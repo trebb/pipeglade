@@ -14,9 +14,16 @@ install: pipeglade pipeglade.1
 	cp pipeglade $(PREFIX)/bin/
 	gzip -c pipeglade.1 > $(PREFIX)/man/man1/pipeglade.1.gz
 
+clean:
+	$(RM) pipeglade
+	$(RM) -r gh-pages
+
+
+# Github pages and versioning
+
 gh-pages: gh-pages/index.html gh-pages/pipeglade.1.html
 
-gh-pages/index.html gh-pages/pipeglade.1.html: pipeglade.1 html-template/index.html
+gh-pages/index.html gh-pages/pipeglade.1.html: pipeglade.1 html-template/index.html Makefile
 	mkdir -p gh-pages
 	cp html-template/* gh-pages/
 	mandoc -T html -O style=style.css pipeglade.1 > gh-pages/pipeglade.1.html
@@ -27,6 +34,7 @@ gh-pages/index.html gh-pages/pipeglade.1.html: pipeglade.1 html-template/index.h
 	echo -e ',s/_PUT_VERSION_HERE_/$(VERSION)/g\nwq' | ed -s gh-pages/index.html
 	echo -e '/<\/body>/-r gh-pages/statcounter.html\nwq' | ed -s gh-pages/index.html
 	echo -e '/<\/body>/-r gh-pages/statcounter.html\nwq' | ed -s gh-pages/pipeglade.1.html
+	echo -e '/<\/body>/-r gh-pages/statcounter.html\nwq' | ed -s gh-pages/404.html
 	$(RM) gh-pages/statcounter.html gh-pages/LICENSE
 
 git-tag:
@@ -34,7 +42,3 @@ git-tag:
 
 publish: clean gh-pages
 	(cd gh-pages; git init; git add ./; git commit -a -m "gh-pages pseudo commit"; git push git@github.com:trebb/pipeglade.git +master:gh-pages)
-
-clean:
-	$(RM) pipeglade
-	$(RM) -r gh-pages
