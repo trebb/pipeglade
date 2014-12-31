@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="style.css" type="text/css" media="all">
+  <title>PIPEGLADE</title></head>
+
+<body>
+  <div class="mandoc">
+    <div class="section">
+      <h1>PIPEGLADE<br />
+        Graphical User Interfaces, The UNIX Way</h1>
+      <p>
+      Pipeglade is a helper program that displays graphical user
+      interfaces for other programs.  It renders the GUI definition
+      found in a GtkBuilder file (created using
+      the <a href="http://glade.gnome.org">Glade Interface
+      Designer</a>), and communicates with the main program solely via
+      pipes or fifos.
+      <p>
+        To have its GUI rendered by pipeglade, a program must be able to
+        <ul class="list list-dash">
+          <li class="list list-dash">
+            send  plain text commands to standard output or a named
+            pipe and/or
+          <li class="list list-dash">
+            receive and parse simple plain text messages from standard
+            input or a named pipe.
+        </ul>
+        Pipeglade strives for simplicity; it provides access to a
+        subset of the features available in GTK+ 3.  Widgets able to
+        communicate via pipeglade include
+        <ul class="list list-dash">
+          <li class="list list-dash">
+            text labels and images,
+          <li class="list list-dash">
+            statusbars and progress indicators,
+          <li class="list list-dash">
+            various kinds of buttons, spinbuttons and scales/sliders,
+          <li class="list list-dash">
+            comboboxes and menus,
+          <li class="list list-dash">
+            various text and tabular inputs,
+          <li class="list list-dash">
+            various standard dialog windows,
+          <li class="list list-dash">
+            calendars.
+        </ul>
+      <p>
+      <div class="subsection">
+        <h2>DOCUMENTATION</h2>
+        Pipeglade has a manual page:
+        <a href="pipeglade.1.html">pipeglade(1)[HTML]</a>,
+        <a href="pipeglade.1.pdf">pipeglade(1)[PDF]</a>
+      </div>
+      <div class="subsection">
+        <h2>SOURCE CODE</h2>
+        <ul class="list list-dash">
+          <li class="list list-dash">
+            Download pipeglade _PUT_VERSION_HERE_: 
+            <a href="http://github.com/trebb/pipeglade/archive/_PUT_VERSION_HERE_.tar.gz">
+              _PUT_VERSION_HERE_.tar.gz</a>
+          <li class="list list-dash">
+            <a href="http://github.com/trebb/pipeglade">GitHub</a>
+        </ul>
+      </div>
+      <div class="subsection">
+        <h2>LICENSE</h2>
+        <!-- replace_with_license_text -->
+      </div>
+    </div>
+  </div>
+</body>
+</html>
