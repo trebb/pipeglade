@@ -36,7 +36,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "0.1.0"
+#define VERSION "0.1.1"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 

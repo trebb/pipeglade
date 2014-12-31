@@ -3,7 +3,7 @@ CCFLAGS = -Wall `pkg-config gtk+-3.0 --cflags` `pkg-config gmodule-2.0 --cflags`
 LIBS = `pkg-config gtk+-3.0 --libs` `pkg-config gmodule-2.0 --libs` -lpthread
 CC != which cc
 RM = rm -f
-VERSION != git tag
+VERSION != git describe --tags | cut -d "-" -f 1
 
 pipeglade: pipeglade.c
 	$(CC) $< -o $@ $(CCFLAGS) $(LIBS)
