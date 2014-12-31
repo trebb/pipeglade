@@ -10,24 +10,26 @@ Visit http://pipeglade.boundp.org
 
 
 INSTALLATION
+============
 
   make
 
 should build a usable binary.
 
-  make PREFIX=/some/dir/
+  make PREFIX=/some/dir/ install
 
 installs the pipeglade binary in /some/dir/bin/ and its manual page in
-/some/dir/man/man1/
+/some/dir/man/man1/.  Default prefix is /usr/local/bin/.
 
 
 TESTS AND FIRST STEPS
+=====================
 
   ./pipegladetest.sh
 
 runs pipeglade's tests (which require some human assistance).  The
-GtkBuilder file of the test GUI, pipeglade.ui, is also used in the
-demonstation script
+GtkBuilder file for the test GUI, pipeglade.ui, is also used in the
+demonstration script
 
   ./echo.sh,
 
