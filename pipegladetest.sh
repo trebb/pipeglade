@@ -1,5 +1,12 @@
 #! /usr/bin/env bash
 
+# Another possible shebang line:
+#! /usr/bin/env mksh
+
+# Pipeglade tests; they should be invoked in the build directory.
+#
+# Failure of a test can cause failure of one or more subsequent tests.
+
 export LC_ALL=C
 FIN=to-g.fifo
 FOUT=from-g.fifo
@@ -7,7 +14,69 @@ FERR=err.fifo
 rm -f $FIN $FOUT $FERR
 
 
-# BATCH ONE
+
+#BATCH ONE
+#
+# Situations where pipeglade should exit immediately.  These tests
+# should run automatically
+
+check_call() {
+    r=$2
+    e=$3
+    o=$4
+    output=$($1 2>tmperr.txt)
+    retval=$?
+    error=$(<tmperr.txt)
+    rm tmperr.txt
+    echo "CALL $1"
+    if test "$output" = "" -a "$o" = "" || (echo "$output" | grep -Fqe "$o"); then
+        echo " OK   STDOUT $output"
+    else
+        echo " FAIL STDOUT $output"
+        echo "    EXPECTED $o"
+    fi
+    if test "$error" = "" -a "$e" = "" || test "$retval" -eq "$r" && (echo "$error" | grep -Fqe "$e"); then
+        echo " OK   EXIT/STDERR $retval $error"
+    else
+        echo " FAIL EXIT/STDERR $retval $error"
+        echo "         EXPECTED $r $e"
+    fi
+}
+
+check_call "./pipeglade -u nonexistent.ui" 1 "nonexistent.ui" ""
+check_call "./pipeglade -u bad_window.ui" 1 "No toplevel window named 'window'" ""
+check_call "./pipeglade -u html-template/404.html" 1 "'html'" ""
+check_call "./pipeglade -u README" 1 "Document must begin with an element" ""
+touch bad_fifo
+check_call "./pipeglade -i bad_fifo" 1 "making fifo" ""
+check_call "./pipeglade -o bad_fifo" 1 "making fifo" ""
+rm bad_fifo
+check_call "./pipeglade -h" 0 "usage: ./pipeglade [-h] [-i in-fifo] [-o out-fifo] [-u glade-builder-file.ui] [-G] [-V]" ""
+check_call "./pipeglade -G" 0 "" "GTK+ v"
+check_call "./pipeglade -V" 0 "" "."
+check_call "./pipeglade -X" 0 "option" ""
+check_call "./pipeglade -u" 0 "argument" ""
+check_call "./pipeglade -i" 0 "argument" ""
+check_call "./pipeglade -o" 0 "argument" ""
+check_call "./pipeglade yyy" 0 "illegal parameter 'yyy'" ""
+mkfifo $FIN
+echo -e "statusbar1:statusbar:pop\n _:_:main_quit" > $FIN &
+check_call "./pipeglade -i $FIN" 0 "" ""
+
+sleep .5
+if test -e $FIN; then
+    echo "FAILED to delete $FIN"
+fi
+
+if test -e $FOUT; then
+    echo "FAILED to delete $FOUT"
+fi
+
+
+
+
+#exit
+# BATCH TWO
 #
 # Error handling tests---bogus actions leading to appropriate error
 # messages.  These tests should run automatically.
@@ -119,8 +188,6 @@ check_error "calendar1:calendar:select_date nnn" "Ignoring command \"calendar1:c
 check_error "calendar1:calendar:select_date 2000-12-33" "Ignoring command \"calendar1:calendar:select_date 2000-12-33\""
 check_error "calendar1:calendar:select_date 2000-13-20" "Ignoring command \"calendar1:calendar:select_date 2000-13-20\""
 
-
-
 echo "_:_:main_quit" >$FIN
 
 sleep .5
@@ -130,8 +197,11 @@ fi
 
 rm $FERR
 
-#exit
 
+
+#exit
+# BATCH THREE
+#
 # Tests for the principal functionality---valid actions leading to
 # correct results.  Manual intervention is required.  Instructions
 # will be given on the statusbar of the test GUI.
