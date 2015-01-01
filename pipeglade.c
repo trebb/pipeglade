@@ -36,7 +36,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "0.1.1"
+#define VERSION "0.2.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 
@@ -58,6 +58,7 @@ usage(char **argv)
                 "[-i in-fifo] "
                 "[-o out-fifo] "
                 "[-u glade-builder-file.ui] "
+                "[-G] "
                 "[-V]\n",
                 argv[0]);
         exit(EXIT_SUCCESS);
@@ -67,6 +68,15 @@ static void
 version(void)
 {
         printf(VERSION "\n");
+        exit(EXIT_SUCCESS);
+}
+
+static void
+gtk_versions(void)
+{
+        printf("GTK+ v%d.%d.%d (running v%d.%d.%d)\n",
+               GTK_MAJOR_VERSION, GTK_MINOR_VERSION, GTK_MICRO_VERSION,
+               gtk_get_major_version(), gtk_get_minor_version(), gtk_get_micro_version());
         exit(EXIT_SUCCESS);
 }
 
@@ -709,16 +719,21 @@ main(int argc, char *argv[])
 
         in = NULL;
         out = NULL;
-        while ((opt = getopt(argc, argv, "hi:o:u:V")) != -1) {
+        while ((opt = getopt(argc, argv, "hi:o:u:GV")) != -1) {
                 switch (opt) {
                 case 'i': in_fifo = optarg; break;
                 case 'o': out_fifo = optarg; break;
                 case 'u': ui_file = optarg; break;
+                case 'G': gtk_versions(); break;
                 case 'V': version(); break;
                 case '?':
                 case 'h':
                 default: usage(argv); break;
                 }
+        }
+        if (argv[optind] != NULL) {
+          fprintf(stderr, "illegal parameter '%s'\n", argv[optind]);
+          usage(argv);
         }
         if (ui_file == NULL)
                 ui_file = "pipeglade.ui";

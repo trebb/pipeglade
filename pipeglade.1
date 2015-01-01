@@ -28,6 +28,7 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl h
+.Op Fl G
 .Op Fl V
 .Nm
 .Op Fl i Ar in-fifo
@@ -74,8 +75,12 @@ Displays the graphical user interface described in
 .Ar builder-file .
 Default is
 .Pa ./pipeglade.ui .
+.It Fl G
+Prints the GTK+ version and exits.
 .It Fl V
-Prints the version number and exits.
+Prints the
+.Nm pipeglade
+version and exits.
 .El
 .Sh INTERFACE CREATION (USING GLADE)
 The interface should be created using the
