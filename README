@@ -44,3 +44,10 @@ like, call
 or
 
   ./pipeglade -u simple_open.ui.
+
+
+SUCCESSFUL BUILDS
+=================
+
+FreeBSD 10.1, GTK+ 3.14.5
+Debian wheezy, GTK+ 3.4.2
