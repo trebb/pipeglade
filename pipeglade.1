@@ -537,6 +537,36 @@ kills the user interface.  Non-empty
 and
 .Fa widget
 are required but ignored.
+.Ss Any Widget
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa widget Ns
+.Ic :set_sensitive
+.Brq Ic 0 |  1
+.Qc
+makes the widget grayed out
+.Pq Ic 0
+or responsive
+.Pq Ic 1 .
+Non-empty
+.Fa widget
+is required but ignored.
+.Pp
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa widget Ns
+.Ic :set_visible
+.Brq Ic 0 |  1
+.Qc
+hides
+.Pq Ic 0
+the widget, or makes it visible
+.Pq Ic 1 .
+Non-empty
+.Fa widget
+is required but ignored.
 .Sh GUI FEEDBACK MESSAGES
 A message from the graphical user interface is a line of text.  The
 message format is 

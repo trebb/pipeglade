@@ -302,6 +302,8 @@ check 1 "statusbar1:statusbar:push Press \"OK\" if 1752-03-13 and 1752-03-14 are
 check 3 "statusbar1:statusbar:push Double-click on 1752-03-13 in the calendar" "calendar1:0 1752-03-13" "calendar1:0 1752-03-13" "calendar1:3 1752-03-13"
 check 1 "statusbar1:statusbar:push Press \"OK\" if there is a spinning spinner\n spinner1:spinner:start" "button1:0 clicked"
 check 1 "statusbar1:statusbar:push Press \"OK\" if the spinner has stopped\n spinner1:spinner:stop" "button1:0 clicked"
+check 1 "statusbar1:statusbar:push Press \"OK\" if there is now a \"Disconnect\" button\n button2:button:set_visible 1\n button2:button:set_sensitive 0" "button1:0 clicked"
+check 1 "statusbar1:statusbar:push Press \"Disconnect\"\n button2:button:set_sensitive 1" "button2:1 clicked"
 check 1 "statusbar1:statusbar:push Press \"OK\" if the window title is now \"ALMOST DONE\"\n window:window:set_title ALMOST DONE" "button1:0 clicked"
 check 1 "statusbar1:statusbar:push Press \"OK\" if the progress bar shows 90%\n progressbar1:progress_bar:set_fraction .9" "button1:0 clicked"
 check 1 "statusbar1:statusbar:push Press \"OK\" if the progress bar text reads \"The End\"\n progressbar1:progress_bar:set_text The End" "button1:0 clicked"

@@ -36,7 +36,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "0.2.0"
+#define VERSION "0.3.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 
@@ -374,7 +374,7 @@ ignoring_command(const char *msg)
 
 /*
  * Parse command pointed to by ud, and act on ui accordingly.  Sets
- * ud->digested = true if done.  This will run once per command inside
+ * ud->digested = true if done.  Runs once per command inside
  * gtk_main_loop()
  */
 static gboolean
@@ -398,6 +398,10 @@ update_ui(struct ui_data *ud)
         }
         if (obj == NULL)
                 ignoring_command(ud->msg);
+        else if (eql(action, "set_sensitive")) /* regardless of type */
+                gtk_widget_set_sensitive(GTK_WIDGET(obj), strtol(data, NULL, 10));
+        else if (eql(action, "set_visible")) /* regardless of type */
+                gtk_widget_set_visible(GTK_WIDGET(obj), strtol(data, NULL, 10));
         else if (eql(type, "label")) {
                 if (eql(action, "set_text"))
                         gtk_label_set_text(GTK_LABEL(obj), data);
