@@ -36,7 +36,7 @@ demonstration script
 which redirects the messages initiated by user activity on the GUI
 back into a text area of the same GUI.
 
-There are two other example GtkBuilder files.  To see how they look
+There are three other example GtkBuilder files.  To see how they look
 like, call
 
   ./pipeglade -u simple_dialog.ui
@@ -44,6 +44,9 @@ like, call
 or
 
   ./pipeglade -u simple_open.ui.
+
+The third one, bad_window.ui, is for testing, and is intentionally
+broken.
 
 
 SUCCESSFUL BUILDS

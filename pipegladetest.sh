@@ -121,6 +121,14 @@ check_error "checkbutton1:check_button:nnn" "Ignoring command \"checkbutton1:che
 check_error "radiobutton1:radio_button:nnn" "Ignoring command \"radiobutton1:radio_button:nnn\""
 # GtkSpinButton
 check_error "spinbutton1:spin_button:nnn" "Ignoring command \"spinbutton1:spin_button:nnn\""
+# GtkFileChooserButton
+check_error "filechooserbutton1:file_chooser_button:nnn" "Ignoring command \"filechooserbutton1:file_chooser_button:nnn\""
+# GtkFilechooserDialog
+check_error "open_dialog:file_chooser_dialog:nnn" "Ignoring command \"open_dialog:file_chooser_dialog:nnn\""
+# GtkFontButton
+check_error "fontbutton1:font_button:nnn" "Ignoring command \"fontbutton1:font_button:nnn\""
+# GtkFontButton
+check_error "colorbutton1:color_button:nnn" "Ignoring command \"colorbutton1:color_button:nnn\""
 # GtkScale
 check_error "scale1:scale:nnn" "Ignoring command \"scale1:scale:nnn\""
 # GtkProgressBar
@@ -263,8 +271,9 @@ check 1 "statusbar1:statusbar:push Press \"send_text\" once again\n textview1:te
 check 1 "statusbar1:statusbar:push Highlight the lowest visible text line and press \"send_selection\"\n textview1:text_view:place_cursor_at_line 1 \ntextview1:text_view:insert_at_cursor A\\\\nB\\\\nC\\\\nD\\\\nE\\\\nF\\\\nG\\\\nH\\\\nI\\\\nJ\\\\nK\\\\nL\\\\nM\\\\nN\\\\nO\\\\nP\\\\nQ\\\\nR\\\\nS\\\\nT\\\\nU\\\\nV\\\\nW\\\\nX\\\\nY\\\\nZ\\\\na\\\\nb\\\\nc\\\\nd\\\\ne\\\\nf\\\\ng\\\\nh\\\\ni\\\\nj\\\\nk\\\\nl\\\\nm\\\\nn\\\\no\\\\np\\\\nq\\\\nr\\\\ns\\\\nt\\\\nu\\\\nv\\\\nw\\\\nx\\\\ny\\\\nz \n textview1:text_view:place_cursor_at_line 46 \n textview1:text_view:scroll_to_cursor" "send_selection:text u"
 check 1 "statusbar1:statusbar:push Again, highlight the lowest visible text line and press \"send_selection\"\n textview1:text_view:place_cursor end\n textview1:text_view:scroll_to_cursor" "send_selection:text z"
 check 1 "statusbar1:statusbar:push Highlight the highest visible text line and press \"send_selection\"\n textview1:text_view:place_cursor 0 \n textview1:text_view:scroll_to_cursor" "send_selection:text A"
-check 1 "statusbar1:statusbar:push Click once, just beyond the right end of the scale" "scale1:0 100.000000"
-check 2 "statusbar1:statusbar:push Click \"Open\" in the \"File\" menu and type \"/\" into the entry line" "open_dialog:file /" "open_dialog:folder"
+# check 1 "statusbar1:statusbar:push Click once, just beyond the right end of the scale" "scale1:0 100.000000"
+check 2 "statusbar1:statusbar:push Click \"Open\" in the \"File\" menu and there, click \"OK\"\n open_dialog:file_chooser_dialog:set_filename q.png" "open_dialog:file $PWD/q.png" "open_dialog:folder $PWD"
+check 2 "statusbar1:statusbar:push Click \"Save As\" in the \"File\" menu and there, click \"OK\"\n save_as_dialog:file_chooser_dialog:set_current_name /somewhere/crazy_idea" "save_as_dialog:file /somewhere/crazy_idea" "save_as_dialog:folder"
 check 1 "statusbar1:statusbar:push Press the \"button\" which should now be renamed \"OK\"\n button1:button:set_label OK" "button1:0 clicked"
 check 1 "statusbar1:statusbar:push Press the \"togglebutton\" which should now be renamed \"on/off\"\n togglebutton1:toggle_button:set_label on/off" "togglebutton1:0 off"
 check 1 "statusbar1:statusbar:push Press the \"checkbutton\" which should now be renamed \"REGISTER\"\n checkbutton1:check_button:set_label REGISTER" "checkbutton1:0 on"
@@ -281,7 +290,13 @@ check 1 "statusbar1:statusbar:push Select the second entry from the combobox\n c
 check 2 "statusbar1:statusbar:push Click the \"+\" of the spinbutton \n button1:button:set_label OK" "spinbutton1:0 33.00" "spinbutton1:0 34.00"
 check 1 "statusbar1:statusbar:push Click the \"+\" of the spinbutton again \n button1:button:set_label OK" "spinbutton1:0 35.00"
 check 1 "statusbar1:statusbar:push Click the \"+\" of the spinbutton once again \n button1:button:set_label OK" "spinbutton1:0 36.00"
-check 1 "statusbar1:statusbar:push Select folder \"/\" using the file chooser button" "filechooserbutton1:0 /"
+check 1 "statusbar1:statusbar:push  Using the file chooser button (now labelled \"etc\"), select \"File System\" (= \"/\")\n filechooserbutton1:file_chooser_button:set_filename /etc/" "filechooserbutton1:0 /"
+check 2 "statusbar1:statusbar:push  Click the font button (now labelled \"Sans Bold 40\"), and then \"Select\"\n fontbutton1:font_button:set_font_name Sans Bold 40" "fontbutton1:0 Sans Bold 40" "fontbutton1:0 Sans Bold 40"
+check 2 "statusbar1:statusbar:push  Click the color button (now turned yellow), and then \"Select\"\n colorbutton1:color_button:set_color yellow" "colorbutton1:0 rgb(255,255,0)" "colorbutton1:0 rgb(255,255,0)"
+check 2 "statusbar1:statusbar:push  Click the color button (now turned green), and then \"Select\"\n colorbutton1:color_button:set_color rgb(0,255,0)" "colorbutton1:0 rgb(0,255,0)" "colorbutton1:0 rgb(0,255,0)"
+check 2 "statusbar1:statusbar:push  Click the color button (now turned blue), and then \"Select\"\n colorbutton1:color_button:set_color #00f" "colorbutton1:0 rgb(0,0,255)" "colorbutton1:0 rgb(0,0,255)"
+check 2 "statusbar1:statusbar:push  Click the color button (now turned red), and then \"Select\"\n colorbutton1:color_button:set_color #ffff00000000" "colorbutton1:0 rgb(255,0,0)" "colorbutton1:0 rgb(255,0,0)"
+check 2 "statusbar1:statusbar:push  Click the color button (now turned green), and then \"Select\"\n colorbutton1:color_button:set_color rgba(0,255,0,.5)" "colorbutton1:0 rgba(0,255,0,0.5)" "colorbutton1:0 rgba(0,255,0,0.5)"
 check 1 "statusbar1:statusbar:push Press \"OK\" if both 1752-03-13 and 1752-03-14 are marked on the calendar\n calendar1:calendar:mark_day 13\n calendar1:calendar:mark_day 14" "button1:0 clicked"
 check 1 "statusbar1:statusbar:push Press \"OK\" if 1752-03-13 and 1752-03-14 are no longer marked on the calendar\n calendar1:calendar:clear_marks" "button1:0 clicked"
 check 3 "statusbar1:statusbar:push Double-click on 1752-03-13 in the calendar" "calendar1:0 1752-03-13" "calendar1:0 1752-03-13" "calendar1:3 1752-03-13"

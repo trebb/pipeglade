@@ -1,4 +1,4 @@
-.\" Copyright (c) 2014 Bert Burgemeister <trebbu@googlemail.com>
+.\" Copyright (c) 2014, 2015 Bert Burgemeister <trebbu@googlemail.com>
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -19,7 +19,7 @@
 .\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 .\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.Dd 2014-12-22
+.Dd January 2, 2015
 .Dt PIPEGLADE 1 CON
 .Os BSD
 .Sh NAME
@@ -409,6 +409,96 @@ removes the row at
 scrolls the cell at
 .Pq Fa row , column
 into view.
+.Ss GtkColorButton
+.Qo
+.Fa name Ns
+.Ic :color_button:set_color
+.Fa color
+.Qc
+preselects the color.
+.Fa color
+can be given as
+.Bl -dash -offset indent -compact
+.It
+a standard X11 color name, like
+.Qq Li Dark Sea Green,
+.It
+a hexadecimal value in the form
+.Ic # Ns
+.Fa rgb ,
+.Ic # Ns
+.Fa rrggbb ,
+.Ic # Ns
+.Fa rrrgggbbb ,
+or
+.Ic # Ns
+.Fa rrrrggggbbbb ,
+.It
+an RGB color in the form
+.Ic rgb( Ns
+.Fa r Ns
+.Ic \&, Ns
+.Fa g Ns
+.Ic \&, Ns
+.Fa b Ns
+.Ic \&) ,
+or
+.It
+an RGBA color in the form
+.Ic rgba( Ns
+.Fa r Ns
+.Ic \&, Ns
+.Fa g Ns
+.Ic \&, Ns
+.Fa b Ns
+.Ic \&, Ns
+.Fa a Ns
+.Ic \&) .
+.El
+The last two are the format the widget reports; see
+.Sx GUI FEEDBACK MESSAGES .
+.Ss GtkFontButton
+.Qo
+.Fa name Ns
+.Ic :font_button:set_font_name
+.Fa fontname
+.Qc
+preselects the font.
+.Ss GtkFileChooserButton
+.Qo
+.Fa name Ns
+.Ic :file_chooser_button:set_filename
+.Fa path
+.Qc
+preselects
+.Fa path
+to the extent it exists.
+.Ss GtkFileChooserDialog
+.Qo
+.Fa name Ns
+.Ic :file_chooser_dialog:set_filename
+.Fa path
+.Qc
+preselects
+.Fa path
+to the extent it exists.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :file_chooser_dialog:set_current_name
+.Fa string
+.Qc
+makes
+.Fa string
+the suggested filename, which may not yet exist.
+.Fa string
+should either resemble an absolute path, or the
+.Fa path
+must be set
+separately by
+.Fa name Ns
+.Ic :file_chooser_dialog:set_current_name
+.Fa path .
 .Ss GtkCalendar
 .Qo
 .Fa name Ns
@@ -811,6 +901,61 @@ The widget reports
 .Fa name Ns
 .Ic \&: Ns
 .Fa section pathname
+.Qc
+if the user has changed the selection.
+.Ss GtkColorButton
+The
+.Ic color-set
+signal should be connected to one of
+.Ic cb_0 , cb_1 , cb_2 ,
+or
+.Ic cb_3 .
+The widget reports
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section
+.Ic rgb( Ns
+.Fa red Ns
+.Ic \&,
+.Fa green Ns
+.Ic \&,
+.Fa blue Ns
+.Ic \&)
+.Qc
+or
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section
+.Ic rgb( Ns
+.Fa red Ns
+.Ic \&,
+.Fa green Ns
+.Ic \&,
+.Fa blue Ns
+.Ic \&,
+.Fa alpha Ns
+.Ic \&)
+.Qc ;
+.Fa red , green ,
+and
+.Fa blue
+lie between 0 and 255, and
+.Fa alpha
+between 0 and 1.
+.Ss GtkFontButton
+The
+.Ic font-set
+signal should be connected to one of
+.Ic cb_0 , cb_1 , cb_2 ,
+or
+.Ic cb_3 .
+The widget reports
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section fontname
 .Qc .
 .Ss GtkMenuItem, GtkImageMenuItem
 The
@@ -922,10 +1067,10 @@ The following shell command displays a running clock:
 The following shell script fragment sets up
 .Nm
 for continuous communication with another program,
-.Li main_prog .
+.Li main_prog :
 .Dl pipeglade -i in.fifo -o out.fifo &
 .Dl # wait for in.fifo and out.fifo to appear
-.Dl while test ! \e( -e in.fifo -a -e out.fifo \e); do :; done
+.Dl while test \& ! \e( -e in.fifo -a -e out.fifo \e); do :; done
 .Dl main_prog <in.fifo >out.fifo
 .Sh EXIT STATUS
 .Nm
@@ -942,4 +1087,4 @@ exits 0 on success, and >0 if an error occurs.
 .Nm
 was written by
 .An Bert Burgemeister Aq trebbu@googlemail.com .
-.\ .Sh BUGS
+.\" .Sh BUGS

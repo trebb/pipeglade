@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Bert Burgemeister <trebbu@googlemail.com>
+ * Copyright (c) 2014, 2015 Bert Burgemeister <trebbu@googlemail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -216,10 +216,17 @@ do_callback(GtkBuildable *obj, gpointer user_data, const char *section)
                 send_msg(obj, section, str, NULL);
         } else if (GTK_IS_TOGGLE_BUTTON(obj))
                 send_msg(obj, section, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(obj))?"on":"off", NULL);
-        else if (GTK_IS_BUTTON(obj))
-                send_msg(obj, section, "clicked", NULL);
+        else if (GTK_IS_COLOR_BUTTON(obj)) {
+                GdkRGBA color;
+                
+                gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(obj), &color);
+                send_msg(obj, section, gdk_rgba_to_string(&color), NULL);
+        } else if (GTK_IS_FONT_BUTTON(obj))
+                send_msg(obj, section, gtk_font_button_get_font_name(GTK_FONT_BUTTON(obj)), NULL);
         else if (GTK_IS_FILE_CHOOSER_BUTTON(obj))
                 send_msg(obj, section, gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(obj)), NULL);
+        else if (GTK_IS_BUTTON(obj))
+                send_msg(obj, section, "clicked", NULL);
         else if (GTK_IS_CALENDAR(obj)) {
                 unsigned int year = 0, month = 0, day = 0;
                 char date[11];
@@ -434,6 +441,31 @@ update_ui(struct ui_data *ud)
         } else if (eql(type, "button")) {
                 if (eql(action, "set_label"))
                         gtk_button_set_label(GTK_BUTTON(obj), data);
+                else
+                        ignoring_command(ud->msg);
+        } else if (eql(type, "file_chooser_dialog")) {
+                if (eql(action, "set_filename"))
+                        gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(obj), data);
+                else if (eql(action, "set_current_name"))
+                        gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(obj), data);
+                else
+                        ignoring_command(ud->msg);
+        } else if (eql(type, "file_chooser_button")) {
+                if (eql(action, "set_filename"))
+                        gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(obj), data);
+                else
+                        ignoring_command(ud->msg);
+        } else if (eql(type, "color_button")) {
+                if (eql(action, "set_color")) {
+                        GdkRGBA color;
+
+                        gdk_rgba_parse(&color, data);
+                        gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(obj), &color);
+                } else
+                        ignoring_command(ud->msg);
+        } else if (eql(type, "font_button")) {
+                if (eql(action, "set_font_name"))
+                        gtk_font_button_set_font_name(GTK_FONT_BUTTON(obj), data);
                 else
                         ignoring_command(ud->msg);
         } else if (eql(type, "toggle_button") || eql(type, "radio_button") || eql(type, "check_button")) {
