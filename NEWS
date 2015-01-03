@@ -1,0 +1,8 @@
+unreleased
+------------------
+  * Start a NEWS file
+  
+0.3.0 (2015-01-02)
+------------------
+  * Added support GtkColorButton, GtkFontButton, and for graying out
+  and hiding of arbitrary widgets.
