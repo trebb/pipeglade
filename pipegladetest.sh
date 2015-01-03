@@ -15,10 +15,11 @@ rm -f $FIN $FOUT $FERR
 
 
 
-#BATCH ONE
+# BATCH ONE
 #
 # Situations where pipeglade should exit immediately.  These tests
 # should run automatically
+######################################################################
 
 check_call() {
     r=$2
@@ -80,6 +81,7 @@ fi
 #
 # Error handling tests---bogus actions leading to appropriate error
 # messages.  These tests should run automatically.
+######################################################################
 
 mkfifo $FERR
 
@@ -213,6 +215,7 @@ rm $FERR
 # Tests for the principal functionality---valid actions leading to
 # correct results.  Manual intervention is required.  Instructions
 # will be given on the statusbar of the test GUI.
+######################################################################
 
 mkfifo $FOUT
 

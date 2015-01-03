@@ -36,12 +36,12 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "0.3.0"
+#define VERSION "0.3.1"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 
-FILE *in;
-FILE *out;
+static FILE *in;
+static FILE *out;
 struct ui_data {
         GtkBuilder *builder;
         size_t msg_size;

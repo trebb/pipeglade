@@ -19,7 +19,17 @@ should build a usable binary.
   make PREFIX=/some/dir/ install
 
 installs the pipeglade binary in /some/dir/bin/ and its manual page in
-/some/dir/man/man1/.  Default prefix is /usr/local/bin/.
+/some/dir/man/man1/.  Default PREFIX is /usr/local/.
+
+To get rid of the installation, call
+
+  make uninstall
+
+or
+
+  make PREFIX=/some/dir/ uninstall
+
+respectively.
 
 
 TESTS AND FIRST STEPS
