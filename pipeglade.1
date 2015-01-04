@@ -19,7 +19,7 @@
 .\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 .\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.Dd January 3, 2015
+.Dd January 4, 2015
 .Dt PIPEGLADE 1 CON
 .Os BSD
 .Sh NAME
@@ -113,8 +113,6 @@ The format of the commands is
 .Qo
 .Fa name Ns
 .Ic \&: Ns
-.Fa widget Ns
-.Ic \&: Ns
 .Fa action
 .Bq Fa data
 .Qc
@@ -136,7 +134,7 @@ commands, are given below.
 .Ss GtkLabel
 .Qo
 .Fa name Ns
-.Ic :label:set_text
+.Ic :set_text
 .Fa string
 .Qc
 replaces the label text with
@@ -144,14 +142,14 @@ replaces the label text with
 .Ss GtkImage
 .Qo
 .Fa name Ns
-.Ic :image:set_from_icon_name
+.Ic :set_from_icon_name
 .Fa icon-name
 .Qc
 replaces the image with one of the standard icons.
 .Pp
 .Qo
 .Fa name Ns
-.Ic :image:set_from_file
+.Ic :set_from_file
 .Fa path
 .Qc
 replaces the image by the one found at
@@ -159,7 +157,7 @@ replaces the image by the one found at
 .Ss GtkEntry
 .Qo
 .Fa name Ns
-.Ic :entry:set_text
+.Ic :set_text
 .Fa string
 .Qc
 replaces the user-editable text with
@@ -167,7 +165,7 @@ replaces the user-editable text with
 .Ss GtkTextView
 .Qo
 .Fa name Ns
-.Ic :text_view:set_text
+.Ic :set_text
 .Fa string
 .Qc
 replaces the user-editable text with
@@ -175,13 +173,13 @@ replaces the user-editable text with
 .Pp
 .Qo
 .Fa name Ns
-.Ic :text_view:delete
+.Ic :delete
 .Qc
 deletes the text.
 .Pp
 .Qo
 .Fa name Ns
-.Ic :text_view:insert_at_cursor
+.Ic :insert_at_cursor
 .Fa string
 .Qc
 inserts
@@ -190,7 +188,7 @@ at cursor position.
 .Pp
 .Qo
 .Fa name Ns
-.Ic :text_view:place_cursor Brq Fa position | Ic end
+.Ic :place_cursor Brq Fa position | Ic end
 .Qc
 places the text cursor at
 .Fa position
@@ -198,7 +196,7 @@ or at the end of the text.
 .Pp
 .Qo
 .Fa name Ns
-.Ic :text_view:place_cursor_at_line
+.Ic :place_cursor_at_line
 .Fa line
 .Qc
 places the text cursor at the beginning of
@@ -206,13 +204,13 @@ places the text cursor at the beginning of
 .Pp
 .Qo
 .Fa name Ns
-.Ic :text_view:scroll_to_cursor
+.Ic :scroll_to_cursor
 .Qc
 scrolls to the cursor position if necessary.
 .Ss GtkButton
 .Qo
 .Fa name Ns
-.Ic :button:set_label
+.Ic :set_label
 .Fa string
 .Qc
 replaces the button text with
@@ -220,7 +218,7 @@ replaces the button text with
 .Ss GtkToggleButton
 .Qo
 .Fa name Ns
-.Ic :toggle_button:set_active Brq Ic 0 | 1
+.Ic :set_active Brq Ic 0 | 1
 .Qc
 switches the button off
 .Pq Ic 0
@@ -229,7 +227,7 @@ or on
 .Pp
 .Qo
 .Fa name Ns
-.Ic :toggle_button:set_label
+.Ic :set_label
 .Fa string
 .Qc
 replaces the button text with
@@ -237,7 +235,7 @@ replaces the button text with
 .Ss GtkCheckButton
 .Qo
 .Fa name Ns
-.Ic :check_button:set_active Brq Ic 0 | 1
+.Ic :set_active Brq Ic 0 | 1
 .Qc
 switches the check mark off
 .Pq Ic 0
@@ -246,7 +244,7 @@ or on
 .Pp
 .Qo
 .Fa name Ns
-.Ic :check_button:set_label
+.Ic :set_label
 .Fa string
 .Qc
 replaces the button text with
@@ -254,14 +252,14 @@ replaces the button text with
 .Ss GtkRadioButton
 .Qo
 .Fa name Ns
-.Ic :radio_button:set_active 1
+.Ic :set_active 1
 .Qc
 switches the button on.  All other buttons of the same group will go off
 automatically.
 .Pp
 .Qo
 .Fa name Ns
-.Ic :radio_button:set_label
+.Ic :set_label
 .Fa string
 .Qc
 replaces the button text with
@@ -269,7 +267,7 @@ replaces the button text with
 .Ss GtkSpinButton
 .Qo
 .Fa name Ns
-.Ic :spin_button:set_text
+.Ic :set_text
 .Fa string
 .Qc
 sets the selected value to
@@ -277,7 +275,7 @@ sets the selected value to
 .Ss GtkScale
 .Qo
 .Fa name Ns
-.Ic :scale:set_value
+.Ic :set_value
 .Fa numeric
 .Qc
 moves the slider to value
@@ -285,7 +283,7 @@ moves the slider to value
 .Ss GtkProgressBar
 .Qo
 .Fa name Ns
-.Ic :progress_bar:set_fraction
+.Ic :set_fraction
 .Fa numeric
 .Qc
 moves the progress bar to
@@ -296,7 +294,7 @@ between 0 and 1
 .Pp
 .Qo
 .Fa name Ns
-.Ic :progress_bar:set_text
+.Ic :set_text
 .Fa string
 .Qc
 replaces the text of the progress bar with
@@ -304,18 +302,18 @@ replaces the text of the progress bar with
 .Ss GtkSpinner
 .Qo
 .Fa name Ns
-.Ic :spinner:start
+.Ic :start
 .Qc
 and
 .Qo
 .Fa name Ns
-.Ic :spinner:stop
+.Ic :stop
 .Qc
 start and stop the spinner.
 .Ss GtkStatusbar
 .Qo
 .Fa name Ns
-.Ic :statusbar:push
+.Ic :push
 .Fa string
 .Qc
 displays
@@ -324,20 +322,20 @@ in the statusbar.
 .Pp
 .Qo
 .Fa name Ns
-.Ic :statusbar:pop
+.Ic :pop
 .Qc
 removes the last entry from the statusbar, revealing the penultimate
 entry.
 .Ss GtkComboBoxText
 .Qo
 .Fa name Ns
-.Ic :combo_box_text:prepend_text
+.Ic :prepend_text
 .Fa string
 .Qc
 and
 .Qo
 .Fa name Ns
-.Ic :combo_box_text:append_text
+.Ic :append_text
 .Fa string
 .Qc
 prepend/append
@@ -346,7 +344,7 @@ as a new selectable item.
 .Pp
 .Qo
 .Fa name Ns
-.Ic :combo_box_text:insert_text
+.Ic :insert_text
 .Fa position string
 .Qc
 inserts item
@@ -356,7 +354,7 @@ at
 .Pp
 .Qo
 .Fa name Ns
-.Ic :combo_box_text:remove
+.Ic :remove
 .Fa position
 .Qc
 removes the item at
@@ -364,7 +362,7 @@ removes the item at
 .Ss GtkTreeView
 .Qo
 .Fa name Ns
-.Ic :tree_view:set
+.Ic :set
 .Fa row column data
 .Qc
 replaces the content at
@@ -376,7 +374,7 @@ with
 .Pp
 .Qo
 .Fa name Ns
-.Ic :tree_view:insert_row Brq Fa position | Ic end
+.Ic :insert_row Brq Fa position | Ic end
 .Qc
 inserts a new, empty row at
 .Fa position
@@ -384,7 +382,7 @@ or at the end of the list.
 .Pp
 .Qo
 .Fa name Ns
-.Ic :tree_view:move_row
+.Ic :move_row
 .Fa origin Brq Fa destination | Ic end
 .Qc
 moves the row at
@@ -395,7 +393,7 @@ or to the end of the list.
 .Pp
 .Qo
 .Fa name Ns
-.Ic :tree_view:remove_row
+.Ic :remove_row
 .Fa position
 .Qc
 removes the row at
@@ -403,7 +401,7 @@ removes the row at
 .Pp
 .Qo
 .Fa name Ns
-.Ic :tree_view:scroll
+.Ic :scroll
 .Fa row column
 .Qc
 scrolls the cell at
@@ -412,7 +410,7 @@ into view.
 .Ss GtkColorButton
 .Qo
 .Fa name Ns
-.Ic :color_button:set_color
+.Ic :set_color
 .Fa color
 .Qc
 preselects the color.
@@ -460,14 +458,14 @@ The last two are the format the widget reports; see
 .Ss GtkFontButton
 .Qo
 .Fa name Ns
-.Ic :font_button:set_font_name
+.Ic :set_font_name
 .Fa fontname
 .Qc
 preselects the font.
 .Ss GtkFileChooserButton
 .Qo
 .Fa name Ns
-.Ic :file_chooser_button:set_filename
+.Ic :set_filename
 .Fa path
 .Qc
 preselects
@@ -476,7 +474,7 @@ to the extent it exists.
 .Ss GtkFileChooserDialog
 .Qo
 .Fa name Ns
-.Ic :file_chooser_dialog:set_filename
+.Ic :set_filename
 .Fa path
 .Qc
 preselects
@@ -485,7 +483,7 @@ to the extent it exists.
 .Pp
 .Qo
 .Fa name Ns
-.Ic :file_chooser_dialog:set_current_name
+.Ic :set_current_name
 .Fa string
 .Qc
 makes
@@ -497,12 +495,12 @@ should either resemble an absolute path, or the
 must be set
 separately by
 .Fa name Ns
-.Ic :file_chooser_dialog:set_current_name
+.Ic :set_current_name
 .Fa path .
 .Ss GtkCalendar
 .Qo
 .Fa name Ns
-.Ic :calendar:select_date
+.Ic :select_date
 .Fa date
 .Qc
 selects
@@ -512,7 +510,7 @@ on the calendar.
 .Pp
 .Qo
 .Fa name Ns
-.Ic :calendar:mark_day
+.Ic :mark_day
 .Fa day
 .Qc
 marks
@@ -522,26 +520,20 @@ on the calendar.
 .Pp
 .Qo
 .Fa name Ns
-.Ic :calendar:clear_marks
+.Ic :clear_marks
 .Qc
 unmarks all days on the calendar.
 .Ss Main Window
 .Qo
 .Fa name Ns
-.Ic \&: Ns
-.Fa widget Ns
 .Ic :main_quit
 .Qc
-kills the user interface.  Non-empty
+kills the user interface.  A non-empty
 .Fa name
-and
-.Fa widget
-are required but ignored.
+is required but ignored.
 .Ss Any Widget
 .Qo
 .Fa name Ns
-.Ic \&: Ns
-.Fa widget Ns
 .Ic :set_sensitive
 .Brq Ic 0 |  1
 .Qc
@@ -549,14 +541,9 @@ makes the widget grayed out
 .Pq Ic 0
 or responsive
 .Pq Ic 1 .
-Non-empty
-.Fa widget
-is required but ignored.
 .Pp
 .Qo
 .Fa name Ns
-.Ic \&: Ns
-.Fa widget Ns
 .Ic :set_visible
 .Brq Ic 0 |  1
 .Qc
@@ -564,9 +551,6 @@ hides
 .Pq Ic 0
 the widget, or makes it visible
 .Pq Ic 1 .
-Non-empty
-.Fa widget
-is required but ignored.
 .Sh GUI FEEDBACK MESSAGES
 A message from the graphical user interface is a line of text.  The
 message format is 
@@ -1056,9 +1040,9 @@ After invoking
 .Dl pipeglade
 and clicking the
 .Ic GtkButton ,
-.Qq c1:0 clicked
+.Qq b1:0 clicked
 will be reported on the terminal.  Typing
-.Dl l1:label:set_text Button Label
+.Dl l1:set_text Button Label
 will change the text shown on the label into
 .Qq Button Label .
 .Ss One-Shot File Dialog
@@ -1089,12 +1073,12 @@ contains a
 .Li label1 ,
 then
 .Dl pipeglade -u simple_dialog.ui <<< \e
-.Dl \ \ \ \ \&"label1:label:set_text NOW READ THIS!\&"
+.Dl \ \ \ \ \&"label1:set_text NOW READ THIS!\&"
 will set the label text accordingly and wait for user input.
 .Ss Continuous Input
 The following shell command displays a running clock:
 .Dl while true; do
-.Dl \ \ \ \ echo \&"label1:label:set_text `date`\&";
+.Dl \ \ \ \ echo \&"label1:set_text `date`\&";
 .Dl \ \ \ \ sleep 1;
 .Dl done | pipeglade -u simple_dialog.ui
 .Ss Continuous Input and Output

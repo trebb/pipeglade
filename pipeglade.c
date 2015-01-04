@@ -36,7 +36,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "0.3.1"
+#define VERSION "1.0.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 
@@ -194,31 +194,34 @@ cb_send_text_selection(GtkBuildable *obj, gpointer user_data)
 static void
 do_callback(GtkBuildable *obj, gpointer user_data, const char *section)
 {
+        char str[BUFLEN];
+        const char *item_name;
+        GdkRGBA color;
+        int col;
+        unsigned int year = 0, month = 0, day = 0;
+        GtkTreeIter iter;
+        GtkTreePath *path;
+        char *path_s;
+        GtkTreeModel *model;
+
         if (GTK_IS_ENTRY(obj)) {
                 send_msg(obj, section, gtk_entry_get_text(GTK_ENTRY(obj)), NULL);
         } else if (GTK_IS_MENU_ITEM(obj)) {
-                const char *item_name;
-                char dialog_name[BUFLEN];
-
                 item_name = gtk_buildable_get_name(obj);
-                strncpy(dialog_name, item_name, BUFLEN - 1);
-                strncpy(dialog_name + strlen(item_name), "_dialog", BUFLEN - 1 - strlen(item_name));
-                if (gtk_builder_get_object(user_data, dialog_name) != NULL)
-                        gtk_widget_show(GTK_WIDGET(gtk_builder_get_object(user_data, dialog_name)));
+                strncpy(str, item_name, BUFLEN - 1);
+                strncpy(str + strlen(item_name), "_dialog", BUFLEN - 1 - strlen(item_name));
+                if (gtk_builder_get_object(user_data, str) != NULL)
+                        gtk_widget_show(GTK_WIDGET(gtk_builder_get_object(user_data, str)));
                 else
                         send_msg(obj, section, gtk_menu_item_get_label(GTK_MENU_ITEM(obj)), NULL);
         } else if (GTK_IS_COMBO_BOX_TEXT(obj))
                 send_msg(obj, section, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(obj)), NULL);
         else if (GTK_IS_RANGE(obj)) {
-                char str[BUFLEN];
-
                 snprintf(str, BUFLEN, "%f", gtk_range_get_value(GTK_RANGE(obj)));
                 send_msg(obj, section, str, NULL);
         } else if (GTK_IS_TOGGLE_BUTTON(obj))
                 send_msg(obj, section, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(obj))?"on":"off", NULL);
         else if (GTK_IS_COLOR_BUTTON(obj)) {
-                GdkRGBA color;
-                
                 gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(obj), &color);
                 send_msg(obj, section, gdk_rgba_to_string(&color), NULL);
         } else if (GTK_IS_FONT_BUTTON(obj))
@@ -228,21 +231,12 @@ do_callback(GtkBuildable *obj, gpointer user_data, const char *section)
         else if (GTK_IS_BUTTON(obj))
                 send_msg(obj, section, "clicked", NULL);
         else if (GTK_IS_CALENDAR(obj)) {
-                unsigned int year = 0, month = 0, day = 0;
-                char date[11];
-
                 gtk_calendar_get_date(GTK_CALENDAR(obj), &year, &month, &day);
-                snprintf(date, 11, "%04u-%02u-%02u", year, ++month, day);
-                send_msg(obj, section, date, NULL);
+                snprintf(str, BUFLEN, "%04u-%02u-%02u", year, ++month, day);
+                send_msg(obj, section, str, NULL);
         } else if (GTK_IS_TREE_VIEW_COLUMN(obj))
                 send_msg(obj, section, "clicked", NULL);
         else if (GTK_IS_TREE_VIEW(obj)) {
-                GtkTreeIter iter;
-                GtkTreePath *path;
-                GtkTreeModel *model;
-                char *path_s;
-                int col;
-
                 gtk_tree_view_get_cursor(GTK_TREE_VIEW(obj), &path, NULL);
                 model = gtk_tree_view_get_model(GTK_TREE_VIEW(obj));
                 gtk_tree_model_get_iter(model, &iter, path);
@@ -367,9 +361,17 @@ read_buf(FILE *stream, char **buf, size_t *bufsize)
  * Error message
  */
 static void
-ignoring_command(const char *msg)
+ign_cmd(GType type, const char *msg)
 {
-        fprintf(stderr, "Ignoring command \"%s\"\n", msg);
+        const char *name, *pad = " ";
+
+        if (type == G_TYPE_INVALID) {
+                name = "";
+                pad = "";
+        }
+        else
+                name = g_type_name(type);
+        fprintf(stderr, "Ignoring %s%scommand \"%s\"\n", name, pad, msg);
 }
 
 /*
@@ -380,34 +382,45 @@ ignoring_command(const char *msg)
 static gboolean
 update_ui(struct ui_data *ud)
 {
-        char name[ud->msg_size], type[ud->msg_size], action[ud->msg_size];
+        char name[ud->msg_size], action[ud->msg_size];
         char *data;
         int data_start;
-        GObject *obj;
+        GObject *obj = NULL;
+        GType type = G_TYPE_INVALID;
 
         data_start = strlen(ud->msg);
-        name[0] = type[0] = action[0] = '\0';
+        name[0] = action[0] = '\0';
         sscanf(ud->msg,
-               " %[0-9a-zA-Z_]:%[0-9a-zA-Z_]:%[0-9a-zA-Z_]%*[ \t] %n",
-               name, type, action, &data_start);
-        data = ud->msg + data_start;
-        obj = (gtk_builder_get_object(ud->builder, name));
+               " %[0-9a-zA-Z_]:%[0-9a-zA-Z_]%*[ \t] %n",
+               name, action, &data_start);
         if (eql(action, "main_quit")) {
                 gtk_main_quit();
+                ud->msg_digested = true;
                 return G_SOURCE_REMOVE;
         }
-        if (obj == NULL)
-                ignoring_command(ud->msg);
-        else if (eql(action, "set_sensitive")) /* regardless of type */
+        obj = (gtk_builder_get_object(ud->builder, name));
+        if (obj == NULL) {
+                ign_cmd(type, ud->msg);
+                ud->msg_digested = true;
+                return G_SOURCE_REMOVE;
+        }
+        data = ud->msg + data_start;
+        if (eql(action, "set_sensitive")) {
                 gtk_widget_set_sensitive(GTK_WIDGET(obj), strtol(data, NULL, 10));
-        else if (eql(action, "set_visible")) /* regardless of type */
+                ud->msg_digested = true;
+                return G_SOURCE_REMOVE;
+        } else if (eql(action, "set_visible")) {
                 gtk_widget_set_visible(GTK_WIDGET(obj), strtol(data, NULL, 10));
-        else if (eql(type, "label")) {
+                ud->msg_digested = true;
+                return G_SOURCE_REMOVE;
+        }
+        type = G_TYPE_FROM_INSTANCE(obj);
+        if (type == GTK_TYPE_LABEL) {
                 if (eql(action, "set_text"))
                         gtk_label_set_text(GTK_LABEL(obj), data);
                 else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "image")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_IMAGE) {
                 GtkIconSize size;
 
                 gtk_image_get_icon_name(GTK_IMAGE(obj), NULL, &size);
@@ -416,8 +429,8 @@ update_ui(struct ui_data *ud)
                 else if (eql(action, "set_from_icon_name"))
                         gtk_image_set_from_icon_name(GTK_IMAGE(obj), data, size);
                 else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "text_view")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_TEXT_VIEW) {
                 GtkTextBuffer *textbuf;
                 GtkTextIter iter, a, b;
 
@@ -441,69 +454,69 @@ update_ui(struct ui_data *ud)
                 } else if (eql(action, "scroll_to_cursor"))
                         gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(obj), gtk_text_buffer_get_insert(textbuf), 0.0, 0, 0.0, 0.0);
                 else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "button")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_BUTTON) {
                 if (eql(action, "set_label"))
                         gtk_button_set_label(GTK_BUTTON(obj), data);
                 else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "file_chooser_dialog")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_FILE_CHOOSER_DIALOG) {
                 if (eql(action, "set_filename"))
                         gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(obj), data);
                 else if (eql(action, "set_current_name"))
                         gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(obj), data);
                 else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "file_chooser_button")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_FILE_CHOOSER_BUTTON) {
                 if (eql(action, "set_filename"))
                         gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(obj), data);
                 else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "color_button")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_COLOR_BUTTON) {
                 if (eql(action, "set_color")) {
                         GdkRGBA color;
 
                         gdk_rgba_parse(&color, data);
                         gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(obj), &color);
                 } else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "font_button")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_FONT_BUTTON) {
                 if (eql(action, "set_font_name"))
                         gtk_font_button_set_font_name(GTK_FONT_BUTTON(obj), data);
                 else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "toggle_button") || eql(type, "radio_button") || eql(type, "check_button")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_TOGGLE_BUTTON || type == GTK_TYPE_RADIO_BUTTON || type == GTK_TYPE_CHECK_BUTTON) {
                 if (eql(action, "set_label"))
                         gtk_button_set_label(GTK_BUTTON(obj), data);
                 else if (eql(action, "set_active")) 
                         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), strtol(data, NULL, 10));
                 else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "spin_button") || eql(type, "entry")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_SPIN_BUTTON || type == GTK_TYPE_ENTRY) {
                 if (eql(action, "set_text"))
                         gtk_entry_set_text(GTK_ENTRY(obj), data);
                 else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "scale")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_SCALE) {
                 if (eql(action, "set_value"))
                         gtk_range_set_value(GTK_RANGE(obj), strtod(data, NULL));
                 else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "progress_bar")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_PROGRESS_BAR) {
                 if (eql(action, "set_text"))
                         gtk_progress_bar_set_text(GTK_PROGRESS_BAR(obj), data);
                 else if (eql(action, "set_fraction"))
                         gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(obj), strtod(data, NULL));
                 else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "spinner")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_SPINNER) {
                 if (eql(action, "start"))
                         gtk_spinner_start(GTK_SPINNER(obj));
                 else if (eql(action, "stop"))
                         gtk_spinner_stop(GTK_SPINNER(obj));
                 else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "combo_box_text")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_COMBO_BOX_TEXT) {
                 if (eql(action, "prepend_text"))
                         gtk_combo_box_text_prepend_text(GTK_COMBO_BOX_TEXT(obj), data);
                 else if (eql(action, "append_text"))
@@ -517,15 +530,15 @@ update_ui(struct ui_data *ud)
                         text = strtok(NULL, WHITESPACE);
                         gtk_combo_box_text_insert_text(GTK_COMBO_BOX_TEXT(obj), strtol(position, NULL, 10), text);
                 } else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "statusbar")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_STATUSBAR) {
                 if (eql(action, "push"))
                         gtk_statusbar_push(GTK_STATUSBAR(obj), 0, data);
                 else if (eql(action, "pop"))
                         gtk_statusbar_pop(GTK_STATUSBAR(obj), 0);
                 else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "calendar")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_CALENDAR) {
                 int year = 0, month = 0, day = 0;
 
                 if (eql(action, "select_date")) {
@@ -534,18 +547,18 @@ update_ui(struct ui_data *ud)
                                 gtk_calendar_select_month(GTK_CALENDAR(obj), --month, year);
                                 gtk_calendar_select_day(GTK_CALENDAR(obj), day);
                         } else
-                                ignoring_command(ud->msg);
+                                ign_cmd(type, ud->msg);
                 } else if (eql(action, "mark_day")) {
                         day = strtol(data, NULL, 10);
                         if (day > 0 && day <= 31)
                                 gtk_calendar_mark_day(GTK_CALENDAR(obj), day);
                         else
-                                ignoring_command(ud->msg);
+                                ign_cmd(type, ud->msg);
                 } else if (eql(action, "clear_marks"))
                         gtk_calendar_clear_marks(GTK_CALENDAR(obj));
                 else
-                        ignoring_command(ud->msg);
-        } else if (eql(type, "tree_view")) {
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_TREE_VIEW) {
                 GtkTreeIter iter0, iter1;
                 GtkTreeView *view;
                 GtkListStore *store;
@@ -601,7 +614,7 @@ update_ui(struct ui_data *ud)
                                 if (!errno && endptr != arg2_s)
                                         gtk_list_store_set(store, &iter0, arg1_n, n, -1);
                                 else
-                                        ignoring_command(ud->msg);
+                                        ign_cmd(type, ud->msg);
                                 break;
                         case G_TYPE_FLOAT:
                         case G_TYPE_DOUBLE:
@@ -611,7 +624,7 @@ update_ui(struct ui_data *ud)
                                 if (!errno && endptr != arg2_s)
                                         gtk_list_store_set(store, &iter0, arg1_n, d, -1);
                                 else
-                                        ignoring_command(ud->msg);
+                                        ign_cmd(type, ud->msg);
                                 gtk_list_store_set(store, &iter0, arg1_n, strtod(arg2_s, NULL), -1);
                                 break;
                         case G_TYPE_STRING:
@@ -632,26 +645,26 @@ update_ui(struct ui_data *ud)
                         else if (iter0_valid)
                                 gtk_list_store_insert_before(store, &iter1, &iter0);
                         else
-                                ignoring_command(ud->msg);
+                                ign_cmd(type, ud->msg);
                 else if (eql(action, "move_row") && iter0_valid)
                         if (eql(arg1_s, "end"))
                                 gtk_list_store_move_before(store, &iter0, NULL);
                         else if (iter1_valid)
                                 gtk_list_store_move_before(store, &iter0, &iter1);
                         else
-                                ignoring_command(ud->msg);
+                                ign_cmd(type, ud->msg);
                 else if (eql(action, "remove_row") && iter0_valid)
                         gtk_list_store_remove(store, &iter0);
                 else
-                        ignoring_command(ud->msg);
+                        ign_cmd(type, ud->msg);
                 free(tokens);
-        } else if (eql(type, "window")) {
+        } else if (type == GTK_TYPE_WINDOW) {
                 if (eql(action, "set_title"))
                         gtk_window_set_title(GTK_WINDOW(obj), data);
                 else
-                        ignoring_command(ud->msg);
+                        ign_cmd(type, ud->msg);
         } else
-                ignoring_command(ud->msg);
+                ign_cmd(type, ud->msg);
         ud->msg_digested = true;
         return G_SOURCE_REMOVE;
 }
