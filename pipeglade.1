@@ -38,7 +38,7 @@
 .Nm
 is a helper program that displays graphical user
 interfaces for other programs.  It renders the GUI definition
-found in a GtkBuilder file (created using the
+found in a GtkBuilder XML file (created using the
 .Xr glade 1
 interface designer), and communicates with the main program solely
 through plain text messages via pipes or fifos.  It provides access to
@@ -61,6 +61,9 @@ exists but is not a named pipe.  The named pipe
 .Ar in-fifo
 is deleted upon successful program termination.  Default is
 .Va stdin .
+See
+.Sx GUI MANIPULATION COMMANDS
+for a list of commands understood by pipeglade.
 .It Fl o Ar out-fifo
 Creates a named pipe
 .Ar out-fifo
@@ -70,6 +73,9 @@ exists but is not a named pipe.  The named pipe
 .Ar out-fifo
 is deleted upon successful program termination.  Default is
 .Va stdout .
+See
+.Sx GUI FEEDBACK MESSAGES
+for a description of possible output.
 .It Fl u Ar builder-file
 Displays the graphical user interface described in
 .Ar builder-file .
@@ -450,7 +456,7 @@ an RGBA color in the form
 .Fa a Ns
 .Ic \&) .
 .El
-The last two are the format the widget reports; see
+The last two are in the format the widget reports; see
 .Sx GUI FEEDBACK MESSAGES .
 .Ss GtkFontButton
 .Qo
