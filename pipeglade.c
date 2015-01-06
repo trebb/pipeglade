@@ -36,7 +36,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "1.1.0"
+#define VERSION "1.2.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 
@@ -265,8 +265,10 @@ send_tree_row_msg(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, str
 }
 
 /*
- * cb_0(), cb_1(), ... call this function to do their work: Send
- * message(s) whose nature depends on the arguments passed
+ * cb_0(), cb_1(), etc. call this function to do their work: Send
+ * message(s) whose nature depends on the arguments passed.  A call to
+ * this function will also be initiated by the user command
+ * ...:force_cb.
  */
 static void
 do_callback(GtkBuildable *obj, gpointer user_data, const char *section)
@@ -420,6 +422,11 @@ update_ui(struct ui_data *ud)
         obj = (gtk_builder_get_object(ud->builder, name));
         if (obj == NULL) {
                 ign_cmd(type, ud->msg);
+                ud->msg_digested = true;
+                return G_SOURCE_REMOVE;
+        }
+        if (eql(action, "force_cb")) {
+                do_callback(GTK_BUILDABLE(obj), NULL, "forced");
                 ud->msg_digested = true;
                 return G_SOURCE_REMOVE;
         }
