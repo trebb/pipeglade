@@ -36,7 +36,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "1.0.0"
+#define VERSION "1.1.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 
@@ -189,17 +189,18 @@ cb_send_text_selection(GtkBuildable *obj, gpointer user_data)
 
 struct selection_data {
         GtkBuildable *buildable;
-        char *section;
+        const char *section;
 };
 
 /*
  * send_tree_row_msg serves as an argument for
  * gtk_tree_selection_selected_foreach()
  */
-void
+static void
 send_tree_row_msg(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, struct selection_data *data)
 {
-        char *path_s, *section;
+        char *path_s;
+        const char *section;
         int col;
         GtkBuildable *obj;
 
