@@ -743,18 +743,25 @@ The widget reports
 .Qc .
 .Ss GtkTreeView
 The
-.Ic cursor-changed
-signal should be connected to one of
+.Ic changed
+signal in the subordinated
+.Ic GtkTreeSelection
+should be connected to one of
 .Ic cb_0 , cb_1 , cb_2 ,
 or
 .Ic cb_3 .
 The widget reports
 .Qo
 .Fa name Ns
+.Ic \&:clicked
+.Qc
+and, if the set of selected rows has changed,
+.Qo
+.Fa name Ns
 .Ic \&: Ns
 .Fa section row column value
 .Qc ,
-one message per column.
+one message per row and column.
 .Nm
 can deal with columns of type
 .Ic gboolean , gint , guint , glong , gulong , gint64 , guint64 , gfloat , gdouble ,

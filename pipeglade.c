@@ -187,6 +187,82 @@ cb_send_text_selection(GtkBuildable *obj, gpointer user_data)
         send_msg(obj, "text", gtk_text_buffer_get_text(user_data, &a, &b, FALSE), NULL);
 }
 
+struct selection_data {
+        GtkBuildable *buildable;
+        char *section;
+};
+
+/*
+ * send_tree_row_msg serves as an argument for
+ * gtk_tree_selection_selected_foreach()
+ */
+void
+send_tree_row_msg(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, struct selection_data *data)
+{
+        char *path_s, *section;
+        int col;
+        GtkBuildable *obj;
+
+        obj = (data->buildable);
+        section = data->section;
+        path_s = gtk_tree_path_to_string(path);
+        for (col = 0; col < gtk_tree_model_get_n_columns(model); col++) {
+                GValue value = G_VALUE_INIT;
+                GType col_type;
+                char str[BUFLEN];
+
+                gtk_tree_model_get_value(model, iter, col, &value);
+                col_type = gtk_tree_model_get_column_type(model, col);
+                switch (col_type) {
+                case G_TYPE_INT:
+                        snprintf(str, BUFLEN, " %d %d", col, g_value_get_int(&value));
+                        send_msg(obj, section, path_s, str, NULL);
+                        break;
+                case G_TYPE_LONG:
+                        snprintf(str, BUFLEN, " %d %ld", col, g_value_get_long(&value));
+                        send_msg(obj, section, path_s, str, NULL);
+                        break;
+                case G_TYPE_INT64:
+                        snprintf(str, BUFLEN, " %d %" PRId64, col, g_value_get_int64(&value));
+                        send_msg(obj, section, path_s, str, NULL);
+                        break;
+                case G_TYPE_UINT:
+                        snprintf(str, BUFLEN, " %d %u", col, g_value_get_uint(&value));
+                        send_msg(obj, section, path_s, str, NULL);
+                        break;
+                case G_TYPE_ULONG:
+                        snprintf(str, BUFLEN, " %d %lu", col, g_value_get_ulong(&value));
+                        send_msg(obj, section, path_s, str, NULL);
+                        break;
+                case G_TYPE_UINT64:
+                        snprintf(str, BUFLEN, " %d %" PRIu64, col, g_value_get_uint64(&value));
+                        send_msg(obj, section, path_s, str, NULL);
+                        break;
+                case G_TYPE_BOOLEAN:
+                        snprintf(str, BUFLEN, " %d %d", col, g_value_get_boolean(&value));
+                        send_msg(obj, section, path_s, str, NULL);
+                        break;
+                case G_TYPE_FLOAT:
+                        snprintf(str, BUFLEN, " %d %f", col, g_value_get_float(&value));
+                        send_msg(obj, section, path_s, str, NULL);
+                        break;
+                case G_TYPE_DOUBLE:
+                        snprintf(str, BUFLEN, " %d %f", col, g_value_get_double(&value));
+                        send_msg(obj, section, path_s, str, NULL);
+                        break;
+                case G_TYPE_STRING:
+                        snprintf(str, BUFLEN, " %d ", col);
+                        send_msg(obj, section, path_s, str, g_value_get_string(&value), NULL);
+                        break;
+                default:
+                        fprintf(stderr, "Column %d not implemented: %s\n", col, G_VALUE_TYPE_NAME(&value));
+                        break;
+                }
+                g_value_unset(&value);
+        }
+        g_free(path_s);
+}
+
 /*
  * cb_0(), cb_1(), ... call this function to do their work: Send
  * message(s) whose nature depends on the arguments passed
@@ -197,12 +273,8 @@ do_callback(GtkBuildable *obj, gpointer user_data, const char *section)
         char str[BUFLEN];
         const char *item_name;
         GdkRGBA color;
-        int col;
+        GtkTreeView *tree_view;
         unsigned int year = 0, month = 0, day = 0;
-        GtkTreeIter iter;
-        GtkTreePath *path;
-        char *path_s;
-        GtkTreeModel *model;
 
         if (GTK_IS_ENTRY(obj)) {
                 send_msg(obj, section, gtk_entry_get_text(GTK_ENTRY(obj)), NULL);
@@ -236,68 +308,14 @@ do_callback(GtkBuildable *obj, gpointer user_data, const char *section)
                 send_msg(obj, section, str, NULL);
         } else if (GTK_IS_TREE_VIEW_COLUMN(obj))
                 send_msg(obj, section, "clicked", NULL);
-        else if (GTK_IS_TREE_VIEW(obj)) {
-                gtk_tree_view_get_cursor(GTK_TREE_VIEW(obj), &path, NULL);
-                model = gtk_tree_view_get_model(GTK_TREE_VIEW(obj));
-                gtk_tree_model_get_iter(model, &iter, path);
-                path_s = gtk_tree_path_to_string(path);
-                for (col = 0; col < gtk_tree_model_get_n_columns(model); col++) {
-                        GValue value = G_VALUE_INIT;
-                        GType col_type;
-                        char str[BUFLEN];
-
-                        gtk_tree_model_get_value(model, &iter, col, &value);
-                        col_type = gtk_tree_model_get_column_type(model, col);
-                        switch (col_type) {
-                        case G_TYPE_INT:
-                                snprintf(str, BUFLEN, " %d %d", col, g_value_get_int(&value));
-                                send_msg(obj, section, path_s, str, NULL);
-                                break;
-                        case G_TYPE_LONG:
-                                snprintf(str, BUFLEN, " %d %ld", col, g_value_get_long(&value));
-                                send_msg(obj, section, path_s, str, NULL);
-                                break;
-                        case G_TYPE_INT64:
-                                snprintf(str, BUFLEN, " %d %" PRId64, col, g_value_get_int64(&value));
-                                send_msg(obj, section, path_s, str, NULL);
-                                break;
-                        case G_TYPE_UINT:
-                                snprintf(str, BUFLEN, " %d %u", col, g_value_get_uint(&value));
-                                send_msg(obj, section, path_s, str, NULL);
-                                break;
-                        case G_TYPE_ULONG:
-                                snprintf(str, BUFLEN, " %d %lu", col, g_value_get_ulong(&value));
-                                send_msg(obj, section, path_s, str, NULL);
-                                break;
-                        case G_TYPE_UINT64:
-                                snprintf(str, BUFLEN, " %d %" PRIu64, col, g_value_get_uint64(&value));
-                                send_msg(obj, section, path_s, str, NULL);
-                                break;
-                        case G_TYPE_BOOLEAN:
-                                snprintf(str, BUFLEN, " %d %d", col, g_value_get_boolean(&value));
-                                send_msg(obj, section, path_s, str, NULL);
-                                break;
-                        case G_TYPE_FLOAT:
-                                snprintf(str, BUFLEN, " %d %f", col, g_value_get_float(&value));
-                                send_msg(obj, section, path_s, str, NULL);
-                                break;
-                        case G_TYPE_DOUBLE:
-                                snprintf(str, BUFLEN, " %d %f", col, g_value_get_double(&value));
-                                send_msg(obj, section, path_s, str, NULL);
-                                break;
-                        case G_TYPE_STRING:
-                                snprintf(str, BUFLEN, " %d ", col);
-                                send_msg(obj, section, path_s, str, g_value_get_string(&value), NULL);
-                                break;
-                        default:
-                                fprintf(stderr, "Column %d not implemented: %s\n", col, G_VALUE_TYPE_NAME(&value));
-                                break;
-                        }
-                        g_value_unset(&value);
-                }
-                g_free(path_s);
-                gtk_tree_path_free(path);
-
+        else if (GTK_IS_TREE_SELECTION(obj)) {
+                tree_view = gtk_tree_selection_get_tree_view(GTK_TREE_SELECTION(obj));
+                send_msg(GTK_BUILDABLE(tree_view), section, "clicked", NULL);
+                gtk_tree_selection_selected_foreach(
+                        GTK_TREE_SELECTION(obj),
+                        (GtkTreeSelectionForeachFunc)send_tree_row_msg,
+                        &(struct selection_data){GTK_BUILDABLE(tree_view),
+                                        section});
         } else if (GTK_IS_WINDOW(obj))
                 gtk_widget_hide_on_delete(GTK_WIDGET(obj));
         else

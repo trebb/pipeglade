@@ -1,3 +1,8 @@
+unreleased
+------------------
+  * Change response of GtkTreeView which now reports an additional
+  'clicked' message and the values of all selected rows.
+
 1.0.0 (2015-01-04)
 ------------------
   * Change API: commands now look like "name:action data" rather than
