@@ -638,6 +638,7 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn4">
                     <property name="title" translatable="yes">col4</property>
                     <property name="clickable">True</property>
+                    <signal name="clicked" handler="cb_2" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext3"/>
                       <attributes>
@@ -650,6 +651,7 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn5">
                     <property name="title" translatable="yes">col5</property>
                     <property name="clickable">True</property>
+                    <signal name="clicked" handler="cb_2" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext4"/>
                       <attributes>
@@ -662,6 +664,7 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn6">
                     <property name="title" translatable="yes">col6</property>
                     <property name="clickable">True</property>
+                    <signal name="clicked" handler="cb_2" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext5"/>
                       <attributes>
@@ -674,6 +677,7 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn7">
                     <property name="title" translatable="yes">col7</property>
                     <property name="clickable">True</property>
+                    <signal name="clicked" handler="cb_2" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext6"/>
                       <attributes>
@@ -686,6 +690,7 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn8">
                     <property name="title" translatable="yes">col8</property>
                     <property name="clickable">True</property>
+                    <signal name="clicked" handler="cb_2" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext9"/>
                       <attributes>
@@ -698,6 +703,7 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn9">
                     <property name="title" translatable="yes">col9</property>
                     <property name="clickable">True</property>
+                    <signal name="clicked" handler="cb_2" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext8"/>
                       <attributes>
@@ -710,6 +716,7 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn10">
                     <property name="title" translatable="yes">col10</property>
                     <property name="clickable">True</property>
+                    <signal name="clicked" handler="cb_2" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext7"/>
                       <attributes>

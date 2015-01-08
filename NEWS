@@ -1,4 +1,4 @@
-unreleased
+1.2.0 (2015-01-08)
 ------------------
   * Add a command for firing GUI callbacks synthetically.
 
