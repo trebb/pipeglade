@@ -21,12 +21,11 @@
 # SOFTWARE.
 
 PREFIX = /usr/local
-CCFLAGS = -Wall `pkg-config gtk+-3.0 --cflags` `pkg-config gmodule-2.0 --cflags`
-LIBS = `pkg-config gtk+-3.0 --libs` `pkg-config gmodule-2.0 --libs` -lpthread
+CCFLAGS = -Wall `pkg-config --cflags --libs gtk+-3.0 gmodule-2.0`
 CC != which cc
 
 pipeglade: pipeglade.c
-	$(CC) $< -o $@ $(CCFLAGS) $(LIBS)
+	$(CC) $< -o $@ $(CCFLAGS)
 
 install: pipeglade pipeglade.1
 	mkdir -p $(PREFIX)/bin/
@@ -79,10 +78,10 @@ gh-pages/index.html gh-pages/pipeglade.1.html: pipeglade.1 html-template/index.h
 	echo -e '/<\/body>/-r gh-pages/statcounter.html\nwq' | ed -s gh-pages/404.html
 	rm -f gh-pages/statcounter.html gh-pages/LICENSE
 
-# Create a new git tag only if there is a headline in the format
-# 1.2.3 (2015-03-02)
+# Create a new git tag only if there is a NEWS headline in the format
+# 1.2.3 (2015-03-22)
 # where 1.2.3 matches the current pipeglade version and the date is of
-# today, and if pipeglade.1 has todays date in its .Dd line.
+# today, and if pipeglade.1 has today's date in its .Dd line.
 # (NEWS headlines are lines that start at column 0.)
 git-tag:
 	if test "$(NEWS_DATE)" != "$(TODAY)"; then \
