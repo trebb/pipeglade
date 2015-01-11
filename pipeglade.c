@@ -36,7 +36,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "1.2.0"
+#define VERSION "1.2.1"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 
@@ -118,7 +118,7 @@ send_msg(GtkBuildable *obj, const char *section, ...)
                 va_end(ap);
                 putc('\n', out);
                 if (ferror(out)) {
-                        fprintf(stderr, "Send error; retrying\n");
+                        fprintf(stderr, "send error; retrying\n");
                         clearerr(out);
                         nanosleep(&(struct timespec){0, nsec}, NULL);
                         putc('\n', out);
@@ -199,14 +199,11 @@ struct selection_data {
 static void
 send_tree_row_msg(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, struct selection_data *data)
 {
-        char *path_s;
-        const char *section;
+        char *path_s = gtk_tree_path_to_string(path);
+        const char *section = data->section;
+        GtkBuildable *obj = data->buildable;
         int col;
-        GtkBuildable *obj;
 
-        obj = (data->buildable);
-        section = data->section;
-        path_s = gtk_tree_path_to_string(path);
         for (col = 0; col < gtk_tree_model_get_n_columns(model); col++) {
                 GValue value = G_VALUE_INIT;
                 GType col_type;
@@ -256,7 +253,7 @@ send_tree_row_msg(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, str
                         send_msg(obj, section, path_s, str, g_value_get_string(&value), NULL);
                         break;
                 default:
-                        fprintf(stderr, "Column %d not implemented: %s\n", col, G_VALUE_TYPE_NAME(&value));
+                        fprintf(stderr, "column %d not implemented: %s\n", col, G_VALUE_TYPE_NAME(&value));
                         break;
                 }
                 g_value_unset(&value);
@@ -322,7 +319,7 @@ do_callback(GtkBuildable *obj, gpointer user_data, const char *section)
         } else if (GTK_IS_WINDOW(obj))
                 gtk_widget_hide_on_delete(GTK_WIDGET(obj));
         else
-                fprintf(stderr, "Ignoring callback %s from %s\n", section, gtk_buildable_get_name(obj));
+                fprintf(stderr, "ignoring callback %s from %s\n", section, gtk_buildable_get_name(obj));
 }
 
 /*
@@ -362,7 +359,7 @@ read_buf(FILE *stream, char **buf, size_t *bufsize)
                         break;
                 if (i >= *bufsize - 1)
                         if ((*buf = realloc(*buf, *bufsize = *bufsize * 2)) == NULL) {
-                                fprintf(stderr, "Out of memory (%s in %s)\n", __func__, __FILE__);
+                                fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
                                 abort();
                         }
                 if (c == '\\')
@@ -392,11 +389,11 @@ ign_cmd(GType type, const char *msg)
         }
         else
                 name = g_type_name(type);
-        fprintf(stderr, "Ignoring %s%scommand \"%s\"\n", name, pad, msg);
+        fprintf(stderr, "ignoring %s%scommand \"%s\"\n", name, pad, msg);
 }
 
 /*
- * Parse command pointed to by ud, and act on ui accordingly.  Sets
+ * Parse command pointed to by ud, and act on ui accordingly.  Set
  * ud->digested = true if done.  Runs once per command inside
  * gtk_main_loop()
  */
@@ -405,11 +402,11 @@ update_ui(struct ui_data *ud)
 {
         char name[ud->msg_size], action[ud->msg_size];
         char *data;
-        int data_start;
+        int data_start = strlen(ud->msg);
         GObject *obj = NULL;
         GType type = G_TYPE_INVALID;
 
-        data_start = strlen(ud->msg);
+        /* data_start = strlen(ud->msg); */
         name[0] = action[0] = '\0';
         sscanf(ud->msg,
                " %[0-9a-zA-Z_]:%[0-9a-zA-Z_]%*[ \t] %n",
@@ -457,10 +454,9 @@ update_ui(struct ui_data *ud)
                 else
                         ign_cmd(type, ud->msg);
         } else if (type == GTK_TYPE_TEXT_VIEW) {
-                GtkTextBuffer *textbuf;
-                GtkTextIter iter, a, b;
+                GtkTextBuffer *textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(obj));
+                GtkTextIter a, b;
 
-                textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(obj));
                 if (eql(action, "set_text"))
                         gtk_text_buffer_set_text(textbuf, data, -1);
                 else if (eql(action, "delete")) {
@@ -470,15 +466,15 @@ update_ui(struct ui_data *ud)
                         gtk_text_buffer_insert_at_cursor(textbuf, data, -1);
                 else if (eql(action, "place_cursor")) {
                         if (eql(data, "end"))
-                                gtk_text_buffer_get_end_iter(textbuf, &iter);
+                                gtk_text_buffer_get_end_iter(textbuf, &a);
                         else    /* numeric offset */
-                                gtk_text_buffer_get_iter_at_offset(textbuf, &iter, strtol(data, NULL, 10));
-                        gtk_text_buffer_place_cursor(textbuf, &iter);
+                                gtk_text_buffer_get_iter_at_offset(textbuf, &a, strtol(data, NULL, 10));
+                        gtk_text_buffer_place_cursor(textbuf, &a);
                 } else if (eql(action, "place_cursor_at_line")) {
-                        gtk_text_buffer_get_iter_at_line(textbuf, &iter, strtol(data, NULL, 10));
-                        gtk_text_buffer_place_cursor(textbuf, &iter);
+                        gtk_text_buffer_get_iter_at_line(textbuf, &a, strtol(data, NULL, 10));
+                        gtk_text_buffer_place_cursor(textbuf, &a);
                 } else if (eql(action, "scroll_to_cursor"))
-                        gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(obj), gtk_text_buffer_get_insert(textbuf), 0.0, 0, 0.0, 0.0);
+                        gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(obj), gtk_text_buffer_get_insert(textbuf), 0., 0, 0., 0.);
                 else
                         ign_cmd(type, ud->msg);
         } else if (type == GTK_TYPE_BUTTON) {
@@ -550,10 +546,9 @@ update_ui(struct ui_data *ud)
                 else if (eql(action, "remove"))
                         gtk_combo_box_text_remove(GTK_COMBO_BOX_TEXT(obj), strtol(data, NULL, 10));
                 else if (eql(action, "insert_text")) {
-                        char *position, *text;
+                        char *position = strtok(data, WHITESPACE);
+                        char *text = strtok(NULL, WHITESPACE);
 
-                        position = strtok(data, WHITESPACE);
-                        text = strtok(NULL, WHITESPACE);
                         gtk_combo_box_text_insert_text(GTK_COMBO_BOX_TEXT(obj), strtol(position, NULL, 10), text);
                 } else
                         ign_cmd(type, ud->msg);
@@ -585,20 +580,17 @@ update_ui(struct ui_data *ud)
                 else
                         ign_cmd(type, ud->msg);
         } else if (type == GTK_TYPE_TREE_VIEW) {
+                GtkTreeView *view = GTK_TREE_VIEW(obj);
+                GtkTreeModel *model = gtk_tree_view_get_model(view);
+                GtkListStore *store = GTK_LIST_STORE(model);
                 GtkTreeIter iter0, iter1;
-                GtkTreeView *view;
-                GtkListStore *store;
-                GtkTreeModel *model;
                 char *tokens, *arg0_s, *arg1_s, *arg2_s, *endptr;
                 int arg0_n = 0, arg1_n = 0;
                 bool arg0_n_valid = false, arg1_n_valid = false;
                 bool iter0_valid = false, iter1_valid = false;
 
-                view = GTK_TREE_VIEW(obj);
-                model = gtk_tree_view_get_model(view);
-                store = GTK_LIST_STORE(model);
                 if ((tokens = malloc(strlen(data) + 1)) == NULL) {
-                        fprintf(stderr, "Out of memory (%s in %s)\n", __func__, __FILE__);
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
                         abort();
                 }
                 strcpy(tokens, data);
@@ -621,11 +613,10 @@ update_ui(struct ui_data *ud)
                         gtk_tree_model_get_iter_from_string(model, &iter1, arg1_s);
                 if (eql(action, "set") && iter0_valid && arg1_n_valid &&
                     arg1_n < gtk_tree_model_get_n_columns(model)) {
-                        GType col_type;
+                        GType col_type = gtk_tree_model_get_column_type(model, arg1_n);
                         long long int n;
                         double d;
 
-                        col_type = gtk_tree_model_get_column_type(model, arg1_n);
                         switch (col_type) {
                         case G_TYPE_BOOLEAN:
                         case G_TYPE_INT:
@@ -657,14 +648,14 @@ update_ui(struct ui_data *ud)
                                 gtk_list_store_set(store, &iter0, arg1_n, arg2_s, -1);
                                 break;
                         default:
-                                fprintf(stderr, "Column %d: %s not implemented\n", arg1_n, g_type_name(col_type));
+                                fprintf(stderr, "column %d: %s not implemented\n", arg1_n, g_type_name(col_type));
                                 break;
                         }
                 } else if (eql(action, "scroll") && arg0_n_valid && arg1_n_valid)
                         gtk_tree_view_scroll_to_cell (view,
                                                       gtk_tree_path_new_from_string(arg0_s),
                                                       gtk_tree_view_get_column(view, arg1_n),
-                                                      0, 0.0, 0.0);
+                                                      0, 0., 0.);
                 else if (eql(action, "insert_row"))
                         if (eql(arg0_s, "end"))
                                 gtk_list_store_insert_before(store, &iter1, NULL);
@@ -707,7 +698,7 @@ digest_msg(void *builder)
                 struct ui_data ud;
 
                 if ((ud.msg = malloc(ud.msg_size = 32)) == NULL ) {
-                        fprintf(stderr, "Out of memory (%s in %s)\n", __func__, __FILE__);
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
                         abort();
                 }
                 read_buf(in, &ud.msg, &ud.msg_size);
@@ -785,8 +776,8 @@ fifo(const char *name, const char *mode)
 int
 main(int argc, char *argv[])
 {
-        char opt, *ui_file = NULL;
-        char *in_fifo = NULL, *out_fifo = NULL;
+        char opt;
+        char *in_fifo = NULL, *out_fifo = NULL, *ui_file = NULL;
         GtkBuilder *builder;
         pthread_t receiver;
         GError *error = NULL;
@@ -824,7 +815,7 @@ main(int argc, char *argv[])
         pthread_create(&receiver, NULL, digest_msg, (void*) builder);
         window = (gtk_builder_get_object(builder, "window"));
         if (!GTK_IS_WIDGET(window)) {
-                fprintf(stderr, "No toplevel window named \'window\'\n");
+                fprintf(stderr, "no toplevel window named \'window\'\n");
                 exit(EXIT_FAILURE);
         }
         gtk_widget_show(GTK_WIDGET(gtk_builder_get_object(builder, "window")));
