@@ -19,7 +19,7 @@
 .\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 .\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.Dd January 8, 2015
+.Dd January 11, 2015
 .Dt PIPEGLADE 1 CON
 .Os BSD
 .Sh NAME
@@ -428,7 +428,7 @@ can be given as
 .Bl -dash -offset indent -compact
 .It
 a standard X11 color name, like
-.Qq Li Dark Sea Green,
+.Qq Li Dark Sea Green ,
 .It
 a hexadecimal value in the form
 .Ic # Ns
@@ -500,12 +500,12 @@ makes
 the suggested filename, which may not yet exist.
 .Fa string
 should either resemble an absolute path, or the
-.Fa path
+.Fa directory
 must be set
 separately by
 .Fa name Ns
-.Ic :set_current_name
-.Fa path .
+.Ic :set_filename
+.Fa directory .
 .Ss GtkCalendar
 .Qo
 .Fa name Ns
@@ -926,6 +926,7 @@ that has its
 .Ic clicked
 signal connected to
 .Ic cb_hide_toplevel .
+The widget doesn't report anything.
 .Ss GtkDialog (as the sole window)
 Both the
 .Ic delete-event
@@ -942,6 +943,7 @@ that has its
 .Ic clicked
 signal connected to
 .Ic gtk_main_quit .
+The widget doesn't report anything.
 .Ss GtkFileChooserButton
 The
 .Ic file-set
@@ -1124,7 +1126,7 @@ for continuous communication with another program,
 .Dl pipeglade -i in.fifo -o out.fifo &
 .Dl # wait for in.fifo and out.fifo to appear
 .Dl while test \& ! \e( -e in.fifo -a -e out.fifo \e); do :; done
-.Dl main_prog <in.fifo >out.fifo
+.Dl main_prog <out.fifo >in.fifo
 .Sh EXIT STATUS
 .Nm
 exits 0 on success, and >0 if an error occurs.

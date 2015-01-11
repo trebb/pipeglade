@@ -1,3 +1,8 @@
+1.2.1 (2015-01-11)
+------------------
+  * Change capitalization of a few error messages.
+  * Bug fix in manual page.
+
 1.2.0 (2015-01-08)
 ------------------
   * Add a command for firing GUI callbacks synthetically.
