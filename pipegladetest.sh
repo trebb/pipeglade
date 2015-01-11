@@ -45,7 +45,7 @@ check_call() {
 }
 
 check_call "./pipeglade -u nonexistent.ui" 1 "nonexistent.ui" ""
-check_call "./pipeglade -u bad_window.ui" 1 "No toplevel window named 'window'" ""
+check_call "./pipeglade -u bad_window.ui" 1 "no toplevel window named 'window'" ""
 check_call "./pipeglade -u html-template/404.html" 1 "'html'" ""
 check_call "./pipeglade -u README" 1 "Document must begin with an element" ""
 touch bad_fifo
@@ -104,98 +104,100 @@ read r 2< $FERR &
 while test ! \( -e $FIN \); do :; done
 
 # Non-existent name
-check_error "" "Ignoring command \"\""
-check_error "nnn" "Ignoring command \"nnn\""
-check_error "nnn:set_text FFFF" "Ignoring command \"nnn:set_text FFFF\""
+check_error "" "ignoring command \"\""
+check_error "nnn" "ignoring command \"nnn\""
+check_error "nnn:set_text FFFF" "ignoring command \"nnn:set_text FFFF\""
+# Widget that shouldn't fire callbacks
+check_error "label1:force_cb" "ignoring callback forced from label1"
 # GtkLabel
-check_error "label1:nnn" "Ignoring GtkLabel command \"label1:nnn\""
+check_error "label1:nnn" "ignoring GtkLabel command \"label1:nnn\""
 # GtkImage
-check_error "image1:nnn" "Ignoring GtkImage command \"image1:nnn\""
+check_error "image1:nnn" "ignoring GtkImage command \"image1:nnn\""
 # GtkTextView
-check_error "textview1:nnn" "Ignoring GtkTextView command \"textview1:nnn\""
+check_error "textview1:nnn" "ignoring GtkTextView command \"textview1:nnn\""
 # GtkButton
-Check_error "button1:nnn" "Ignoring GtkButton command \"button1:nnn\""
+Check_error "button1:nnn" "ignoring GtkButton command \"button1:nnn\""
 # GtkToggleButton
-check_error "togglebutton1:nnn" "Ignoring GtkToggleButton command \"togglebutton1:nnn\""
+check_error "togglebutton1:nnn" "ignoring GtkToggleButton command \"togglebutton1:nnn\""
 # GtkCheckButton
-check_error "checkbutton1:nnn" "Ignoring GtkCheckButton command \"checkbutton1:nnn\""
+check_error "checkbutton1:nnn" "ignoring GtkCheckButton command \"checkbutton1:nnn\""
 # GtkRadioButton
-check_error "radiobutton1:nnn" "Ignoring GtkRadioButton command \"radiobutton1:nnn\""
+check_error "radiobutton1:nnn" "ignoring GtkRadioButton command \"radiobutton1:nnn\""
 # GtkSpinButton
-check_error "spinbutton1:nnn" "Ignoring GtkSpinButton command \"spinbutton1:nnn\""
+check_error "spinbutton1:nnn" "ignoring GtkSpinButton command \"spinbutton1:nnn\""
 # GtkFileChooserButton
-check_error "filechooserbutton1:nnn" "Ignoring GtkFileChooserButton command \"filechooserbutton1:nnn\""
+check_error "filechooserbutton1:nnn" "ignoring GtkFileChooserButton command \"filechooserbutton1:nnn\""
 # GtkFilechooserDialog
-check_error "open_dialog:nnn" "Ignoring GtkFileChooserDialog command \"open_dialog:nnn\""
+check_error "open_dialog:nnn" "ignoring GtkFileChooserDialog command \"open_dialog:nnn\""
 # GtkFontButton
-check_error "fontbutton1:nnn" "Ignoring GtkFontButton command \"fontbutton1:nnn\""
+check_error "fontbutton1:nnn" "ignoring GtkFontButton command \"fontbutton1:nnn\""
 # GtkColorButton
-check_error "colorbutton1:nnn" "Ignoring GtkColorButton command \"colorbutton1:nnn\""
+check_error "colorbutton1:nnn" "ignoring GtkColorButton command \"colorbutton1:nnn\""
 # GtkScale
-check_error "scale1:nnn" "Ignoring GtkScale command \"scale1:nnn\""
+check_error "scale1:nnn" "ignoring GtkScale command \"scale1:nnn\""
 # GtkProgressBar
-check_error "progressbar1:nnn" "Ignoring GtkProgressBar command \"progressbar1:nnn\""
+check_error "progressbar1:nnn" "ignoring GtkProgressBar command \"progressbar1:nnn\""
 # GtkSpinner
-check_error "spinner1:nnn" "Ignoring GtkSpinner command \"spinner1:nnn\""
+check_error "spinner1:nnn" "ignoring GtkSpinner command \"spinner1:nnn\""
 # GtkStatusbar
-check_error "statusbar1:nnn" "Ignoring GtkStatusbar command \"statusbar1:nnn\""
+check_error "statusbar1:nnn" "ignoring GtkStatusbar command \"statusbar1:nnn\""
 # GtkComboBoxText
-check_error "comboboxtext1:nnn" "Ignoring GtkComboBoxText command \"comboboxtext1:nnn\""
+check_error "comboboxtext1:nnn" "ignoring GtkComboBoxText command \"comboboxtext1:nnn\""
 # GtkEntry
-check_error "entry1:nnn" "Ignoring GtkEntry command \"entry1:nnn\""
+check_error "entry1:nnn" "ignoring GtkEntry command \"entry1:nnn\""
 # GtkTreeView insert_row
-check_error "treeview1:nnn" "Ignoring GtkTreeView command \"treeview1:nnn\""
-check_error "treeview1:insert_row 10000" "Ignoring GtkTreeView command \"treeview1:insert_row 10000\""
-check_error "treeview1:insert_row -1" "Ignoring GtkTreeView command \"treeview1:insert_row -1\""
-check_error "treeview1:insert_row nnn" "Ignoring GtkTreeView command \"treeview1:insert_row nnn\""
-check_error "treeview1:insert_row" "Ignoring GtkTreeView command \"treeview1:insert_row\""
-check_error "treeview1:insert_row " "Ignoring GtkTreeView command \"treeview1:insert_row \""
+check_error "treeview1:nnn" "ignoring GtkTreeView command \"treeview1:nnn\""
+check_error "treeview1:insert_row 10000" "ignoring GtkTreeView command \"treeview1:insert_row 10000\""
+check_error "treeview1:insert_row -1" "ignoring GtkTreeView command \"treeview1:insert_row -1\""
+check_error "treeview1:insert_row nnn" "ignoring GtkTreeView command \"treeview1:insert_row nnn\""
+check_error "treeview1:insert_row" "ignoring GtkTreeView command \"treeview1:insert_row\""
+check_error "treeview1:insert_row " "ignoring GtkTreeView command \"treeview1:insert_row \""
 # GtkTreeView remove_row
-check_error "treeview1:remove_row 10000" "Ignoring GtkTreeView command \"treeview1:remove_row 10000\""
-check_error "treeview1:remove_row -1" "Ignoring GtkTreeView command \"treeview1:remove_row -1\""
-check_error "treeview1:remove_row nnn" "Ignoring GtkTreeView command \"treeview1:remove_row nnn\""
-check_error "treeview1:remove_row" "Ignoring GtkTreeView command \"treeview1:remove_row\""
-check_error "treeview1:remove_row " "Ignoring GtkTreeView command \"treeview1:remove_row \""
+check_error "treeview1:remove_row 10000" "ignoring GtkTreeView command \"treeview1:remove_row 10000\""
+check_error "treeview1:remove_row -1" "ignoring GtkTreeView command \"treeview1:remove_row -1\""
+check_error "treeview1:remove_row nnn" "ignoring GtkTreeView command \"treeview1:remove_row nnn\""
+check_error "treeview1:remove_row" "ignoring GtkTreeView command \"treeview1:remove_row\""
+check_error "treeview1:remove_row " "ignoring GtkTreeView command \"treeview1:remove_row \""
 # GtkTreeView move_row
-check_error "treeview1:move_row" "Ignoring GtkTreeView command \"treeview1:move_row\""
-check_error "treeview1:move_row " "Ignoring GtkTreeView command \"treeview1:move_row \""
-check_error "treeview1:move_row nnn" "Ignoring GtkTreeView command \"treeview1:move_row nnn\""
-check_error "treeview1:move_row 10000 end" "Ignoring GtkTreeView command \"treeview1:move_row 10000 end\""
-check_error "treeview1:move_row -1 end" "Ignoring GtkTreeView command \"treeview1:move_row -1 end\""
-check_error "treeview1:move_row nnn end" "Ignoring GtkTreeView command \"treeview1:move_row nnn end\""
-check_error "treeview1:move_row 0 10000" "Ignoring GtkTreeView command \"treeview1:move_row 0 10000\""
-check_error "treeview1:move_row 0 -1" "Ignoring GtkTreeView command \"treeview1:move_row 0 -1\""
-check_error "treeview1:move_row 0 nnn" "Ignoring GtkTreeView command \"treeview1:move_row 0 nnn\""
+check_error "treeview1:move_row" "ignoring GtkTreeView command \"treeview1:move_row\""
+check_error "treeview1:move_row " "ignoring GtkTreeView command \"treeview1:move_row \""
+check_error "treeview1:move_row nnn" "ignoring GtkTreeView command \"treeview1:move_row nnn\""
+check_error "treeview1:move_row 10000 end" "ignoring GtkTreeView command \"treeview1:move_row 10000 end\""
+check_error "treeview1:move_row -1 end" "ignoring GtkTreeView command \"treeview1:move_row -1 end\""
+check_error "treeview1:move_row nnn end" "ignoring GtkTreeView command \"treeview1:move_row nnn end\""
+check_error "treeview1:move_row 0 10000" "ignoring GtkTreeView command \"treeview1:move_row 0 10000\""
+check_error "treeview1:move_row 0 -1" "ignoring GtkTreeView command \"treeview1:move_row 0 -1\""
+check_error "treeview1:move_row 0 nnn" "ignoring GtkTreeView command \"treeview1:move_row 0 nnn\""
 # GtkTreeView scroll
-check_error "treeview1:scroll" "Ignoring GtkTreeView command \"treeview1:scroll\""
-check_error "treeview1:scroll " "Ignoring GtkTreeView command \"treeview1:scroll \""
-check_error "treeview1:scroll nnn" "Ignoring GtkTreeView command \"treeview1:scroll nnn\""
-check_error "treeview1:scroll -1 1" "Ignoring GtkTreeView command \"treeview1:scroll -1 1\""
-check_error "treeview1:scroll 1 -1" "Ignoring GtkTreeView command \"treeview1:scroll 1 -1\""
-check_error "treeview1:scroll nnn 1" "Ignoring GtkTreeView command \"treeview1:scroll nnn 1\""
-check_error "treeview1:scroll 1 nnn" "Ignoring GtkTreeView command \"treeview1:scroll 1 nnn\""
+check_error "treeview1:scroll" "ignoring GtkTreeView command \"treeview1:scroll\""
+check_error "treeview1:scroll " "ignoring GtkTreeView command \"treeview1:scroll \""
+check_error "treeview1:scroll nnn" "ignoring GtkTreeView command \"treeview1:scroll nnn\""
+check_error "treeview1:scroll -1 1" "ignoring GtkTreeView command \"treeview1:scroll -1 1\""
+check_error "treeview1:scroll 1 -1" "ignoring GtkTreeView command \"treeview1:scroll 1 -1\""
+check_error "treeview1:scroll nnn 1" "ignoring GtkTreeView command \"treeview1:scroll nnn 1\""
+check_error "treeview1:scroll 1 nnn" "ignoring GtkTreeView command \"treeview1:scroll 1 nnn\""
 # GtkTreeView set
-check_error "treeview1:set" "Ignoring GtkTreeView command \"treeview1:set\""
-check_error "treeview1:set " "Ignoring GtkTreeView command \"treeview1:set \""
-check_error "treeview1:set nnn" "Ignoring GtkTreeView command \"treeview1:set nnn\""
-check_error "treeview1:set 0 nnn" "Ignoring GtkTreeView command \"treeview1:set 0 nnn\""
-check_error "treeview1:set nnn 0" "Ignoring GtkTreeView command \"treeview1:set nnn 0\""
-check_error "treeview1:set 10000 1 77" "Ignoring GtkTreeView command \"treeview1:set 10000 1 77\""
-check_error "treeview1:set 1 10000 77" "Ignoring GtkTreeView command \"treeview1:set 1 10000 77\""
-check_error "treeview1:set 1 11 77" "Ignoring GtkTreeView command \"treeview1:set 1 11 77\""
-check_error "treeview1:set nnn 1 77" "Ignoring GtkTreeView command \"treeview1:set nnn 1 77\""
-check_error "treeview1:set 1 nnn 77" "Ignoring GtkTreeView command \"treeview1:set 1 nnn 77\""
-check_error "treeview1:set -1 1 77" "Ignoring GtkTreeView command \"treeview1:set -1 1 77\""
-check_error "treeview1:set 1 -1 77" "Ignoring GtkTreeView command \"treeview1:set 1 -1 77\""
+check_error "treeview1:set" "ignoring GtkTreeView command \"treeview1:set\""
+check_error "treeview1:set " "ignoring GtkTreeView command \"treeview1:set \""
+check_error "treeview1:set nnn" "ignoring GtkTreeView command \"treeview1:set nnn\""
+check_error "treeview1:set 0 nnn" "ignoring GtkTreeView command \"treeview1:set 0 nnn\""
+check_error "treeview1:set nnn 0" "ignoring GtkTreeView command \"treeview1:set nnn 0\""
+check_error "treeview1:set 10000 1 77" "ignoring GtkTreeView command \"treeview1:set 10000 1 77\""
+check_error "treeview1:set 1 10000 77" "ignoring GtkTreeView command \"treeview1:set 1 10000 77\""
+check_error "treeview1:set 1 11 77" "ignoring GtkTreeView command \"treeview1:set 1 11 77\""
+check_error "treeview1:set nnn 1 77" "ignoring GtkTreeView command \"treeview1:set nnn 1 77\""
+check_error "treeview1:set 1 nnn 77" "ignoring GtkTreeView command \"treeview1:set 1 nnn 77\""
+check_error "treeview1:set -1 1 77" "ignoring GtkTreeView command \"treeview1:set -1 1 77\""
+check_error "treeview1:set 1 -1 77" "ignoring GtkTreeView command \"treeview1:set 1 -1 77\""
 # GtkTree set "abc" into numeric column
-check_error "treeview1:set 1 1 abc" "Ignoring GtkTreeView command \"treeview1:set 1 1 abc\""
+check_error "treeview1:set 1 1 abc" "ignoring GtkTreeView command \"treeview1:set 1 1 abc\""
 # GtkCalendar
-check_error "calendar1:nnn" "Ignoring GtkCalendar command \"calendar1:nnn\""
-check_error "calendar1:select_date" "Ignoring GtkCalendar command \"calendar1:select_date\""
-check_error "calendar1:select_date " "Ignoring GtkCalendar command \"calendar1:select_date \""
-check_error "calendar1:select_date nnn" "Ignoring GtkCalendar command \"calendar1:select_date nnn\""
-check_error "calendar1:select_date 2000-12-33" "Ignoring GtkCalendar command \"calendar1:select_date 2000-12-33\""
-check_error "calendar1:select_date 2000-13-20" "Ignoring GtkCalendar command \"calendar1:select_date 2000-13-20\""
+check_error "calendar1:nnn" "ignoring GtkCalendar command \"calendar1:nnn\""
+check_error "calendar1:select_date" "ignoring GtkCalendar command \"calendar1:select_date\""
+check_error "calendar1:select_date " "ignoring GtkCalendar command \"calendar1:select_date \""
+check_error "calendar1:select_date nnn" "ignoring GtkCalendar command \"calendar1:select_date nnn\""
+check_error "calendar1:select_date 2000-12-33" "ignoring GtkCalendar command \"calendar1:select_date 2000-12-33\""
+check_error "calendar1:select_date 2000-13-20" "ignoring GtkCalendar command \"calendar1:select_date 2000-13-20\""
 
 echo "_:main_quit" >$FIN
 
