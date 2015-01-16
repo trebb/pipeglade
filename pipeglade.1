@@ -19,7 +19,7 @@
 .\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 .\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.Dd January 11, 2015
+.Dd January 16, 2015
 .Dt PIPEGLADE 1 CON
 .Os BSD
 .Sh NAME
@@ -731,15 +731,16 @@ The widgets report
 .Fa name Ns
 .Ic \&: Ns
 .Fa section
-.Ic on
+.Ic 1
 .Qc
-or
+if they are switched on, or
 .Qo
 .Fa name Ns
 .Ic \&: Ns
 .Fa section
-.Ic off
-.Qc .
+.Ic 0
+.Qc
+otherwise.
 .Ss GtkEntry, GtkComboBoxText, GtkSpinButton
 The
 .Ic changed

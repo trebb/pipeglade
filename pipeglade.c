@@ -36,7 +36,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "1.2.1"
+#define VERSION "2.0.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 
@@ -292,7 +292,7 @@ do_callback(GtkBuildable *obj, gpointer user_data, const char *section)
                 snprintf(str, BUFLEN, "%f", gtk_range_get_value(GTK_RANGE(obj)));
                 send_msg(obj, section, str, NULL);
         } else if (GTK_IS_TOGGLE_BUTTON(obj))
-                send_msg(obj, section, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(obj))?"on":"off", NULL);
+                send_msg(obj, section, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(obj))?"1":"0", NULL);
         else if (GTK_IS_COLOR_BUTTON(obj)) {
                 gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(obj), &color);
                 send_msg(obj, section, gdk_rgba_to_string(&color), NULL);
@@ -818,7 +818,7 @@ main(int argc, char *argv[])
                 fprintf(stderr, "no toplevel window named \'window\'\n");
                 exit(EXIT_FAILURE);
         }
-        gtk_widget_show(GTK_WIDGET(gtk_builder_get_object(builder, "window")));
+        gtk_widget_show(GTK_WIDGET(window));
         gtk_main();
         if (in != stdin) {
                 fclose(in);
