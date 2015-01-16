@@ -1,4 +1,9 @@
+unreleased
+------------------
+  * Bug fix in the echo.sh example script.
+
 2.0.0 (2015-01-16)
+------------------
   * Change output of GtkToggleButton, GtkCheckButton, and
   GtkRadioButton.
 

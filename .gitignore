@@ -2,3 +2,4 @@
 gh-pages/
 pipeglade
 *~
+*.fifo
