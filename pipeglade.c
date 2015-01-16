@@ -694,7 +694,7 @@ static void *
 digest_msg(void *builder)
 {
         for (;;) {
-                char first_char;
+                char first_char = '\0';
                 struct ui_data ud;
 
                 if ((ud.msg = malloc(ud.msg_size = 32)) == NULL ) {
@@ -726,9 +726,8 @@ fifo(const char *name, const char *mode)
         int fd;
         FILE *stream;
 
-        stat(name, &sb);
-        if (!S_ISFIFO(sb.st_mode))
-                if (name != NULL && mkfifo(name, 0666) != 0) {
+        if (name != NULL && stat(name, &sb) && !S_ISFIFO(sb.st_mode))
+                if (mkfifo(name, 0666) != 0) {
                         perror("making fifo");
                         exit(EXIT_FAILURE);
                 }
