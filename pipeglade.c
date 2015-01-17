@@ -732,7 +732,7 @@ fifo(const char *name, const char *mode)
         int fd;
         FILE *stream;
 
-        if (name != NULL && stat(name, &sb) && !S_ISFIFO(sb.st_mode))
+        if (name != NULL && (stat(name, &sb), !S_ISFIFO(sb.st_mode)))
                 if (mkfifo(name, 0666) != 0) {
                         perror("making fifo");
                         exit(EXIT_FAILURE);
@@ -754,7 +754,7 @@ fifo(const char *name, const char *mode)
                 if (name == NULL)
                         stream = stdout;
                 else {
-                        /* fopen blocks if there is no reader so here is one */
+                        /* fopen blocks if there is no reader, so here is one */
                         fd = open(name, O_RDONLY | O_NONBLOCK);
                         if (fd < 0) {
                                 perror("opening fifo");

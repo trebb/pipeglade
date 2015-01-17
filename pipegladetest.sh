@@ -11,7 +11,8 @@ export LC_ALL=C
 FIN=to-g.fifo
 FOUT=from-g.fifo
 FERR=err.fifo
-rm -f $FIN $FOUT $FERR
+BAD_FIFO=bad_fifo
+rm -f $FIN $FOUT $FERR $BAD_FIFO
 
 
 
@@ -48,10 +49,10 @@ check_call "./pipeglade -u nonexistent.ui" 1 "nonexistent.ui" ""
 check_call "./pipeglade -u bad_window.ui" 1 "no toplevel window named 'window'" ""
 check_call "./pipeglade -u html-template/404.html" 1 "'html'" ""
 check_call "./pipeglade -u README" 1 "Document must begin with an element" ""
-touch bad_fifo
+touch $BAD_FIFO
 check_call "./pipeglade -i bad_fifo" 1 "making fifo" ""
 check_call "./pipeglade -o bad_fifo" 1 "making fifo" ""
-rm bad_fifo
+rm $BAD_FIFO
 check_call "./pipeglade -h" 0 "usage: ./pipeglade [-h] [-i in-fifo] [-o out-fifo] [-u glade-builder-file.ui] [-G] [-V]" ""
 check_call "./pipeglade -G" 0 "" "GTK+ v"
 check_call "./pipeglade -V" 0 "" "."
