@@ -46,8 +46,8 @@ struct ui_data {
         GtkBuilder *builder;
         size_t msg_size;
         char *msg;
-        bool msg_digested;
 };
+static pthread_mutex_t msg_in_use = PTHREAD_MUTEX_INITIALIZER;
 
 static void
 usage(char **argv)
@@ -393,9 +393,8 @@ ign_cmd(GType type, const char *msg)
 }
 
 /*
- * Parse command pointed to by ud, and act on ui accordingly.  Set
- * ud->digested = true if done.  Runs once per command inside
- * gtk_main_loop()
+ * Parse command pointed to by ud, and act on ui accordingly.  Runs
+ * once per command inside * gtk_main_loop()
  */
 static gboolean
 update_ui(struct ui_data *ud)
@@ -413,29 +412,24 @@ update_ui(struct ui_data *ud)
                name, action, &data_start);
         if (eql(action, "main_quit")) {
                 gtk_main_quit();
-                ud->msg_digested = true;
-                return G_SOURCE_REMOVE;
+                goto done;
         }
         obj = (gtk_builder_get_object(ud->builder, name));
         if (obj == NULL) {
                 ign_cmd(type, ud->msg);
-                ud->msg_digested = true;
-                return G_SOURCE_REMOVE;
+                goto done;
         }
         if (eql(action, "force_cb")) {
                 do_callback(GTK_BUILDABLE(obj), NULL, "forced");
-                ud->msg_digested = true;
-                return G_SOURCE_REMOVE;
+                goto done;
         }
         data = ud->msg + data_start;
         if (eql(action, "set_sensitive")) {
                 gtk_widget_set_sensitive(GTK_WIDGET(obj), strtol(data, NULL, 10));
-                ud->msg_digested = true;
-                return G_SOURCE_REMOVE;
+                goto done;
         } else if (eql(action, "set_visible")) {
                 gtk_widget_set_visible(GTK_WIDGET(obj), strtol(data, NULL, 10));
-                ud->msg_digested = true;
-                return G_SOURCE_REMOVE;
+                goto done;
         }
         type = G_TYPE_FROM_INSTANCE(obj);
         if (type == GTK_TYPE_LABEL) {
@@ -682,7 +676,9 @@ update_ui(struct ui_data *ud)
                         ign_cmd(type, ud->msg);
         } else
                 ign_cmd(type, ud->msg);
-        ud->msg_digested = true;
+done:
+        if (pthread_mutex_unlock(&msg_in_use))
+                abort();
         return G_SOURCE_REMOVE;
 }
 
@@ -699,6 +695,8 @@ free_at(void **mem)
 static void *
 digest_msg(void *builder)
 {
+        if (pthread_mutex_lock(&msg_in_use)) /* unlocking in update_ui() */
+                abort();
         for (;;) {
                 char first_char = '\0';
                 struct ui_data ud;
@@ -713,11 +711,10 @@ digest_msg(void *builder)
                 sscanf(ud.msg, " %c", &first_char);
                 ud.builder = builder;
                 if (first_char != '#') {
-                        ud.msg_digested = false;
                         pthread_testcancel();
                         gdk_threads_add_timeout(1, (GSourceFunc)update_ui, &ud);
-                        while (!ud.msg_digested)
-                                nanosleep(&(struct timespec){0, 1e6}, NULL);
+                        if (pthread_mutex_lock(&msg_in_use))
+                                abort();
                 }
                 pthread_cleanup_pop(1);
         }
