@@ -686,6 +686,12 @@ update_ui(struct ui_data *ud)
         return G_SOURCE_REMOVE;
 }
 
+static void
+free_at(void **mem)
+{
+        free(*mem);
+}
+
 /*
  * Read lines from global stream "in" and perform the appropriate
  * actions on the GUI
@@ -701,16 +707,19 @@ digest_msg(void *builder)
                         fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
                         abort();
                 }
+                pthread_cleanup_push((void(*))free_at, &ud.msg);
+                pthread_testcancel();
                 read_buf(in, &ud.msg, &ud.msg_size);
                 sscanf(ud.msg, " %c", &first_char);
                 ud.builder = builder;
                 if (first_char != '#') {
                         ud.msg_digested = false;
+                        pthread_testcancel();
                         gdk_threads_add_timeout(1, (GSourceFunc)update_ui, &ud);
                         while (!ud.msg_digested)
                                 nanosleep(&(struct timespec){0, 1e6}, NULL);
                 }
-                free(ud.msg);
+                pthread_cleanup_pop(1);
         }
         return NULL;
 }
