@@ -14,6 +14,29 @@ FERR=err.fifo
 BAD_FIFO=bad_fifo
 rm -f $FIN $FOUT $FERR $BAD_FIFO
 
+TESTS=0
+FAILS=0
+OKS=0
+
+count_fail() {
+    (( TESTS+=1 ))
+    (( FAILS+=1 ))
+}
+
+count_ok() {
+    (( TESTS+=1 ))
+    (( OKS+=1 ))
+}
+
+check_rm() {
+    if test -e $1; then
+        count_fail
+        echo " FAIL $1 should be deleted"
+    else
+        count_ok
+        echo " OK   $1 deleted"
+    fi
+}
 
 
 # BATCH ONE
@@ -32,14 +55,18 @@ check_call() {
     rm tmperr.txt
     echo "CALL $1"
     if test "$output" = "" -a "$o" = "" || (echo "$output" | grep -Fqe "$o"); then
+        count_ok
         echo " OK   STDOUT $output"
     else
+        count_fail
         echo " FAIL STDOUT $output"
         echo "    EXPECTED $o"
     fi
     if test "$error" = "" -a "$e" = "" || test "$retval" -eq "$r" && (echo "$error" | grep -Fqe "$e"); then
+        count_ok
         echo " OK   EXIT/STDERR $retval $error"
     else
+        count_fail
         echo " FAIL EXIT/STDERR $retval $error"
         echo "         EXPECTED $r $e"
     fi
@@ -66,14 +93,8 @@ echo -e "statusbar1:pop\n _:main_quit" > $FIN &
 check_call "./pipeglade -i $FIN" 0 "" ""
 
 sleep .5
-if test -e $FIN; then
-    echo "FAILED to delete $FIN"
-fi
-
-if test -e $FOUT; then
-    echo "FAILED to delete $FOUT"
-fi
-
+check_rm $FIN
+check_rm $FOUT
 
 
 
@@ -91,8 +112,10 @@ check_error() {
     echo -e "$1" >$FIN
     read r <$FERR
     if test "$2" = "$r"; then
+        count_ok
         echo " OK $r"
     else
+        count_fail
         echo " FAIL     $r"
         echo " EXPECTED $2"
     fi
@@ -203,10 +226,7 @@ check_error "calendar1:select_date 2000-13-20" "ignoring GtkCalendar command \"c
 echo "_:main_quit" >$FIN
 
 sleep .5
-if test -e $FIN; then
-    echo "FAILED to delete $FIN"
-fi
-
+check_rm $FIN
 rm $FERR
 
 
@@ -230,8 +250,10 @@ check() {
         read r <$FOUT
         if test "$r" != ""; then
             if test "$r" = "$3"; then
+                count_ok
                 echo " OK  ($i)  $r"
             else
+                count_fail
                 echo " FAIL($i)  $r"
                 echo " EXPECTED $3"
             fi
@@ -292,7 +314,6 @@ check 2 "statusbar1:push Press the \"radiobutton\" which should now be renamed \
 check 1 "statusbar1:push Press \"OK\" if the \"lorem ipsum dolor ...\" text now reads \"LABEL\"\n label1:set_text LABEL" "button1:0 clicked"
 check 1 "statusbar1:push Press \"OK\" if the green dot has turned red\n image1:set_from_icon_name gtk-no" "button1:0 clicked"
 check 1 "statusbar1:push Press \"OK\" if the red dot has turned into a green \"Q\"\n image1:set_from_file q.png" "button1:0 clicked"
-check 1 "statusbar1:push Select \"def\" from the combobox" "comboboxtext1:0 def"
 check 1 "statusbar1:push Select \"FIRST\" from the combobox\n comboboxtext1:prepend_text FIRST" "comboboxtext1:0 FIRST"
 check 1 "statusbar1:push Select \"LAST\" from the combobox\n comboboxtext1:append_text LAST" "comboboxtext1:0 LAST"
 check 1 "statusbar1:push Select \"AVERAGE\" from the combobox\n comboboxtext1:insert_text 3 AVERAGE" "comboboxtext1:0 AVERAGE"
@@ -322,10 +343,9 @@ check 1 "statusbar1:push Press \"No\"\n statusbar1:push nonsense 1\n statusbar1:
 echo "_:main_quit" >$FIN
 
 sleep .5
-if test -e $FIN; then
-    echo "FAILED to delete $FIN"
-fi
+check_rm $FIN
+check_rm $FOUT
 
-if test -e $FOUT; then
-    echo "FAILED to delete $FOUT"
-fi
+
+echo "PASSED: $OKS/$TESTS; FAILED: $FAILS/$TESTS"
+
