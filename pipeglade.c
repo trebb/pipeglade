@@ -36,7 +36,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "2.0.0"
+#define VERSION "2.0.1"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 
@@ -52,7 +52,7 @@ struct ui_data {
 static void
 usage(char **argv)
 {
-        fprintf(stderr, 
+        fprintf(stderr,
                 "usage: %s "
                 "[-h] "
                 "[-i in-fifo] "
@@ -106,7 +106,7 @@ send_msg(GtkBuildable *obj, const char *section, ...)
                 while ((data = va_arg(ap, char *)) != NULL) {
                         size_t i = 0;
                         char c;
-                
+
                         while ((c = data[i++]) != '\0')
                                 if (c == '\\')
                                         fprintf(out, "\\\\");
@@ -135,6 +135,7 @@ cb_hide_toplevel(GtkBuildable *obj, gpointer user_data)
 {
         GtkWidget *toplevel = gtk_widget_get_toplevel(GTK_WIDGET(obj));
 
+        (void)user_data;
         if (gtk_widget_is_toplevel(toplevel))
                 gtk_widget_hide(toplevel);
 }
@@ -147,7 +148,8 @@ void
 cb_send_dialog_selection(GtkBuildable *obj, gpointer user_data)
 {
         GtkWidget *toplevel = gtk_widget_get_toplevel(GTK_WIDGET(obj));
- 
+
+        (void)user_data;
         if (gtk_widget_is_toplevel(toplevel))
         {
                 if (GTK_IS_FILE_CHOOSER(toplevel)) {
@@ -504,7 +506,7 @@ update_ui(struct ui_data *ud)
         } else if (type == GTK_TYPE_TOGGLE_BUTTON || type == GTK_TYPE_RADIO_BUTTON || type == GTK_TYPE_CHECK_BUTTON) {
                 if (eql(action, "set_label"))
                         gtk_button_set_label(GTK_BUTTON(obj), data);
-                else if (eql(action, "set_active")) 
+                else if (eql(action, "set_active"))
                         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), strtol(data, NULL, 10));
                 else
                         ign_cmd(type, ud->msg);
@@ -595,7 +597,7 @@ update_ui(struct ui_data *ud)
                 endptr = NULL;
                 iter0_valid =
                         arg0_s != NULL &&
-                        (arg0_n_valid = (arg0_n = strtol(arg0_s, &endptr, 10)) >= 0 && 
+                        (arg0_n_valid = (arg0_n = strtol(arg0_s, &endptr, 10)) >= 0 &&
                          errno == 0 && endptr != arg0_s) &&
                         gtk_tree_model_get_iter_from_string(model, &iter0, arg0_s);
                 errno = 0;
@@ -603,7 +605,7 @@ update_ui(struct ui_data *ud)
                 iter1_valid =
                         arg1_s != NULL &&
                         (arg1_n_valid = (arg1_n = strtol(arg1_s, &endptr, 10)) >= 0 &&
-                         errno == 0 && endptr != arg1_s)  &&
+                         errno == 0 && endptr != arg1_s) &&
                         gtk_tree_model_get_iter_from_string(model, &iter1, arg1_s);
                 if (eql(action, "set") && iter0_valid && arg1_n_valid &&
                     arg1_n < gtk_tree_model_get_n_columns(model)) {
@@ -702,7 +704,7 @@ digest_msg(void *builder)
                         fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
                         abort();
                 }
-                pthread_cleanup_push((void(*))free_at, &ud.msg);
+                pthread_cleanup_push((void(*)(void *))free_at, &ud.msg);
                 pthread_testcancel();
                 read_buf(in, &ud.msg, &ud.msg_size);
                 sscanf(ud.msg, " %c", &first_char);
@@ -814,8 +816,8 @@ main(int argc, char *argv[])
         }
         in = fifo(in_fifo, "r");
         out = fifo(out_fifo, "w");
-        gtk_builder_connect_signals(builder, builder);          
-        pthread_create(&receiver, NULL, digest_msg, (void*) builder);
+        gtk_builder_connect_signals(builder, builder);
+        pthread_create(&receiver, NULL, digest_msg, (void*)builder);
         window = (gtk_builder_get_object(builder, "window"));
         if (!GTK_IS_WIDGET(window)) {
                 fprintf(stderr, "no toplevel window named \'window\'\n");

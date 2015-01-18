@@ -21,7 +21,9 @@
 # SOFTWARE.
 
 PREFIX = /usr/local
-CCFLAGS = -Wall `pkg-config --cflags --libs gtk+-3.0 gmodule-2.0`
+CCFLAGS += -Wall -Wextra -pedantic
+CCFLAGS += -std=c99 -D_POSIX_C_SOURCE=200809L
+CCFLAGS += `pkg-config --cflags --libs gtk+-3.0 gmodule-2.0`
 CC != which cc
 
 pipeglade: pipeglade.c
