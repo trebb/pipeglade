@@ -46,8 +46,8 @@ struct ui_data {
         GtkBuilder *builder;
         size_t msg_size;
         char *msg;
+        bool msg_digested;
 };
-static pthread_mutex_t msg_in_use = PTHREAD_MUTEX_INITIALIZER;
 
 static void
 usage(char **argv)
@@ -393,8 +393,9 @@ ign_cmd(GType type, const char *msg)
 }
 
 /*
- * Parse command pointed to by ud, and act on ui accordingly.  Runs
- * once per command inside * gtk_main_loop()
+ * Parse command pointed to by ud, and act on ui accordingly.  Set
+ * ud->digested = true if done.  Runs once per command inside
+ * gtk_main_loop()
  */
 static gboolean
 update_ui(struct ui_data *ud)
@@ -405,7 +406,6 @@ update_ui(struct ui_data *ud)
         GObject *obj = NULL;
         GType type = G_TYPE_INVALID;
 
-        /* data_start = strlen(ud->msg); */
         name[0] = action[0] = '\0';
         sscanf(ud->msg,
                " %[0-9a-zA-Z_]:%[0-9a-zA-Z_]%*[ \t] %n",
@@ -677,8 +677,7 @@ update_ui(struct ui_data *ud)
         } else
                 ign_cmd(type, ud->msg);
 done:
-        if (pthread_mutex_unlock(&msg_in_use))
-                abort();
+        ud->msg_digested = true;
         return G_SOURCE_REMOVE;
 }
 
@@ -695,8 +694,6 @@ free_at(void **mem)
 static void *
 digest_msg(void *builder)
 {
-        if (pthread_mutex_lock(&msg_in_use)) /* unlocking in update_ui() */
-                abort();
         for (;;) {
                 char first_char = '\0';
                 struct ui_data ud;
@@ -711,10 +708,11 @@ digest_msg(void *builder)
                 sscanf(ud.msg, " %c", &first_char);
                 ud.builder = builder;
                 if (first_char != '#') {
+                        ud.msg_digested = false;
                         pthread_testcancel();
                         gdk_threads_add_timeout(1, (GSourceFunc)update_ui, &ud);
-                        if (pthread_mutex_lock(&msg_in_use))
-                                abort();
+                        while (!ud.msg_digested)
+                                nanosleep(&(struct timespec){0, 1e6}, NULL);
                 }
                 pthread_cleanup_pop(1);
         }
