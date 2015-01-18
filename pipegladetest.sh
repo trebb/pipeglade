@@ -254,6 +254,13 @@ check 2 "radiobutton1:set_active 1" "radiobutton2:0 0" "radiobutton1:0 1"
 check 1 "togglebutton1:set_active 1" "togglebutton1:0 1"
 check 1 "calendar1:select_date 1752-03-29" "calendar1:0 1752-03-29"
 
+L=$(i=0
+    while (( i<100 )); do
+        (( i+=1 ))
+        echo -n "Repetitive input that is large enough to have the realloc() machinery kick in.---"
+    done)
+check 1 "entry1:set_text $L" "entry1:0 $L"
+
 check 12 "statusbar1:push Click the 66% line\n treeview1:set 2 0 1\n treeview1:set 2 1 -30000\n treeview1:set 2 2 66\n treeview1:set 2 3 -2000000000\n treeview1:set 2 4 4000000000\n treeview1:set 2 5 -2000000000\n treeview1:set 2 6 4000000000\n treeview1:set 2 7 3.141\n treeview1:set 2 8 3.141\n treeview1:set 2 9 TEXT" "treeview1:1 clicked" "treeview1:1 2 0 1" "treeview1:1 2 1 -30000" "treeview1:1 2 2 66" "treeview1:1 2 3 -2000000000" "treeview1:1 2 4 4000000000" "treeview1:1 2 5 -2000000000" "treeview1:1 2 6 4000000000" "treeview1:1 2 7 3.141000" "treeview1:1 2 8 3.141000" "treeview1:1 2 9 TEXT" "treeview1:1 2 10 zzz"
 check 12 "statusbar1:push Click the 66% line again (insert_row)\n treeview1:insert_row 0\n treeview1:insert_row 2" "treeview1:1 clicked" "treeview1:1 4 0 1" "treeview1:1 4 1 -30000" "treeview1:1 4 2 66" "treeview1:1 4 3 -2000000000" "treeview1:1 4 4 4000000000" "treeview1:1 4 5 -2000000000" "treeview1:1 4 6 4000000000" "treeview1:1 4 7 3.141000" "treeview1:1 4 8 3.141000" "treeview1:1 4 9 TEXT" "treeview1:1 4 10 zzz"
 check 12 "statusbar1:push Click the 66% line again (move_row)\n treeview1:move_row 4 0" "treeview1:1 clicked" "treeview1:1 0 0 1" "treeview1:1 0 1 -30000" "treeview1:1 0 2 66" "treeview1:1 0 3 -2000000000" "treeview1:1 0 4 4000000000" "treeview1:1 0 5 -2000000000" "treeview1:1 0 6 4000000000" "treeview1:1 0 7 3.141000" "treeview1:1 0 8 3.141000" "treeview1:1 0 9 TEXT" "treeview1:1 0 10 zzz"
