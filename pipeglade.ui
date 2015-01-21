@@ -339,6 +339,21 @@ et dolore magna aliqua.
                     <property name="position">2</property>
                   </packing>
                 </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <object class="GtkSwitch" id="switch1">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <signal name="state-set" handler="cb_0" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">4</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>

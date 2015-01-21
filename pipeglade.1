@@ -219,6 +219,15 @@ scrolls to the cursor position if necessary.
 .Qc
 replaces the button text with
 .Fa string .
+.Ss GtkSwitch
+.Qo
+.Fa name Ns
+.Ic :set_active Brq Ic 0 | 1
+.Qc
+turns the switch off
+.Pq Ic 0
+or on
+.Pq Ic 1 .
 .Ss GtkToggleButton
 .Qo
 .Fa name Ns
@@ -720,6 +729,28 @@ The widget reports
 .Fa section
 .Ic clicked
 .Qc .
+.Ss GtkSwitch
+The
+.Ic state-set
+signal should be connected to one of
+.Ic cb_0 , cb_1 , cb_2 ,
+or
+.Ic cb_3 .
+The widget reports
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section
+.Ic 1
+.Qc
+if it is switched on, or
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section
+.Ic 0
+.Qc
+otherwise.
 .Ss GtkToggleButton, GtkCheckButton, GtkRadioButton
 The
 .Ic toggled

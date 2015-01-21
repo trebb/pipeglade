@@ -293,7 +293,9 @@ do_callback(GtkBuildable *obj, gpointer user_data, const char *section)
         else if (GTK_IS_RANGE(obj)) {
                 snprintf(str, BUFLEN, "%f", gtk_range_get_value(GTK_RANGE(obj)));
                 send_msg(obj, section, str, NULL);
-        } else if (GTK_IS_TOGGLE_BUTTON(obj))
+        } else if (GTK_IS_SWITCH(obj))
+                send_msg(obj, section, gtk_switch_get_active(GTK_SWITCH(obj))?"1":"0", NULL);
+        else if (GTK_IS_TOGGLE_BUTTON(obj))
                 send_msg(obj, section, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(obj))?"1":"0", NULL);
         else if (GTK_IS_COLOR_BUTTON(obj)) {
                 gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(obj), &color);
@@ -501,6 +503,11 @@ update_ui(struct ui_data *ud)
         } else if (type == GTK_TYPE_FONT_BUTTON) {
                 if (eql(action, "set_font_name"))
                         gtk_font_button_set_font_name(GTK_FONT_BUTTON(obj), data);
+                else
+                        ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_SWITCH) {
+                if (eql(action, "set_active"))
+                        gtk_switch_set_active(GTK_SWITCH(obj), strtol(data, NULL, 10));
                 else
                         ign_cmd(type, ud->msg);
         } else if (type == GTK_TYPE_TOGGLE_BUTTON || type == GTK_TYPE_RADIO_BUTTON || type == GTK_TYPE_CHECK_BUTTON) {

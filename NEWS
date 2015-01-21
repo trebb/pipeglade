@@ -1,3 +1,8 @@
+(unreleased)
+------------------
+  * Add support for GtkSwitch.
+
+
 2.0.1 (2015-01-18)
 ------------------
   * Bug fix in the echo.sh example script.

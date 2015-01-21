@@ -140,7 +140,9 @@ check_error "image1:nnn" "ignoring GtkImage command \"image1:nnn\""
 # GtkTextView
 check_error "textview1:nnn" "ignoring GtkTextView command \"textview1:nnn\""
 # GtkButton
-Check_error "button1:nnn" "ignoring GtkButton command \"button1:nnn\""
+check_error "button1:nnn" "ignoring GtkButton command \"button1:nnn\""
+# GtkSwitch
+check_error "switch1:nnn" "ignoring GtkSwitch command \"switch1:nnn\""
 # GtkToggleButton
 check_error "togglebutton1:nnn" "ignoring GtkToggleButton command \"togglebutton1:nnn\""
 # GtkCheckButton
@@ -273,6 +275,8 @@ check 1 "entry1:set_text GGGG" "entry1:0 GGGG"
 check 1 "spinbutton1:set_text 33.0" "spinbutton1:0 33.0"
 check 2 "radiobutton2:set_active 1" "radiobutton1:0 0" "radiobutton2:0 1"
 check 2 "radiobutton1:set_active 1" "radiobutton2:0 0" "radiobutton1:0 1"
+check 1 "switch1:set_active 1" "switch1:0 1"
+check 1 "switch1:set_active 0" "switch1:0 0"
 check 1 "togglebutton1:set_active 1" "togglebutton1:0 1"
 check 1 "calendar1:select_date 1752-03-29" "calendar1:0 1752-03-29"
 
