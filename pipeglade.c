@@ -310,7 +310,9 @@ do_callback(GtkBuildable *obj, gpointer user_data, const char *section)
                 gtk_calendar_get_date(GTK_CALENDAR(obj), &year, &month, &day);
                 snprintf(str, BUFLEN, "%04u-%02u-%02u", year, ++month, day);
                 send_msg(obj, section, str, NULL);
-        } else if (GTK_IS_TREE_VIEW_COLUMN(obj))
+        } else if (GTK_IS_INFO_BAR(obj))
+                send_msg(obj, section, "clicked", NULL);
+        else if (GTK_IS_TREE_VIEW_COLUMN(obj))
                 send_msg(obj, section, "clicked", NULL);
         else if (GTK_IS_TREE_SELECTION(obj)) {
                 tree_view = gtk_tree_selection_get_tree_view(GTK_TREE_SELECTION(obj));

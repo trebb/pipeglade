@@ -800,6 +800,25 @@ replaces the image with one of the standard icons.
 replaces the image by the one found at
 .Fa path Ns .
 .El
+.Ss GtkInfoBar
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
+.Ic response
+to one of
+.Ic cb_0 , cb_1 , cb_2 ,
+or
+.Ic cb_3 .
+.It feedback
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section
+.Ic clicked
+.Qc
+.It commands
+none
+.El
 .Ss GtkLabel
 .Bl -tag -width "signals/callbacks"
 .It signals/callbacks

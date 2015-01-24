@@ -300,6 +300,10 @@ check 12 "statusbar1:push Click the lowest line visible in the scrolled area (sc
 check 12 "statusbar1:push Click the highest line visible in the scrolled area (scroll)\n treeview1:scroll 1 0" "treeview1:1 clicked" "treeview1:1 1 0 0" "treeview1:1 1 1 3" "treeview1:1 1 2 0" "treeview1:1 1 3 0" "treeview1:1 1 4 0" "treeview1:1 1 5 0" "treeview1:1 1 6 0" "treeview1:1 1 7 0.000000" "treeview1:1 1 8 0.000000" "treeview1:1 1 9 jkl" "treeview1:1 1 10 ZZZ"
 
 check 1 "statusbar1:push Click the header of column \"col3\"" "treeviewcolumn3:3 clicked"
+
+check 1 "statusbar1:push Close the infobar\n infobar1:set_visible 1" "infobar1:1 clicked"
+check 0 "infobar1:set_visible 0"
+
 check 1 "statusbar1:push Press \"send_text\"" "send_text:text some textnetcn"
 check 1 "statusbar1:push Press \"send_text\" again\n textview1:place_cursor 5\n textview1:insert_at_cursor MORE " "send_text:text some MORE textnetcn"
 check 1 "statusbar1:push Press \"send_text\"  again\n textview1:place_cursor_at_line 1\n textview1:insert_at_cursor ETC " "send_text:text some MORE textnETC etcn"
