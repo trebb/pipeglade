@@ -1,6 +1,7 @@
 (unreleased)
 ------------------
   * Add support for GtkInfoBar, GtkSwitch.
+  * Add support for changing of GUI colors.
   * Rewrite parts of manual page.
 
 2.0.1 (2015-01-18)

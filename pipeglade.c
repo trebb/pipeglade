@@ -36,7 +36,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "2.0.1"
+#define VERSION "2.1.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 
@@ -411,6 +411,7 @@ update_ui(struct ui_data *ud)
         int data_start = strlen(ud->msg);
         GObject *obj = NULL;
         GType type = G_TYPE_INVALID;
+        GdkRGBA color;
 
         name[0] = action[0] = '\0';
         sscanf(ud->msg,
@@ -435,6 +436,20 @@ update_ui(struct ui_data *ud)
                 goto done;
         } else if (eql(action, "set_visible")) {
                 gtk_widget_set_visible(GTK_WIDGET(obj), strtol(data, NULL, 10));
+                goto done;
+        } else if (eql(action, "override_color")) {
+                if (data[0]) {
+                        gdk_rgba_parse(&color, data);
+                        gtk_widget_override_color(GTK_WIDGET(obj), GTK_STATE_FLAG_NORMAL, &color);
+                } else
+                        gtk_widget_override_color(GTK_WIDGET(obj), GTK_STATE_FLAG_NORMAL, NULL);
+                goto done;
+        } else if (eql(action, "override_background_color")) {
+                if (data[0]) {
+                        gdk_rgba_parse(&color, data);
+                        gtk_widget_override_background_color(GTK_WIDGET(obj), GTK_STATE_FLAG_NORMAL, &color);
+                } else
+                        gtk_widget_override_background_color(GTK_WIDGET(obj), GTK_STATE_FLAG_NORMAL, NULL);
                 goto done;
         }
         type = G_TYPE_FROM_INSTANCE(obj);
@@ -496,8 +511,6 @@ update_ui(struct ui_data *ud)
                         ign_cmd(type, ud->msg);
         } else if (type == GTK_TYPE_COLOR_BUTTON) {
                 if (eql(action, "set_color")) {
-                        GdkRGBA color;
-
                         gdk_rgba_parse(&color, data);
                         gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(obj), &color);
                 } else

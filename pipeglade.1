@@ -259,6 +259,28 @@ the widget, or makes it visible
 .Pp
 .Qo
 .Fa name Ns
+.Ic :override_color
+.Bq Fa color
+.Qc
+sets the color of the widget.  Default is the original color.  The
+format of
+.Fa color
+is identical to the format used with
+.Sx GtkColorButton .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :override_background_color
+.Bq Fa color
+.Qc
+sets the background color of the widget.  Default is the original
+background color.  The format of
+.Fa color
+is identical to the format used with
+.Sx GtkColorButton .
+.Pp
+.Qo
+.Fa name Ns
 .Ic :force_cb
 .Qc
 initiates the standard callback.  The
