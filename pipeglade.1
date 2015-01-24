@@ -62,8 +62,7 @@ exists but is not a named pipe.  The named pipe
 is deleted upon successful program termination.  Default is
 .Va stdin .
 See
-.Sx GUI MANIPULATION COMMANDS
-for a list of commands understood by pipeglade.
+.Sx GUI MANIPULATION COMMANDS .
 .It Fl o Ar out-fifo
 Creates a named pipe
 .Ar out-fifo
@@ -74,8 +73,7 @@ exists but is not a named pipe.  The named pipe
 is deleted upon successful program termination.  Default is
 .Va stdout .
 See
-.Sx GUI FEEDBACK MESSAGES
-for a description of possible output.
+.Sx GUI FEEDBACK MESSAGES .
 .It Fl u Ar builder-file
 Displays the graphical user interface described in
 .Ar builder-file .
@@ -102,7 +100,9 @@ signal should be connected to
 Certain signals of the other widgets should be connected to
 callbacks.  See
 .Sx GUI FEEDBACK MESSAGES
-for callback names and which signals of which widgets to connect to
+for callback names, and see
+.Sx WIDGETS
+for which signals of which widgets to connect to
 them.
 .Sh GUI MANIPULATION COMMANDS
 A command is a line of text.  Lines whose first non-whitespace
@@ -127,468 +127,13 @@ where
 .Fa name
 is the name of the receiving widget.
 .Fa data
-is separated from the rest of the command by whitespace.
+is separated from the rest of the command by whitespace.  See
+.Sx WIDGETS
+for possible commands.
 .Pp
 Invalid commands are reported on
 .Va stderr
 and are otherwise ignored.
-.Pp
-Widgets that can be manipulated programmatically, and the relevant
-commands, are given below.
-.Ss GtkLabel
-.Qo
-.Fa name Ns
-.Ic :set_text
-.Fa string
-.Qc
-replaces the label text with
-.Fa string .
-.Ss GtkImage
-.Qo
-.Fa name Ns
-.Ic :set_from_icon_name
-.Fa icon-name
-.Qc
-replaces the image with one of the standard icons.
-.Pp
-.Qo
-.Fa name Ns
-.Ic :set_from_file
-.Fa path
-.Qc
-replaces the image by the one found at
-.Fa path Ns .
-.Ss GtkEntry
-.Qo
-.Fa name Ns
-.Ic :set_text
-.Fa string
-.Qc
-replaces the user-editable text with
-.Fa string .
-.Ss GtkTextView
-.Qo
-.Fa name Ns
-.Ic :set_text
-.Fa string
-.Qc
-replaces the user-editable text with
-.Fa string Ns .
-.Pp
-.Qo
-.Fa name Ns
-.Ic :delete
-.Qc
-deletes the text.
-.Pp
-.Qo
-.Fa name Ns
-.Ic :insert_at_cursor
-.Fa string
-.Qc
-inserts
-.Fa string
-at cursor position.
-.Pp
-.Qo
-.Fa name Ns
-.Ic :place_cursor Brq Fa position | Ic end
-.Qc
-places the text cursor at
-.Fa position
-or at the end of the text.
-.Pp
-.Qo
-.Fa name Ns
-.Ic :place_cursor_at_line
-.Fa line
-.Qc
-places the text cursor at the beginning of
-.Fa line .
-.Pp
-.Qo
-.Fa name Ns
-.Ic :scroll_to_cursor
-.Qc
-scrolls to the cursor position if necessary.
-.Ss GtkButton
-.Qo
-.Fa name Ns
-.Ic :set_label
-.Fa string
-.Qc
-replaces the button text with
-.Fa string .
-.Ss GtkSwitch
-.Qo
-.Fa name Ns
-.Ic :set_active Brq Ic 0 | 1
-.Qc
-turns the switch off
-.Pq Ic 0
-or on
-.Pq Ic 1 .
-.Ss GtkToggleButton
-.Qo
-.Fa name Ns
-.Ic :set_active Brq Ic 0 | 1
-.Qc
-switches the button off
-.Pq Ic 0
-or on
-.Pq Ic 1 .
-.Pp
-.Qo
-.Fa name Ns
-.Ic :set_label
-.Fa string
-.Qc
-replaces the button text with
-.Fa string .
-.Ss GtkCheckButton
-.Qo
-.Fa name Ns
-.Ic :set_active Brq Ic 0 | 1
-.Qc
-switches the check mark off
-.Pq Ic 0
-or on
-.Pq Ic 1 .
-.Pp
-.Qo
-.Fa name Ns
-.Ic :set_label
-.Fa string
-.Qc
-replaces the button text with
-.Fa string .
-.Ss GtkRadioButton
-.Qo
-.Fa name Ns
-.Ic :set_active 1
-.Qc
-switches the button on.  All other buttons of the same group will go off
-automatically.
-.Pp
-.Qo
-.Fa name Ns
-.Ic :set_label
-.Fa string
-.Qc
-replaces the button text with
-.Fa string .
-.Ss GtkSpinButton
-.Qo
-.Fa name Ns
-.Ic :set_text
-.Fa string
-.Qc
-sets the selected value to
-.Fa string .
-.Ss GtkScale
-.Qo
-.Fa name Ns
-.Ic :set_value
-.Fa numeric
-.Qc
-moves the slider to value
-.Fa numeric .
-.Ss GtkProgressBar
-.Qo
-.Fa name Ns
-.Ic :set_fraction
-.Fa numeric
-.Qc
-moves the progress bar to
-.Fa numeric
-.Po
-between 0 and 1
-.Pc .
-.Pp
-.Qo
-.Fa name Ns
-.Ic :set_text
-.Fa string
-.Qc
-replaces the text of the progress bar with
-.Fa string .
-.Ss GtkSpinner
-.Qo
-.Fa name Ns
-.Ic :start
-.Qc
-and
-.Qo
-.Fa name Ns
-.Ic :stop
-.Qc
-start and stop the spinner.
-.Ss GtkStatusbar
-.Qo
-.Fa name Ns
-.Ic :push
-.Fa string
-.Qc
-displays
-.Fa string
-in the statusbar.
-.Pp
-.Qo
-.Fa name Ns
-.Ic :pop
-.Qc
-removes the last entry from the statusbar, revealing the penultimate
-entry.
-.Ss GtkComboBoxText
-.Qo
-.Fa name Ns
-.Ic :prepend_text
-.Fa string
-.Qc
-and
-.Qo
-.Fa name Ns
-.Ic :append_text
-.Fa string
-.Qc
-prepend/append
-.Fa string
-as a new selectable item.
-.Pp
-.Qo
-.Fa name Ns
-.Ic :insert_text
-.Fa position string
-.Qc
-inserts item
-.Fa string
-at
-.Fa position .
-.Pp
-.Qo
-.Fa name Ns
-.Ic :remove
-.Fa position
-.Qc
-removes the item at
-.Fa position .
-.Ss GtkTreeView
-.Fa row
-and
-.Fa column
-refer to the underlying model (usually a
-.Ic GtkListStore ) .
-.Pp
-.Qo
-.Fa name Ns
-.Ic :set
-.Fa row column data
-.Qc
-replaces the content at
-.Pq Fa row , column
-with
-.Fa data
-(which should be compatible with the type of
-.Fa column ) .
-.Pp
-.Qo
-.Fa name Ns
-.Ic :insert_row Brq Fa position | Ic end
-.Qc
-inserts a new, empty row at
-.Fa position
-or at the end of the list.
-.Pp
-.Qo
-.Fa name Ns
-.Ic :move_row
-.Fa origin Brq Fa destination | Ic end
-.Qc
-moves the row at
-.Fa origin
-to
-.Fa destination
-or to the end of the list.
-.Pp
-.Qo
-.Fa name Ns
-.Ic :remove_row
-.Fa position
-.Qc
-removes the row at
-.Fa position .
-.Pp
-.Qo
-.Fa name Ns
-.Ic :scroll
-.Fa row column
-.Qc
-scrolls the cell at
-.Pq Fa row , column
-into view.
-.Ss GtkColorButton
-.Qo
-.Fa name Ns
-.Ic :set_color
-.Fa color
-.Qc
-preselects the color.
-.Fa color
-can be given as
-.Bl -dash -offset indent -compact
-.It
-a standard X11 color name, like
-.Qq Li Dark Sea Green ,
-.It
-a hexadecimal value in the form
-.Ic # Ns
-.Fa rgb ,
-.Ic # Ns
-.Fa rrggbb ,
-.Ic # Ns
-.Fa rrrgggbbb ,
-or
-.Ic # Ns
-.Fa rrrrggggbbbb ,
-.It
-an RGB color in the form
-.Ic rgb( Ns
-.Fa r Ns
-.Ic \&, Ns
-.Fa g Ns
-.Ic \&, Ns
-.Fa b Ns
-.Ic \&) ,
-or
-.It
-an RGBA color in the form
-.Ic rgba( Ns
-.Fa r Ns
-.Ic \&, Ns
-.Fa g Ns
-.Ic \&, Ns
-.Fa b Ns
-.Ic \&, Ns
-.Fa a Ns
-.Ic \&) .
-.El
-The last two are in the format the widget reports; see
-.Sx GUI FEEDBACK MESSAGES .
-.Ss GtkFontButton
-.Qo
-.Fa name Ns
-.Ic :set_font_name
-.Fa fontname
-.Qc
-preselects the font.
-.Ss GtkFileChooserButton
-.Qo
-.Fa name Ns
-.Ic :set_filename
-.Fa path
-.Qc
-preselects
-.Fa path
-to the extent it exists.
-.Ss GtkFileChooserDialog
-.Qo
-.Fa name Ns
-.Ic :set_filename
-.Fa path
-.Qc
-preselects
-.Fa path
-to the extent it exists.
-.Pp
-.Qo
-.Fa name Ns
-.Ic :set_current_name
-.Fa string
-.Qc
-makes
-.Fa string
-the suggested filename, which may not yet exist.
-.Fa string
-should either resemble an absolute path, or the
-.Fa directory
-must be set
-separately by
-.Fa name Ns
-.Ic :set_filename
-.Fa directory .
-.Ss GtkCalendar
-.Qo
-.Fa name Ns
-.Ic :select_date
-.Fa date
-.Qc
-selects
-.Fa date
-.Pq Li yyyy-mm-dd
-on the calendar.
-.Pp
-.Qo
-.Fa name Ns
-.Ic :mark_day
-.Fa day
-.Qc
-marks
-.Fa day
-.Pq 1-31
-on the calendar.
-.Pp
-.Qo
-.Fa name Ns
-.Ic :clear_marks
-.Qc
-unmarks all days on the calendar.
-.Ss Main Window
-.Qo
-.Fa name Ns
-.Ic :main_quit
-.Qc
-kills the user interface.  A non-empty
-.Fa name
-is required but ignored.
-.Ss Any Widget
-.Qo
-.Fa name Ns
-.Ic :set_sensitive
-.Brq Ic 0 |  1
-.Qc
-makes the widget grayed out
-.Pq Ic 0
-or responsive
-.Pq Ic 1 .
-.Pp
-.Qo
-.Fa name Ns
-.Ic :set_visible
-.Brq Ic 0 |  1
-.Qc
-hides
-.Pq Ic 0
-the widget, or makes it visible
-.Pq Ic 1 .
-.Pp
-.Qo
-.Fa name Ns
-.Ic :force_cb
-.Qc
-initiates the standard callback.  The
-.Fa name Ns
-d widget
-responds as if
-.Ic cb_0
-had been activated, but with a different
-.Fa section
-code:
-.Qo
-.Fa name Ns
-.Ic :forced
-.Fa data
-.Qc .
-The command doesn't change anything on the GUI.
 .Sh GUI FEEDBACK MESSAGES
 A message from the graphical user interface is a line of text.  The
 message format is 
@@ -603,7 +148,7 @@ certain signals; this has to be done in
 as part of the interface design.
 .Nm
 provides the following callbacks:
-.Bl -dash -offset indent -compact
+.Bl -dash -offset indent
 .It
 .Ic cb_0 , cb_1 , cb_2 ,
 and
@@ -685,87 +230,150 @@ and backslashes are replaced by
 .Ic \e\e .
 .El
 .Pp
-The widgets capable of reporting user activity are:
-.Ss GtkTextView
-There should be a dedicated
-.Ic GtkButton
-for sending (parts of) the text.
-The
-.Ic clicked
-signal of the
-.Ic GtkButton
-should be connected to either
-.Ic cb_send_text
-or
-.Ic cb_send_text_selection ,
-specifying the
-.Ic GtkTextBuffer
-underlying the
-.Ic GtkTextView
-as
-.Ic User Data .
-The
-.Ic GtkButton
-reports
+See
+.Sx WIDGETS
+for possible feedback messages.
+.Sh WIDGETS
+.Ss Any Widget (including widgets not mentioned in this document)
+.Bl -tag -width "signals/callbacks"
+.It commands
 .Qo
 .Fa name Ns
-.Ic :text
-.Fa text
-.Qc ,
+.Ic :set_sensitive
+.Brq Ic 0 |  1
+.Qc
+makes the widget grayed out
+.Pq Ic 0
+or responsive
+.Pq Ic 1 .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_visible
+.Brq Ic 0 |  1
+.Qc
+hides
+.Pq Ic 0
+the widget, or makes it visible
+.Pq Ic 1 .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :force_cb
+.Qc
+initiates the standard callback.  The
+.Fa name Ns
+d widget
+responds as if
+.Ic cb_0
+had been activated, but with a different
+.Fa section
+code:
+.Qo
+.Fa name Ns
+.Ic :forced
+.Fa data
+.Qc .
+The command doesn't change anything on the GUI.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :main_quit
+.Qc
+kills the user interface.  A non-empty
 .Fa name
-being the name of the
-.Ic GtkButton.
+is required but ignored.
+.El
 .Ss GtkButton
-The
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
 .Ic clicked
-signal should be connected to one of
+to one of
 .Ic cb_0 , cb_1 , cb_2 ,
 or
 .Ic cb_3 .
-The widget reports
+.It feedback
 .Qo
 .Fa name Ns
 .Ic \&: Ns
 .Fa section
 .Ic clicked
-.Qc .
-.Ss GtkSwitch
-The
-.Ic state-set
-signal should be connected to one of
+.Qc
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_label
+.Fa string
+.Qc
+replaces the button text with
+.Fa string .
+.El
+.Ss GtkCalendar
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
+.Ic day-selected
+and/or
+.Ic day-selected-doubleclick
+to one or two of
 .Ic cb_0 , cb_1 , cb_2 ,
 or
 .Ic cb_3 .
-The widget reports
+.It feedback
 .Qo
 .Fa name Ns
 .Ic \&: Ns
-.Fa section
-.Ic 1
+.Fa section date
 .Qc
-if it is switched on, or
+with
+.Fa date
+formatted
+.Li yyyy-mm-dd .
+.It commands
 .Qo
 .Fa name Ns
-.Ic \&: Ns
-.Fa section
-.Ic 0
+.Ic :select_date
+.Fa date
 .Qc
-otherwise.
-.Ss GtkToggleButton, GtkCheckButton, GtkRadioButton
-The
+selects
+.Fa date
+.Pq Li yyyy-mm-dd
+on the calendar.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :mark_day
+.Fa day
+.Qc
+marks
+.Fa day
+.Pq 1-31
+on the calendar.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :clear_marks
+.Qc
+unmarks all days on the calendar.
+.El
+.Ss GtkCheckButton
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
 .Ic toggled
-signal should be connected to one of
+to one of
 .Ic cb_0 , cb_1 , cb_2 ,
 or
 .Ic cb_3 .
-The widgets report
+.It feedback
 .Qo
 .Fa name Ns
 .Ic \&: Ns
 .Fa section
 .Ic 1
 .Qc
-if they are switched on, or
+if switched on, or
 .Qo
 .Fa name Ns
 .Ic \&: Ns
@@ -773,232 +381,34 @@ if they are switched on, or
 .Ic 0
 .Qc
 otherwise.
-.Ss GtkEntry, GtkComboBoxText, GtkSpinButton
-The
-.Ic changed
-signal should be connected to one of
-.Ic cb_0 , cb_1 , cb_2 ,
-or
-.Ic cb_3 .
-The widgets report
+.It commands
 .Qo
 .Fa name Ns
-.Ic \&: Ns
-.Fa section text
-.Qc .
-.Ss GtkScale
-The
-.Ic value-changed
-signal should be connected to one of
-.Ic cb_0 , cb_1 , cb_2 ,
-or
-.Ic cb_3 .
-The widget reports
-.Qo
-.Fa name Ns
-.Ic \&: Ns
-.Fa section floating_point_text
-.Qc .
-.Ss GtkTreeView
-The
-.Ic changed
-signal in the subordinated
-.Ic GtkTreeSelection
-should be connected to one of
-.Ic cb_0 , cb_1 , cb_2 ,
-or
-.Ic cb_3 .
-The widget reports
-.Qo
-.Fa name Ns
-.Ic \&:clicked
+.Ic :set_active Brq Ic 0 | 1
 .Qc
-and, if the set of selected rows has changed,
+switches the check mark off
+.Pq Ic 0
+or on
+.Pq Ic 1 .
+.Pp
 .Qo
 .Fa name Ns
-.Ic \&: Ns
-.Fa section row column value
-.Qc ,
-one message per row and column in the underlying model.
-.Nm
-can deal with columns of type
-.Ic gboolean , gint , guint , glong , gulong , gint64 , guint64 , gfloat , gdouble ,
-and
-.Ic gchararray .
-.Ss GtkTreeViewColumn
-The
-.Ic clicked
-signal should be connected to one of
-.Ic cb_0 , cb_1 , cb_2 ,
-or
-.Ic cb_3 .
-The widget reports
-.Qo
-.Fa name Ns
-.Ic \&: Ns
-.Fa section
-.Ic clicked
-.Qc .
-.Ss GtkFileChooserDialog (when subordinated to another window)
-The
-.Ic delete-event
-signal should be connected to
-.Ic cb_0 .
-The name of the
-.Ic GtkFileChooserDialog
-widget should end in
-.Ic _dialog ,
-eg.\&
-.Fa some_name Ns
-.Ic _dialog .
-Then, a
-.Ic GtkMenuItem
-or
-.Ic GtkImageMenuItem
-named
-.Fa some_name
-will invoke the
-.Ic GtkFileChooserDialog
-(see
-.Sx GtkMenuItem, GtkImageMenuItem
-for their setup).  The
-.Ic GtkFileChooserDialog
-should have an
-.Sq OK
-.Ic GtkBbutton
-that has its
-.Ic clicked
-signal connected to both
-.Ic cb_send_dialog_selection
-and
-.Ic cb_hide_toplevel .
-A
-.Sq Cancel
-.Ic GtkButton
-should have its
-.Ic clicked
-signal connected to
-.Ic cb_hide_toplevel .
-The widget reports
-.Qo
-.Fa name Ns
-.Ic :file
-.Fa  pathname
+.Ic :set_label
+.Fa string
 .Qc
-and/or
-.Qo
-.Fa name Ns
-.Ic :folder
-.Fa  pathname
-.Qc .
-.Ss GtkFileChooserDialog (as the sole window)
-Both the
-.Ic delete-event
-and the
-.Ic destroy
-signal should be connected to
-.Ic gtk_main_quit .
-The
-.Ic GtkFileChooserDialog
-should have an
-.Sq OK
-.Ic GtkBbutton
-that has its
-.Ic clicked
-signal connected to both
-.Ic cb_send_dialog_selection
-and
-.Ic gtk_main_quit .
-A
-.Sq Cancel
-.Ic GtkButton
-should have its
-.Ic clicked
-signal connected to
-.Ic gtk_main_quit .
-The widget reports
-.Qo
-.Fa name Ns
-.Ic :file
-.Fa  pathname
-.Qc
-and/or
-.Qo
-.Fa name Ns
-.Ic :folder
-.Fa  pathname
-.Qc .
-.Ss GtkDialog (when subordinated to another window)
-The
-.Ic delete-event
-signal should be connected to
-.Ic cb_0 .
-The name of the
-.Ic GtkDialog
-widget should end in
-.Ic _dialog ,
-eg.
-.Fa some_name Ns
-.Ic _dialog .
-Then, a
-.Ic GtkMenuItem
-or
-.Ic GtkImageMenuItem
-named
-.Fa some_name
-will invoke the
-.Ic GtkDialog
-(see
-.Sx GtkMenuItem, GtkImageMenuItem
-for their setup).  The
-.Ic GtkDialog
-should have a
-.Sq Cancel
-.Ic GtkBbutton
-that has its
-.Ic clicked
-signal connected to
-.Ic cb_hide_toplevel .
-The widget doesn't report anything.
-.Ss GtkDialog (as the sole window)
-Both the
-.Ic delete-event
-and the
-.Ic destroy
-signal should be connected to
-.Ic gtk_main_quit .
-The
-.Ic GtkDialog
-should have a
-.Sq Cancel
-.Ic GtkBbutton
-that has its
-.Ic clicked
-signal connected to
-.Ic gtk_main_quit .
-The widget doesn't report anything.
-.Ss GtkFileChooserButton
-The
-.Ic file-set
-signal should be connected to one of
-.Ic cb_0 , cb_1 , cb_2 ,
-or
-.Ic cb_3 .
-The widget reports
-.Qo
-.Fa name Ns
-.Ic \&: Ns
-.Fa section pathname
-.Qc
-if the user has changed the selection.
+replaces the button text with
+.Fa string .
+.El
 .Ss GtkColorButton
-The
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
 .Ic color-set
-signal should be connected to one of
+to one of
 .Ic cb_0 , cb_1 , cb_2 ,
 or
 .Ic cb_3 .
-The widget reports
+.It feedback
 .Qo
 .Fa name Ns
 .Ic \&: Ns
@@ -1025,33 +435,396 @@ or
 .Ic \&, Ns
 .Fa alpha Ns
 .Ic \&)
-.Qc ;
+.Qc .
 .Fa red , green ,
 and
 .Fa blue
 lie between 0 and 255, and
 .Fa alpha
 between 0 and 1.
-.Ss GtkFontButton
-The
-.Ic font-set
-signal should be connected to one of
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_color
+.Fa color
+.Qc
+preselects the color.
+.Fa color
+can be given as
+.Bl -dash -offset indent -compact
+.It
+a standard X11 color name, like
+.Qq Li Dark Sea Green ,
+.It
+a hexadecimal value in the form
+.Ic # Ns
+.Fa rgb ,
+.Ic # Ns
+.Fa rrggbb ,
+.Ic # Ns
+.Fa rrrgggbbb ,
+or
+.Ic # Ns
+.Fa rrrrggggbbbb ,
+.It
+an RGB color in the form
+.Ic rgb( Ns
+.Fa red Ns
+.Ic \&, Ns
+.Fa green Ns
+.Ic \&, Ns
+.Fa blue Ns
+.Ic \&) ,
+or
+.It
+an RGBA color in the form
+.Ic rgba( Ns
+.Fa red Ns
+.Ic \&, Ns
+.Fa green Ns
+.Ic \&, Ns
+.Fa blue Ns
+.Ic \&, Ns
+.Fa alpha Ns
+.Ic \&) .
+.El
+.El
+.Ss GtkComboBoxText
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
+.Ic changed
+to one of
 .Ic cb_0 , cb_1 , cb_2 ,
 or
 .Ic cb_3 .
-The widget reports
+.It feedback
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section text
+.Qc
+.It commands
+.Qo
+.Fa name Ns
+.Ic :prepend_text
+.Fa string
+.Qc
+and
+.Qo
+.Fa name Ns
+.Ic :append_text
+.Fa string
+.Qc
+prepend/append
+.Fa string
+as a new selectable item.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :insert_text
+.Fa position string
+.Qc
+inserts item
+.Fa string
+at
+.Fa position .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :remove
+.Fa position
+.Qc
+removes the item at
+.Fa position .
+.El
+.Ss GtkDialog
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks (if the dialog is subordinated to another window)
+Connect
+.Ic delete-event
+to
+.Ic cb_0 .
+The name of the
+.Ic GtkDialog
+widget should end in
+.Ic _dialog ,
+eg.
+.Fa some_name Ns
+.Ic _dialog .
+Then, a
+.Ic GtkMenuItem
+or
+.Ic GtkImageMenuItem
+named
+.Fa some_name
+will invoke the
+.Ic GtkDialog
+(see
+.Sx GtkMenuItem, GtkImageMenuItem
+for their setup).
+.Pp
+The
+.Ic GtkDialog
+should have a
+.Sq Cancel
+.Sx GtkButton
+that has its
+.Ic clicked
+signal connected to
+.Ic cb_hide_toplevel .
+.It signals/callbacs (if the dialog is the sole window)
+Connect
+.Ic delete-event
+and
+.Ic destroy
+to
+.Ic gtk_main_quit .
+.Pp
+The
+.Ic GtkDialog
+should have a
+.Sq Cancel
+.Sx GtkButton
+that has its
+.Ic clicked
+signal connected to
+.Ic gtk_main_quit .
+.It feedback
+none
+.It commands
+none
+.El
+.Ss GtkEntry
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
+.Ic changed
+to one of
+.Ic cb_0 , cb_1 , cb_2 ,
+or
+.Ic cb_3 .
+.It feedback
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section text
+.Qc
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_text
+.Fa string
+.Qc
+replaces the user-editable text with
+.Fa string .
+.El
+.Ss GtkFileChooserButton
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
+.Ic file-set
+to one of
+.Ic cb_0 , cb_1 , cb_2 ,
+or
+.Ic cb_3 .
+.It feedback
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section pathname
+.Qc
+if the selection has changed.
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_filename
+.Fa path
+.Qc
+preselects
+.Fa path
+to the extent it exists.
+.El
+.Ss GtkFileChooserDialog
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks (if the dialog is subordinated to another window)
+Connect
+.Ic delete-event
+to
+.Ic cb_0 .
+.Pp
+The name of the
+.Ic GtkFileChooserDialog
+widget should end in
+.Ic _dialog ,
+eg.\&
+.Fa some_name Ns
+.Ic _dialog .
+Then, a
+.Ic GtkMenuItem
+or
+.Ic GtkImageMenuItem
+named
+.Fa some_name
+will invoke the
+.Ic GtkFileChooserDialog
+(see
+.Sx GtkMenuItem, GtkImageMenuItem
+for their setup).
+.Pp
+The
+.Ic GtkFileChooserDialog
+should have an
+.Sq OK
+.Sx GtkButton
+that has its
+.Ic clicked
+signal connected to both
+.Ic cb_send_dialog_selection
+and
+.Ic cb_hide_toplevel .
+A
+.Sq Cancel
+.Sx GtkButton
+should have its
+.Ic clicked
+signal connected to
+.Ic cb_hide_toplevel .
+.It signals/callbacks (if the dialog is the sole window)
+Connect
+.Ic delete-event
+and
+.Ic destroy
+to
+.Ic gtk_main_quit .
+.Pp
+The
+.Ic GtkFileChooserDialog
+should have an
+.Sq OK
+.Sx GtkButton
+that has its
+.Ic clicked
+signal connected to both
+.Ic cb_send_dialog_selection
+and
+.Ic gtk_main_quit .
+A
+.Sq Cancel
+.Sx GtkButton
+should have its
+.Ic clicked
+signal connected to
+.Ic gtk_main_quit .
+.It feedback
+.Qo
+.Fa name Ns
+.Ic :file
+.Fa  pathname
+.Qc
+and/or
+.Qo
+.Fa name Ns
+.Ic :folder
+.Fa  pathname
+.Qc
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_filename
+.Fa path
+.Qc
+preselects
+.Fa path
+to the extent it exists.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_current_name
+.Fa string
+.Qc
+makes
+.Fa string
+the suggested filename, which may not yet exist.
+.Fa string
+should either resemble an absolute path, or the
+.Fa directory
+must be set
+separately by
+.Fa name Ns
+.Ic :set_filename
+.Fa directory .
+.El
+.Ss GtkFontButton
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
+.Ic font-set
+to one of
+.Ic cb_0 , cb_1 , cb_2 ,
+or
+.Ic cb_3 .
+.It feedback
 .Qo
 .Fa name Ns
 .Ic \&: Ns
 .Fa section fontname
-.Qc .
+.Qc
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_font_name
+.Fa fontname
+.Qc
+preselects the font.
+.El
+.Ss GtkImage
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+none
+.It feedback
+none
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_from_icon_name
+.Fa icon-name
+.Qc
+replaces the image with one of the standard icons.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_from_file
+.Fa path
+.Qc
+replaces the image by the one found at
+.Fa path Ns .
+.El
+.Ss GtkLabel
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+none
+.It feedback
+none
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_text
+.Fa string
+.Qc
+replaces the label text with
+.Fa string .
+.El
 .Ss GtkMenuItem, GtkImageMenuItem
-The
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
 .Ic activate
-signal should be connected to one of
+to one of
 .Ic cb_0 , cb_1 , cb_2 ,
 or
 .Ic cb_3 .
+.It feedback
 A
 .Ic GtkMenuItem
 or
@@ -1059,9 +832,9 @@ or
 with the name
 .Fa some_item
 will invoke the
-.Ic GtkDialog
+.Sx GtkDialog
 or
-.Ic GtkFileChooserDialog
+.Sx GtkFileChooserDialog
 named
 .Fa some_item Ns
 .Ic _dialog
@@ -1073,34 +846,427 @@ it reports
 .Ic \&: Ns
 .Fa section label
 .Qc .
-.Ss GtkCalendar
-One or both of the
-.Ic day-selected
-and
-.Ic day-selected-doubleclick
-signals should be connected to one or two of
+.It commands
+none
+.El
+.Ss GtkProgressBar
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+none
+.It feedback
+none
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_fraction
+.Fa numeric
+.Qc
+moves the progress bar to
+.Fa numeric
+.Po
+between 0 and 1
+.Pc .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_text
+.Fa string
+.Qc
+replaces the text of the progress bar with
+.Fa string .
+.El
+.Ss GtkRadioButton
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
+.Ic toggled
+to one of
 .Ic cb_0 , cb_1 , cb_2 ,
 or
 .Ic cb_3 .
-The widget reports
+.It feedback
 .Qo
 .Fa name Ns
 .Ic \&: Ns
-.Fa section date
+.Fa section
+.Ic 1
 .Qc
+if switched on, or
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section
+.Ic 0
+.Qc
+otherwise.
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_active 1
+.Qc
+switches the button on.  All other buttons of the same group will go off
+automatically.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_label
+.Fa string
+.Qc
+replaces the button text with
+.Fa string .
+.El
+.Ss GtkScale
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
+.Ic value-changed
+to one of
+.Ic cb_0 , cb_1 , cb_2 ,
+or
+.Ic cb_3 .
+.It feedback
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section floating_point_text
+.Qc
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_value
+.Fa numeric
+.Qc
+moves the slider to value
+.Fa numeric .
+.El
+.Ss GtkSpinButton
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
+.Ic changed
+to one of
+.Ic cb_0 , cb_1 , cb_2 ,
+or
+.Ic cb_3 .
+.It feedback
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section text
+.Qc
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_text
+.Fa string
+.Qc
+sets the selected value to
+.Fa string .
+.El
+.Ss GtkSpinner
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+none
+.It feedback
+none
+.It commands
+.Qo
+.Fa name Ns
+.Ic :start
+.Qc
+and
+.Qo
+.Fa name Ns
+.Ic :stop
+.Qc
+start and stop the spinner.
+.El
+.Ss GtkStatusbar
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+none
+.It feedback
+none
+.It commands
+.Qo
+.Fa name Ns
+.Ic :push
+.Fa string
+.Qc
+displays
+.Fa string
+in the statusbar.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :pop
+.Qc
+removes the last entry from the statusbar, revealing the penultimate
+entry.
+.El
+.Ss GtkSwitch
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
+.Ic state-set
+to one of
+.Ic cb_0 , cb_1 , cb_2 ,
+or
+.Ic cb_3 .
+.It feedback
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section
+.Ic 1
+.Qc
+if switched on, or
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section
+.Ic 0
+.Qc
+otherwise.
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_active Brq Ic 0 | 1
+.Qc
+turns the switch off
+.Pq Ic 0
+or on
+.Pq Ic 1 .
+.El
+.Ss GtkTextView
+There should be a dedicated
+.Sx GtkButton
+for sending (parts of) the text.
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect the
+.Ic clicked
+signal of the
+.Sx GtkButton
+to either
+.Ic cb_send_text
+or
+.Ic cb_send_text_selection ,
+specifying the
+.Ic GtkTextBuffer
+underlying the
+.Ic GtkTextView
+as
+.Ic User Data .
+.It feedback
+.Qo
+.Fa button_name Ns
+.Ic :text
+.Fa text
+.Qc ,
+.Fa button_name
+being the name of the
+.Sx GtkButton .
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_text
+.Fa string
+.Qc
+replaces the user-editable text with
+.Fa string Ns .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :delete
+.Qc
+deletes the text.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :insert_at_cursor
+.Fa string
+.Qc
+inserts
+.Fa string
+at cursor position.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :place_cursor Brq Fa position | Ic end
+.Qc
+places the text cursor at
+.Fa position
+or at the end of the text.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :place_cursor_at_line
+.Fa line
+.Qc
+places the text cursor at the beginning of
+.Fa line .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :scroll_to_cursor
+.Qc
+scrolls to the cursor position if necessary.
+.El
+.Ss GtkToggleButton
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
+.Ic toggled
+to one of
+.Ic cb_0 , cb_1 , cb_2 ,
+or
+.Ic cb_3 .
+.It feedback
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section
+.Ic 1
+.Qc
+if switched on, or
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section
+.Ic 0
+.Qc
+otherwise.
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_active Brq Ic 0 | 1
+.Qc
+switches the button off
+.Pq Ic 0
+or on
+.Pq Ic 1 .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_label
+.Fa string
+.Qc
+replaces the button text with
+.Fa string .
+.El
+.Ss GtkTreeView
+.Nm
+can deal with columns of type
+.Ic gboolean , gint , guint , glong , gulong , gint64 , guint64 , gfloat , gdouble ,
+and
+.Ic gchararray .
+.Pp
+.Fa row
+and
+.Fa column
+refer to the underlying model (usually a
+.Ic GtkListStore ) .
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect the
+.Ic changed
+signal in the subordinated
+.Ic GtkTreeSelection
+to one of
+.Ic cb_0 , cb_1 , cb_2 ,
+or
+.Ic cb_3 .
+.It feedback
+.Qo
+.Fa name Ns
+.Ic \&:clicked
+.Qc
+.Pp
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section row column value
+.Qc ,
+one message per selected row and column in the underlying model if
+the set of selected rows has changed.
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set
+.Fa row column data
+.Qc
+replaces the content at
+.Pq Fa row , column
 with
-.Fa date
-formatted
-.Li yyyy-mm-dd .
+.Fa data
+(which should be compatible with the type of
+.Fa column ) .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :insert_row Brq Fa position | Ic end
+.Qc
+inserts a new, empty row at
+.Fa position
+or at the end of the list.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :move_row
+.Fa origin Brq Fa destination | Ic end
+.Qc
+moves the row at
+.Fa origin
+to
+.Fa destination
+or to the end of the list.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :remove_row
+.Fa position
+.Qc
+removes the row at
+.Fa position .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :scroll
+.Fa row column
+.Qc
+scrolls the cell at
+.Pq Fa row , column
+into view.
+.El
+.Ss GtkTreeViewColumn
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connnect
+.Ic clicked
+to one of
+.Ic cb_0 , cb_1 , cb_2 ,
+or
+.Ic cb_3 .
+.It feedback
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa section
+.Ic clicked
+.Qc
+.It commands
+none
+.El
 .Sh EXAMPLES
 .Ss Discovering Pipeglade Interactively
 Suppose the interface in
 .Pa ./pipeglade.ui
 has a
-.Ic GtkLabel
+.Sx GtkLabel
 .Li l1
 and a
-.Ic GtkButton
+.Sx GtkButton
 .Li b1
 whose
 .Ic clicked
@@ -1109,7 +1275,7 @@ signal is connected to
 After invoking
 .Dl pipeglade
 and clicking the
-.Ic GtkButton ,
+.Sx GtkButton ,
 .Qq b1:0 clicked
 will be reported on the terminal.  Typing
 .Dl l1:set_text Button Label
@@ -1119,10 +1285,10 @@ will change the text shown on the label into
 Suppose the interface in
 .Pa ./simple_open.ui
 contains a
-.Ic GtkFileChooserDialog
+.Sx GtkFileChooserDialog
 with an
 .Sq OK
-.Ic GtkButton
+.Sx GtkButton
 whose
 .Ic clicked
 signal is connected to both
@@ -1139,7 +1305,7 @@ will close it after sending the selected filename to
 If the interface in
 .Pa ./simple_dialog.ui
 contains a
-.Ic GtkLabel
+.Sx GtkLabel
 .Li label1 ,
 then
 .Dl pipeglade -u simple_dialog.ui <<< \e
