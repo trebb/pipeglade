@@ -437,6 +437,15 @@ update_ui(struct ui_data *ud)
         } else if (eql(action, "set_visible")) {
                 gtk_widget_set_visible(GTK_WIDGET(obj), strtol(data, NULL, 10));
                 goto done;
+        } else if (eql(action, "override_font")) {
+                if (data[0]) {
+                        PangoFontDescription *font = pango_font_description_from_string(data);
+                        
+                        gtk_widget_override_font(GTK_WIDGET(obj), font);
+                        pango_font_description_free(font);
+                } else
+                        gtk_widget_override_font(GTK_WIDGET(obj), NULL);
+                goto done;
         } else if (eql(action, "override_color")) {
                 if (data[0]) {
                         gdk_rgba_parse(&color, data);

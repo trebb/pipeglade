@@ -319,9 +319,12 @@ check 1 "statusbar1:push Press the \"togglebutton\" which should now be renamed 
 check 1 "statusbar1:push Press the \"checkbutton\" which should now be renamed \"REGISTER\"\n checkbutton1:set_label REGISTER" "checkbutton1:0 1"
 check 1 "statusbar1:push Press the \"REGISTER\" checkbutton again\n checkbutton1:set_label REGISTER" "checkbutton1:0 0"
 check 2 "statusbar1:push Press the \"radiobutton\" which should now be renamed \"RADIO\"\n radiobutton2:set_label RADIO" "radiobutton1:0 0" "radiobutton2:0 1"
+check 1 "statusbar1:push Click the button whose label font is now Bold Italic 14\n no_button:override_font Bold Italic 14" "no_button:0 clicked"
 check 1 "statusbar1:push Click the button whose label has turned red\n no_button:override_color red" "no_button:0 clicked"
 check 1 "statusbar1:push Click the widget whose background has turned yellow\n checkbutton1:override_background_color yellow" "checkbutton1:0 1"
+check 1 "statusbar1:push Press \"OK\" if font and colors changed in previous steps are back to normal\n no_button:override_font\n no_button:override_color\n checkbutton1:override_background_color" "button1:0 clicked"
 check 1 "statusbar1:push Press \"OK\" if the \"lorem ipsum dolor ...\" text now reads \"LABEL\"\n label1:set_text LABEL" "button1:0 clicked"
+exit
 check 1 "statusbar1:push Press \"OK\" if the green dot has turned red\n image1:set_from_icon_name gtk-no" "button1:0 clicked"
 check 1 "statusbar1:push Press \"OK\" if the red dot has turned into a green \"Q\"\n image1:set_from_file q.png" "button1:0 clicked"
 check 1 "statusbar1:push Select \"FIRST\" from the combobox\n comboboxtext1:prepend_text FIRST" "comboboxtext1:0 FIRST"
