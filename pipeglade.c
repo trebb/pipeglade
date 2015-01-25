@@ -513,6 +513,11 @@ update_ui(struct ui_data *ud)
                         gtk_expander_set_label(GTK_EXPANDER(obj), data);
                 else
                         ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_FRAME) {
+                if (eql(action, "set_label"))
+                        gtk_frame_set_label(GTK_FRAME(obj), data);
+                else
+                        ign_cmd(type, ud->msg);
         } else if (type == GTK_TYPE_BUTTON) {
                 if (eql(action, "set_label"))
                         gtk_button_set_label(GTK_BUTTON(obj), data);
