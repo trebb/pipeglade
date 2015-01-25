@@ -137,6 +137,10 @@ check_error "label1:force_cb" "ignoring callback forced from label1"
 check_error "label1:nnn" "ignoring GtkLabel command \"label1:nnn\""
 # GtkImage
 check_error "image1:nnn" "ignoring GtkImage command \"image1:nnn\""
+# GtkNotebook
+check_error "notebook1:nnn" "ignoring GtkNotebook command \"notebook1:nnn\""
+# GtkExpander
+check_error "expander1:nnn" "ignoring GtkExpander command \"expander1:nnn\""
 # GtkTextView
 check_error "textview1:nnn" "ignoring GtkTextView command \"textview1:nnn\""
 # GtkButton
@@ -286,6 +290,9 @@ L=$(i=0
         echo -n "Repetitive input that is large enough to have the realloc() machinery kick in.---"
     done)
 check 1 "entry1:set_text $L" "entry1:0 $L"
+
+check 1 "statusbar1:push Open what should now be named \"EXPANDER\" and click the \"button inside expander\"\n expander1:set_expanded 0\n expander1:set_label EXPANDER" "button6:0 clicked"
+check 0 "expander1:set_expanded 0"
 
 check 12 "statusbar1:push Click the 66% line\n treeview1:set 2 0 1\n treeview1:set 2 1 -30000\n treeview1:set 2 2 66\n treeview1:set 2 3 -2000000000\n treeview1:set 2 4 4000000000\n treeview1:set 2 5 -2000000000\n treeview1:set 2 6 4000000000\n treeview1:set 2 7 3.141\n treeview1:set 2 8 3.141\n treeview1:set 2 9 TEXT" "treeview1:1 clicked" "treeview1:1 2 0 1" "treeview1:1 2 1 -30000" "treeview1:1 2 2 66" "treeview1:1 2 3 -2000000000" "treeview1:1 2 4 4000000000" "treeview1:1 2 5 -2000000000" "treeview1:1 2 6 4000000000" "treeview1:1 2 7 3.141000" "treeview1:1 2 8 3.141000" "treeview1:1 2 9 TEXT" "treeview1:1 2 10 zzz"
 check 12 "statusbar1:push Click the 66% line again (insert_row)\n treeview1:insert_row 0\n treeview1:insert_row 2" "treeview1:1 clicked" "treeview1:1 4 0 1" "treeview1:1 4 1 -30000" "treeview1:1 4 2 66" "treeview1:1 4 3 -2000000000" "treeview1:1 4 4 4000000000" "treeview1:1 4 5 -2000000000" "treeview1:1 4 6 4000000000" "treeview1:1 4 7 3.141000" "treeview1:1 4 8 3.141000" "treeview1:1 4 9 TEXT" "treeview1:1 4 10 zzz"

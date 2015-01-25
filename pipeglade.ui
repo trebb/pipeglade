@@ -821,7 +821,32 @@ et dolore magna aliqua.
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkExpander" id="expander1">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="expanded">True</property>
+            <child>
+              <object class="GtkButton" id="button6">
+                <property name="label" translatable="yes">button inside expander</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <signal name="clicked" handler="cb_0" swapped="no"/>
+              </object>
+            </child>
+            <child type="label">
+              <object class="GtkLabel" id="label5">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">exp</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">6</property>
+          </packing>
         </child>
         <child>
           <object class="GtkBox" id="box5">

@@ -506,6 +506,13 @@ update_ui(struct ui_data *ud)
                         gtk_notebook_set_current_page(GTK_NOTEBOOK(obj), strtol(data, NULL, 10));
                 else
                         ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_EXPANDER) {
+                if (eql(action, "set_expanded"))
+                        gtk_expander_set_expanded(GTK_EXPANDER(obj), strtol(data, NULL, 10));
+                else if (eql(action, "set_label"))
+                        gtk_expander_set_label(GTK_EXPANDER(obj), data);
+                else
+                        ign_cmd(type, ud->msg);
         } else if (type == GTK_TYPE_BUTTON) {
                 if (eql(action, "set_label"))
                         gtk_button_set_label(GTK_BUTTON(obj), data);

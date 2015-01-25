@@ -654,6 +654,31 @@ or
 replaces the user-editable text with
 .Fa string .
 .El
+.Ss GtkExpander
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+none
+.It feedback
+none
+.It commands
+.Qo
+.Fa name Ns
+.Ic :set_label
+.Fa string
+.Qc
+replaces the expander label text with
+.Fa string .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_expanded
+.Brq Ic 0 |  1
+.Qc
+hides
+.Pq Ic 0
+the child widget, or makes it visible
+.Pq Ic 1 .
+.El
 .Ss GtkFileChooserButton
 .Bl -tag -width "signals/callbacks"
 .It signals/callbacks
