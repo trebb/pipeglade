@@ -501,6 +501,11 @@ update_ui(struct ui_data *ud)
                         gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(obj), gtk_text_buffer_get_insert(textbuf), 0., 0, 0., 0.);
                 else
                         ign_cmd(type, ud->msg);
+        } else if (type == GTK_TYPE_NOTEBOOK) {
+                if (eql(action, "set_current_page"))
+                        gtk_notebook_set_current_page(GTK_NOTEBOOK(obj), strtol(data, NULL, 10));
+                else
+                        ign_cmd(type, ud->msg);
         } else if (type == GTK_TYPE_BUTTON) {
                 if (eql(action, "set_label"))
                         gtk_button_set_label(GTK_BUTTON(obj), data);
