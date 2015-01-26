@@ -1,7 +1,7 @@
 (unreleased)
 ------------------
-  * Add support for GtkExpander, GtkFrame, GtkNotebook,
-  and GtkSwitch.
+  * Add support for GtkExpander, GtkFrame, GtkNotebook, and
+  GtkSwitch.
   * Add support for changing of GUI fonts and colors.
   * Rewrite parts of manual page.
 
