@@ -308,9 +308,6 @@ check 12 "statusbar1:push Click the highest line visible in the scrolled area (s
 
 check 1 "statusbar1:push Click the header of column \"col3\"" "treeviewcolumn3:3 clicked"
 
-check 1 "statusbar1:push Close the infobar\n infobar1:set_visible 1" "infobar1:1 clicked"
-check 0 "infobar1:set_visible 0"
-
 check 0 "notebook1:set_current_page 1"
 check 1 "statusbar1:push Press \"send_text\"" "send_text:text some textnetcn"
 check 1 "statusbar1:push Press \"send_text\" again\n textview1:place_cursor 5\n textview1:insert_at_cursor MORE " "send_text:text some MORE textnetcn"
