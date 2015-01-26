@@ -248,6 +248,8 @@ rm $FERR
 mkfifo $FOUT
 
 check() {
+    # Flush stale pipeglade output
+    while read -t .1 <$FOUT; do : ; done
     N=$1
     echo "SEND $2"
     echo -e "$2" >$FIN
@@ -274,7 +276,6 @@ check() {
 # wait for $FIN and $FOUT to appear
 while test ! \( -e $FIN -a -e $FOUT \); do :; done
 
-check 1 "bogus initial output" "switch1:0 0"
 check 1 "entry1:set_text FFFF" "entry1:0 FFFF"
 check 1 "entry1:set_text GGGG" "entry1:0 GGGG"
 check 1 "spinbutton1:set_text 33.0" "spinbutton1:0 33.0"
@@ -341,8 +342,8 @@ check 2 "statusbar1:push Click the \"+\" of the spinbutton \n button1:set_label 
 check 1 "statusbar1:push Click the \"+\" of the spinbutton again \n button1:set_label OK" "spinbutton1:0 35.00"
 check 1 "statusbar1:push Click the \"+\" of the spinbutton once again \n button1:set_label OK" "spinbutton1:0 36.00"
 check 1 "statusbar1:push Using the file chooser button (now labelled \"etc\"), select \"File System\" (= \"/\")\n filechooserbutton1:set_filename /etc/" "filechooserbutton1:0 /"
-check 2 "statusbar1:push Click the font button (now labelled \"Sans Bold 40\"), and then \"Select\"\n fontbutton1:set_font_name Sans Bold 40" "fontbutton1:0 Sans Bold 40" "fontbutton1:0 Sans Bold 40"
-check 2 "statusbar1:push Click the color button (now turned yellow), and then \"Select\"\n colorbutton1:set_color yellow" "colorbutton1:0 rgb(255,255,0)" "colorbutton1:0 rgb(255,255,0)"
+check 1 "statusbar1:push Click the font button (now labelled \"Sans Bold 40\"), and then \"Select\"\n fontbutton1:set_font_name Sans Bold 40" "fontbutton1:0 Sans Bold 40"
+check 1 "statusbar1:push Click the color button (now turned yellow), and then \"Select\"\n colorbutton1:set_color yellow" "colorbutton1:0 rgb(255,255,0)"
 check 1 "colorbutton1:set_color rgb(0,255,0)\n colorbutton1:force_cb" "colorbutton1:forced rgb(0,255,0)"
 check 1 "colorbutton1:set_color #00f\n colorbutton1:force_cb" "colorbutton1:forced rgb(0,0,255)"
 check 1 "colorbutton1:set_color #ffff00000000\n colorbutton1:force_cb" "colorbutton1:forced rgb(255,0,0)"
