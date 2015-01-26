@@ -864,7 +864,7 @@ main(int argc, char *argv[])
         out = fifo(out_fifo, "w");
         gtk_builder_connect_signals(builder, builder);
         pthread_create(&receiver, NULL, digest_msg, (void*)builder);
-        window = (gtk_builder_get_object(builder, "window"));
+        window = gtk_builder_get_object(builder, "window");
         if (!GTK_IS_WIDGET(window)) {
                 fprintf(stderr, "no toplevel window named \'window\'\n");
                 exit(EXIT_FAILURE);

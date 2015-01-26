@@ -274,6 +274,7 @@ check() {
 # wait for $FIN and $FOUT to appear
 while test ! \( -e $FIN -a -e $FOUT \); do :; done
 
+check 1 "bogus initial output" "switch1:0 0"
 check 1 "entry1:set_text FFFF" "entry1:0 FFFF"
 check 1 "entry1:set_text GGGG" "entry1:0 GGGG"
 check 1 "spinbutton1:set_text 33.0" "spinbutton1:0 33.0"
@@ -324,10 +325,10 @@ check 1 "statusbar1:push Press the \"togglebutton\" which should now be renamed 
 check 1 "statusbar1:push Press the \"checkbutton\" which should now be renamed \"REGISTER\"\n checkbutton1:set_label REGISTER" "checkbutton1:0 1"
 check 1 "statusbar1:push Press the \"REGISTER\" checkbutton again\n checkbutton1:set_label REGISTER" "checkbutton1:0 0"
 check 2 "statusbar1:push Press the \"radiobutton\" which should now be renamed \"RADIO\"\n radiobutton2:set_label RADIO" "radiobutton1:0 0" "radiobutton2:0 1"
-check 1 "statusbar1:push Click the button whose label font is now Bold Italic 14\n no_button:override_font Bold Italic 14" "no_button:0 clicked"
-check 1 "statusbar1:push Click the button whose label has turned red\n no_button:override_color red" "no_button:0 clicked"
+check 1 "statusbar1:push Click the widget whose label font is now Bold Italic 14\n switch1:override_font Bold Italic 14" "switch1:0 1"
+check 1 "statusbar1:push Click the widget whose label has turned red\n switch1:override_color red" "switch1:0 0"
 check 1 "statusbar1:push Click the widget whose background has turned yellow\n checkbutton1:override_background_color yellow" "checkbutton1:0 1"
-check 1 "statusbar1:push Press \"OK\" if font and colors changed in previous steps are back to normal\n no_button:override_font\n no_button:override_color\n checkbutton1:override_background_color" "button1:0 clicked"
+check 1 "statusbar1:push Press \"OK\" if font and colors changed in previous steps are back to normal\n switch1:override_font\n switch1:override_color\n checkbutton1:override_background_color" "button1:0 clicked"
 check 1 "statusbar1:push Press \"OK\" if the \"lorem ipsum dolor ...\" text inside \"frame1\" now reads \"LABEL\"\n label1:set_text LABEL" "button1:0 clicked"
 check 1 "statusbar1:push Press \"OK\" if the label of the frame around \"LABEL\" now reads \"LOREM IPSUM\"\n frame1:set_label LOREM IPSUM" "button1:0 clicked"
 check 1 "statusbar1:push Press \"OK\" if the green dot has turned red\n image1:set_from_icon_name gtk-no" "button1:0 clicked"
