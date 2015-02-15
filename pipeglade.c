@@ -26,7 +26,9 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <locale.h>
+#include <math.h>
 #include <pthread.h>
+#include <search.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -36,7 +38,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "2.1.0"
+#define VERSION "2.2.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 
@@ -397,6 +399,585 @@ ign_cmd(GType type, const char *msg)
 }
 
 /*
+ * Drawing on a GtkDrawingArea
+ */
+enum cairo_fn {
+        RECTANGLE,
+        ARC,
+        ARC_NEGATIVE,
+        CURVE_TO,
+        REL_CURVE_TO,
+        LINE_TO,
+        REL_LINE_TO,
+        MOVE_TO,
+        REL_MOVE_TO,
+        CLOSE_PATH,
+        SET_SOURCE_RGBA,
+        SET_DASH,
+        SET_LINE_CAP,
+        SET_LINE_JOIN,
+        SET_LINE_WIDTH,
+        FILL,
+        FILL_PRESERVE,
+        STROKE,
+        STROKE_PRESERVE,
+        SHOW_TEXT,
+        SET_FONT_SIZE,
+};
+
+/*
+ * One single element of a drawing
+ */
+struct draw_op {
+        struct draw_op *next;
+        struct draw_op *prev;
+        unsigned int id;
+        enum cairo_fn op;
+        void *op_args;
+};
+
+/*
+ * The content of all GtkDrawingAreas
+ */
+static struct drawing {
+        struct drawing *next;
+        struct drawing *prev;
+        GtkWidget *widget;
+        struct draw_op *draw_ops;
+} *drawings = NULL;
+
+/*
+ * Sets of arguments for various drawing functions
+ */
+struct rectangle_args {
+        double x;
+        double y;
+        double width;
+        double height;
+};
+
+struct arc_args {
+        double x;
+        double y;
+        double radius;
+        double angle1;
+        double angle2;
+};
+
+struct curve_to_args {
+        double x1;
+        double y1;
+        double x2;
+        double y2;
+        double x3;
+        double y3;
+};
+
+struct move_to_args {
+        double x;
+        double y;
+};
+
+struct set_source_rgba_args {
+        GdkRGBA color;
+};
+
+struct set_dash_args {
+        int num_dashes;
+        double dashes[];
+};
+
+struct set_line_cap_args {
+        cairo_line_cap_t line_cap;
+};
+
+struct set_line_join_args {
+        cairo_line_join_t line_join;
+};
+
+struct set_line_width_args {
+        double width;
+};
+
+struct show_text_args {
+        int len;
+        char text[];
+};
+
+struct set_font_size_args {
+        double size;
+};
+        
+static void
+draw(cairo_t *cr, enum cairo_fn op, void *op_args)
+{
+        switch (op) {
+        case RECTANGLE: {
+                struct rectangle_args *args = op_args;
+                
+                cairo_rectangle(cr, args->x, args->y, args->width, args->height);
+                break;
+        }
+        case ARC: {
+                struct arc_args *args = op_args;
+
+                cairo_arc(cr, args->x, args->y, args->radius, args->angle1, args->angle2);
+                break;
+        }
+        case ARC_NEGATIVE: {
+                struct arc_args *args = op_args;
+
+                cairo_arc_negative(cr, args->x, args->y, args->radius, args->angle1, args->angle2);
+                break;
+        }
+        case CURVE_TO: {
+                struct curve_to_args *args = op_args;
+
+                cairo_curve_to(cr, args->x1, args->y1, args->x2, args->y2, args->x3, args->y3);
+                break;
+        }
+        case REL_CURVE_TO: {
+                struct curve_to_args *args = op_args;
+
+                cairo_curve_to(cr, args->x1, args->y1, args->x2, args->y2, args->x3, args->y3);
+                break;
+        }
+        case LINE_TO: {
+                struct move_to_args *args = op_args;
+
+                cairo_line_to(cr, args->x, args->y);
+                break;
+        }
+        case REL_LINE_TO: {
+                struct move_to_args *args = op_args;
+
+                cairo_rel_line_to(cr, args->x, args->y);
+                break;
+        }
+        case MOVE_TO: {
+                struct move_to_args *args = op_args;
+
+                cairo_move_to(cr, args->x, args->y);
+                break;
+        }
+        case REL_MOVE_TO: {
+                struct move_to_args *args = op_args;
+
+                cairo_rel_move_to(cr, args->x, args->y);
+                break;
+        }
+        case CLOSE_PATH:
+                cairo_close_path(cr);
+                break;
+        case SET_SOURCE_RGBA: {
+                struct set_source_rgba_args *args = op_args;
+
+                gdk_cairo_set_source_rgba(cr, &args->color);
+                break;
+        }
+        case SET_DASH: {
+                struct set_dash_args *args = op_args;
+
+                cairo_set_dash(cr, args->dashes, args->num_dashes, 0);
+                break;
+        }
+        case SET_LINE_CAP: {
+                struct set_line_cap_args *args = op_args;
+
+                cairo_set_line_cap(cr, args->line_cap);
+                break;
+        }
+        case SET_LINE_JOIN: {
+                struct set_line_join_args *args = op_args;
+
+                cairo_set_line_join(cr, args->line_join);
+                break;
+        }
+        case SET_LINE_WIDTH: {
+                struct set_line_width_args *args = op_args;
+
+                cairo_set_line_width(cr, args->width);
+                break;
+        } 
+        case FILL:
+                cairo_fill(cr);
+                break;
+        case FILL_PRESERVE:
+                cairo_fill_preserve(cr);
+                break;
+        case STROKE:
+                cairo_stroke(cr);
+                break;
+        case STROKE_PRESERVE:
+                cairo_stroke_preserve(cr);
+                break;
+        case SHOW_TEXT: {
+                struct show_text_args *args = op_args;
+
+                cairo_show_text(cr, args->text);
+                break;
+        }
+        case SET_FONT_SIZE: {
+                struct set_font_size_args *args = op_args;
+
+                cairo_set_font_size(cr, args->size);
+                break;
+        }
+        default:
+                abort();
+                break;
+        }
+}
+
+static bool
+set_draw_op(struct draw_op *op, char* action, char *data)
+{
+        if (eql(action, "rectangle")) {
+                struct rectangle_args *args;
+
+                if ((args = malloc(sizeof(*args))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = RECTANGLE;
+                op->op_args = args;
+                if (sscanf(data, "%u %lf %lf %lf %lf", &op->id, &args->x, &args->y, &args->width, &args->height) != 5)
+                        return false;
+        } else if (eql(action, "arc")) {
+                struct arc_args *args;
+                double deg1, deg2;
+
+                if ((args = malloc(sizeof(*args))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = ARC;
+                op->op_args = args;
+                if (sscanf(data, "%u %lf %lf %lf %lf %lf", &op->id, &args->x, &args->y, &args->radius, &deg1, &deg2) != 6)
+                        return false;
+                args->angle1 = deg1 * (M_PI / 180.);
+                args->angle2 = deg2 * (M_PI / 180.);
+        } else if (eql(action, "arc_negative")) {
+                struct arc_args *args;
+                double deg1, deg2;
+
+                if ((args = malloc(sizeof(*args))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = ARC_NEGATIVE;
+                op->op_args = args;
+                if (sscanf(data, "%u %lf %lf %lf %lf %lf", &op->id, &args->x, &args->y, &args->radius, &deg1, &deg2) != 6)
+                        return false;
+                args->angle1 = deg1 * (M_PI / 180.);
+                args->angle2 = deg2 * (M_PI / 180.);
+        } else if (eql(action, "curve_to")) {
+                struct curve_to_args *args;
+
+                if ((args = malloc(sizeof(*args))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = CURVE_TO;
+                op->op_args = args;
+                if (sscanf(data, "%u %lf %lf %lf %lf %lf %lf", &op->id, &args->x1, &args->y1, &args->x2, &args->y2, &args->x3, &args->y3) != 7)
+                        return false;
+        } else if (eql(action, "rel_curve_to")) {
+                struct curve_to_args *args;
+
+                if ((args = malloc(sizeof(*args))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = REL_CURVE_TO;
+                op->op_args = args;
+                if (sscanf(data, "%u %lf %lf %lf %lf %lf %lf", &op->id, &args->x1, &args->y1, &args->x2, &args->y2, &args->x3, &args->y3) != 7)
+                        return false;
+        } else if (eql(action, "line_to")) {
+                struct move_to_args *args;
+
+                if ((args = malloc(sizeof(*args))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = LINE_TO;
+                op->op_args = args;
+                if (sscanf(data, "%u %lf %lf", &op->id, &args->x, &args->y) != 3)
+                        return false;
+        } else if (eql(action, "rel_line_to")) {
+                struct move_to_args *args;
+
+                if ((args = malloc(sizeof(*args))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = REL_LINE_TO;
+                op->op_args = args;
+                if (sscanf(data, "%u %lf %lf", &op->id, &args->x, &args->y) != 3)
+                        return false;
+        } else if (eql(action, "move_to")) {
+                struct move_to_args *args;
+
+                if ((args = malloc(sizeof(*args))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = MOVE_TO;
+                op->op_args = args;
+                if (sscanf(data, "%u %lf %lf", &op->id, &args->x, &args->y) != 3)
+                        return false;
+        } else if (eql(action, "rel_move_to")) {
+                struct move_to_args *args;
+
+                if ((args = malloc(sizeof(*args))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = REL_MOVE_TO;
+                op->op_args = args;
+                if (sscanf(data, "%u %lf %lf", &op->id, &args->x, &args->y) != 3)
+                        return false;
+        } else if (eql(action, "close_path")) {
+                op->op = CLOSE_PATH;
+                if (sscanf(data, "%u", &op->id) != 1)
+                        return false;
+                op->op_args = NULL;
+        } else if (eql(action, "set_source_rgba")) {
+                struct set_source_rgba_args *args;
+                int c_start;
+
+                if ((args = malloc(sizeof(*args))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = SET_SOURCE_RGBA;
+                op->op_args = args;
+                if ((sscanf(data, "%u %n", &op->id, &c_start) < 1))
+                        return false;;
+                gdk_rgba_parse(&args->color, data + c_start);
+        } else if (eql(action, "set_dash")) {
+                struct set_dash_args *args;
+                int d_start, n, i;
+                char *next, *end;
+
+                if (sscanf(data, "%u %n", &op->id, &d_start) < 1)
+                        return false;
+                next = end = data + d_start;
+                n = -1;
+                do {
+                        n++;
+                        next = end;
+                        strtod(next, &end);
+                } while (next != end);
+                if ((args = malloc(sizeof(*args) + n * sizeof(args->dashes[0]))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = SET_DASH;
+                op->op_args = args;
+                args->num_dashes = n;
+                for (i = 0, next = data + d_start; i < n; i++, next = end) {
+                        args->dashes[i] = strtod(next, &end);
+                }
+        } else if (eql(action, "set_line_cap")) {
+                struct set_line_cap_args *args;
+                char str[6 + 1];
+
+                if ((args = malloc(sizeof(*args))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = SET_LINE_CAP;
+                op->op_args = args;
+                if (sscanf(data, "%u %6s", &op->id, str) != 2)
+                        return false;
+                if (eql(str, "butt"))
+                        args->line_cap = CAIRO_LINE_CAP_BUTT;
+                else if (eql(str, "round"))
+                        args->line_cap = CAIRO_LINE_CAP_ROUND;
+                else if (eql(str, "square"))
+                        args->line_cap = CAIRO_LINE_CAP_SQUARE;
+                else
+                        return false;
+        } else if (eql(action, "set_line_join")) {
+                struct set_line_join_args *args;
+                char str[5 + 1];
+
+                if ((args = malloc(sizeof(*args))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = SET_LINE_JOIN;
+                op->op_args = args;
+                if (sscanf(data, "%u %5s", &op->id, str) != 2)
+                        return false;
+                if (eql(str, "miter"))
+                        args->line_join = CAIRO_LINE_JOIN_MITER;
+                else if (eql(str, "round"))
+                        args->line_join = CAIRO_LINE_JOIN_ROUND;
+                else if (eql(str, "bevel"))
+                        args->line_join = CAIRO_LINE_JOIN_BEVEL;
+                else
+                        return false;
+        } else if (eql(action, "set_line_width")) {
+                struct set_line_width_args *args;
+
+                if ((args = malloc(sizeof(*args))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = SET_LINE_WIDTH;
+                op->op_args = args;
+                if (sscanf(data, "%u %lf", &op->id, &args->width) != 2)
+                        return false;
+        } else if (eql(action, "fill")) {
+                op->op = FILL;
+                if (sscanf(data, "%u", &op->id) != 1)
+                        return false;
+                op->op_args = NULL;
+        } else if (eql(action, "fill_preserve")) {
+                op->op = FILL_PRESERVE;
+                if (sscanf(data, "%u", &op->id) != 1)
+                        return false;
+                op->op_args = NULL;
+        } else if (eql(action, "stroke")) {
+                op->op = STROKE;
+                if (sscanf(data, "%u", &op->id) != 1)
+                        return false;
+                op->op_args = NULL;
+        } else if (eql(action, "stroke_preserve")) {
+                op->op = STROKE_PRESERVE;
+                if (sscanf(data, "%u", &op->id) != 1)
+                        return false;
+                op->op_args = NULL;
+        } else if (eql(action, "show_text")) {
+                struct show_text_args *args;
+                int start, len;
+
+                if (sscanf(data, "%u %n", &op->id, &start) < 1)
+                        return false;
+                len = strlen(data + start) + 1;
+                if ((args = malloc(sizeof(*args) + len * sizeof(args->text[0]))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = SHOW_TEXT;
+                op->op_args = args;
+                args->len = len; /* not used */
+                strncpy(args->text, (data + start), len);
+        } else if (eql(action, "set_font_size")) {
+                struct set_font_size_args *args;
+
+                if ((args = malloc(sizeof(*args))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                op->op = SET_FONT_SIZE;
+                op->op_args = args;
+                if (sscanf(data, "%u %lf", &op->id, &args->size) != 2)
+                        return false;
+        } else
+                return false;
+        return true;
+}
+
+/*
+ * Add another element to widget's list of drawing operations
+ */
+static bool
+ins_draw_op(GtkWidget *widget, char *action, char *data)
+{
+        struct draw_op *op, *last_op;
+        struct drawing *d;
+
+        if ((op = malloc(sizeof(*op))) == NULL) {
+                fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                abort();
+        }
+        op->op_args = NULL;
+        if (!set_draw_op(op, action, data)) {
+                free(op->op_args);
+                free(op);
+                return false;
+        }
+        for (d = drawings; d != NULL; d = d->next)
+                if (d->widget == widget) 
+                        break;
+        if (d == NULL) {
+                if ((d = malloc(sizeof(*d))) == NULL) {
+                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
+                        abort();
+                }
+                if (drawings == NULL) {
+                        drawings = d;
+                        insque(d, NULL);
+                } else 
+                        insque(d, drawings);
+                d->widget = widget;
+                d->draw_ops = op;
+                insque(op, NULL);
+        } else if (d->draw_ops == NULL) {
+                d->draw_ops = op;
+                insque(op, NULL);
+        } else {
+                for (last_op = d->draw_ops; last_op->next != NULL; last_op = last_op->next);
+                insque(op, last_op);
+        }
+        return true;
+}
+
+/*
+ * Remove all elements with the given id from widget's list of drawing
+ * operations
+ */
+static bool
+rem_draw_op(GtkWidget *widget, char *data)
+{
+        struct draw_op *op, *next_op;
+        struct drawing *d;
+        unsigned int id;
+
+        if (sscanf(data, "%u", &id) != 1)
+                return false;
+        for (d = drawings; d != NULL; d = d->next)
+                if (d->widget == widget) 
+                        break;
+        if (d != NULL) {
+                op = d->draw_ops;
+                while (op != NULL) {
+                        next_op = op->next;
+                        if (op->id == id) {
+                                if (op->prev == NULL)
+                                        d->draw_ops = next_op;
+                                remque(op);
+                                free(op->op_args);
+                                free(op);
+                        }
+                        op = next_op;
+                }
+        }
+        return true;
+}
+        
+/*
+ * Callback that draws on a GtkDrawingArea
+ */
+gboolean
+cb_draw (GtkWidget *widget, cairo_t *cr, gpointer data)
+{
+        struct draw_op *op;
+        struct drawing *p;
+
+        (void)data;
+        for (p = drawings; p != NULL; p = p->next)
+                if (p->widget == widget)
+                        for (op = p->draw_ops; op != NULL; op = op->next) {
+                                draw(cr, op->op, op->op_args);
+                        }
+        return FALSE;
+}
+
+/*
  * Parse command pointed to by ud, and act on ui accordingly.  Set
  * ud->digested = true if done.  Runs once per command inside
  * gtk_main_loop()
@@ -717,6 +1298,18 @@ update_ui(struct ui_data *ud)
                 else
                         ign_cmd(type, ud->msg);
                 free(tokens);
+        } else if (type == GTK_TYPE_DRAWING_AREA) {
+                if (eql(action, "remove")) {
+                        if (!rem_draw_op(GTK_WIDGET(obj), data))
+                                ign_cmd(type, ud->msg);
+                } else if (eql(action, "refresh")) {
+                        gint width = gtk_widget_get_allocated_width (GTK_WIDGET(obj));
+                        gint height = gtk_widget_get_allocated_height (GTK_WIDGET(obj));
+
+                        gtk_widget_queue_draw_area(GTK_WIDGET(obj), 0, 0, width, height);
+                } else if (ins_draw_op(GTK_WIDGET(obj), action, data));
+                else
+                        ign_cmd(type, ud->msg);
         } else if (type == GTK_TYPE_WINDOW) {
                 if (eql(action, "set_title"))
                         gtk_window_set_title(GTK_WINDOW(obj), data);

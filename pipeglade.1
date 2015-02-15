@@ -630,6 +630,253 @@ none
 .It commands
 none
 .El
+.Ss GtkDrawingArea
+Most drawing commands expect an
+.Fa id
+parameter (an arbitrary non-negative integer) which can be used to reference the
+command for later removal.
+.Bl -tag -width "signals/callbacks"
+.It signals/callbacks
+Connect
+.Ic draw
+to
+.Ic cb_draw .
+.It feedback
+none
+.It commands
+.Qo
+.Fa name Ns
+.Ic :arc
+.Fa id x y radius angle1 angle2
+.Qc
+adds a circular arc to the current path.  The arc is centered at
+.Pq Fa x , y
+and proceeds clockwise from
+.Fa angle1
+to
+.Fa angle2
+.Po
+in degrees
+.Pc .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :arc_negative
+.Fa id x y radius angle1 angle2
+.Qc
+adds a circular arc to the current path.  The arc is centered at
+.Pq Fa x , y
+and proceeds counterclockwise from
+.Fa angle1
+to
+.Fa angle2
+.Po
+in degrees
+.Pc .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :close_path
+.Fa id
+.Qc
+adds a line segment from the current point to the point most recently
+passed to
+.Fa name Ns
+.Ic :move_to
+of
+.Fa name Ns
+.Ic :rel_move_to .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :curve_to
+.Fa id x1 y1 x2 y2 x3 y3
+.Qc
+adds a cubic Bezier spline from the current point to
+.Pq Fa x3 , y3 ,
+using
+.Pq Fa x1 , y1
+and
+.Pq Fa x2 , y2
+as control points.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :fill
+.Fa id
+.Qc
+fills the current path and clears it.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :fill_preserve
+.Fa id
+.Qc
+fills the current path without clearing it.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :line_to
+.Fa id x y
+.Qc
+adds a line from the current point to
+.Pq Fa x , y .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :move_to
+.Fa id x y
+.Qc
+sets the current point to
+.Pq Fa x , y .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :rectangle
+.Fa id x y width height
+.Qc
+adds a rectangle to the current path.  The top left corner is at
+.Pq Fa x , y .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :refresh
+.Qc
+redraws the
+.Ic GtkDrawingArea
+.Fa name .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :rel_curve_to
+.Fa id dx1 dy1 dx2 dy2 dx3 dy3
+.Qc
+adds a cubic Bezier spline from the current point to 
+.Pq Fa dx3 , dy3 ,
+using
+.Pq Fa dx1 , dy1
+and
+.Pq Fa dx2 , dy2
+as control points.  All coordinates are offsets relative to the
+current point.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :rel_line_to
+.Fa id dx dy
+.Qc
+adds a line from the current point to a point offset from there by
+.Pq Fa dx , dy .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :rel_move_to
+.Fa id dx dy
+.Qc
+moves the current point by
+.Pq Fa dx , dy .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :remove
+.Fa id
+.Qc
+removes the elements with
+.Fa id
+from the
+.Ic GtkDrawingArea
+.Fa name .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_dash
+.Fa id l
+.Qc
+sets the dash pattern to
+.Fa l
+on,
+.Fa l
+off.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_dash
+.Fa id l1on l1off l2on l2off ...
+.Qc
+resets the dash pattern to a line with arbitrary on/off portions.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_dash
+.Fa id
+.Qc
+resets the dash pattern to a solid line.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_font_size
+.Fa id size
+.Qc
+sets the font size for subsequent calls of
+.Fa name Ns
+.Ic :show_text .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_line_cap
+.Fa id
+.Brq Ic butt | round | square
+.Qc
+sets the line cap style.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_line_join
+.Fa id
+.Brq Ic miter | round | bevel
+.Qc
+sets the line junction style.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_line_width
+.Fa id width
+.Qc
+sets the line width.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_source_rgba
+.Fa id color
+.Qc
+sets the color.
+.Fa color
+is in the format used with
+.Sx GtkColorButton .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :show_text
+.Fa id text
+.Qc
+writes
+.Fa text ,
+beginning at the current point.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :stroke
+.Fa id
+.Qc
+strokes the current path and clears it.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :stroke_preserve
+.Fa id
+.Qc
+strokes the current path without clearing it.
+.El
 .Ss GtkEntry
 .Bl -tag -width "signals/callbacks"
 .It signals/callbacks
