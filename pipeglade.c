@@ -42,6 +42,14 @@
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 
+#define OOM_ABORT                                                       \
+        {                                                               \
+                fprintf(stderr,                                         \
+                        "out of memory: %s (%s:%d)\n",                  \
+                        __func__, __FILE__, __LINE__);                  \
+                abort();                                                \
+        }
+
 static FILE *in;
 static FILE *out;
 struct ui_data {
@@ -334,8 +342,11 @@ do_callback(GtkBuildable *obj, gpointer user_data, const char *section)
  * section strings.
  */
 #define MAKE_CB_N(n)                                            \
-        void cb_##n(GtkBuildable *obj, gpointer user_data)      \
-        {do_callback(obj, user_data, #n);}                      \
+        void                                                    \
+        cb_##n(GtkBuildable *obj, gpointer user_data)           \
+        {                                                       \
+                do_callback(obj, user_data, #n);                \
+        }
 
 MAKE_CB_N(0)
 MAKE_CB_N(1)
@@ -364,10 +375,8 @@ read_buf(FILE *stream, char **buf, size_t *bufsize)
                 if (c == '\n')
                         break;
                 if (i >= *bufsize - 1)
-                        if ((*buf = realloc(*buf, *bufsize = *bufsize * 2)) == NULL) {
-                                fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                                abort();
-                        }
+                        if ((*buf = realloc(*buf, *bufsize = *bufsize * 2)) == NULL)
+                                OOM_ABORT;
                 if (c == '\\')
                         switch (c = getc(stream)) {
                         case 'n': (*buf)[i++] = '\n'; break;
@@ -507,14 +516,14 @@ struct show_text_args {
 struct set_font_size_args {
         double size;
 };
-        
+
 static void
 draw(cairo_t *cr, enum cairo_fn op, void *op_args)
 {
         switch (op) {
         case RECTANGLE: {
                 struct rectangle_args *args = op_args;
-                
+
                 cairo_rectangle(cr, args->x, args->y, args->width, args->height);
                 break;
         }
@@ -598,7 +607,7 @@ draw(cairo_t *cr, enum cairo_fn op, void *op_args)
 
                 cairo_set_line_width(cr, args->width);
                 break;
-        } 
+        }
         case FILL:
                 cairo_fill(cr);
                 break;
@@ -635,10 +644,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
         if (eql(action, "rectangle")) {
                 struct rectangle_args *args;
 
-                if ((args = malloc(sizeof(*args))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
                 op->op = RECTANGLE;
                 op->op_args = args;
                 if (sscanf(data, "%u %lf %lf %lf %lf", &op->id, &args->x, &args->y, &args->width, &args->height) != 5)
@@ -647,10 +654,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
                 struct arc_args *args;
                 double deg1, deg2;
 
-                if ((args = malloc(sizeof(*args))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
                 op->op = ARC;
                 op->op_args = args;
                 if (sscanf(data, "%u %lf %lf %lf %lf %lf", &op->id, &args->x, &args->y, &args->radius, &deg1, &deg2) != 6)
@@ -661,10 +666,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
                 struct arc_args *args;
                 double deg1, deg2;
 
-                if ((args = malloc(sizeof(*args))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
                 op->op = ARC_NEGATIVE;
                 op->op_args = args;
                 if (sscanf(data, "%u %lf %lf %lf %lf %lf", &op->id, &args->x, &args->y, &args->radius, &deg1, &deg2) != 6)
@@ -674,10 +677,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
         } else if (eql(action, "curve_to")) {
                 struct curve_to_args *args;
 
-                if ((args = malloc(sizeof(*args))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
                 op->op = CURVE_TO;
                 op->op_args = args;
                 if (sscanf(data, "%u %lf %lf %lf %lf %lf %lf", &op->id, &args->x1, &args->y1, &args->x2, &args->y2, &args->x3, &args->y3) != 7)
@@ -685,10 +686,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
         } else if (eql(action, "rel_curve_to")) {
                 struct curve_to_args *args;
 
-                if ((args = malloc(sizeof(*args))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
                 op->op = REL_CURVE_TO;
                 op->op_args = args;
                 if (sscanf(data, "%u %lf %lf %lf %lf %lf %lf", &op->id, &args->x1, &args->y1, &args->x2, &args->y2, &args->x3, &args->y3) != 7)
@@ -696,10 +695,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
         } else if (eql(action, "line_to")) {
                 struct move_to_args *args;
 
-                if ((args = malloc(sizeof(*args))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
                 op->op = LINE_TO;
                 op->op_args = args;
                 if (sscanf(data, "%u %lf %lf", &op->id, &args->x, &args->y) != 3)
@@ -707,10 +704,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
         } else if (eql(action, "rel_line_to")) {
                 struct move_to_args *args;
 
-                if ((args = malloc(sizeof(*args))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
                 op->op = REL_LINE_TO;
                 op->op_args = args;
                 if (sscanf(data, "%u %lf %lf", &op->id, &args->x, &args->y) != 3)
@@ -718,10 +713,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
         } else if (eql(action, "move_to")) {
                 struct move_to_args *args;
 
-                if ((args = malloc(sizeof(*args))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
                 op->op = MOVE_TO;
                 op->op_args = args;
                 if (sscanf(data, "%u %lf %lf", &op->id, &args->x, &args->y) != 3)
@@ -729,10 +722,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
         } else if (eql(action, "rel_move_to")) {
                 struct move_to_args *args;
 
-                if ((args = malloc(sizeof(*args))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
                 op->op = REL_MOVE_TO;
                 op->op_args = args;
                 if (sscanf(data, "%u %lf %lf", &op->id, &args->x, &args->y) != 3)
@@ -746,10 +737,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
                 struct set_source_rgba_args *args;
                 int c_start;
 
-                if ((args = malloc(sizeof(*args))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
                 op->op = SET_SOURCE_RGBA;
                 op->op_args = args;
                 if ((sscanf(data, "%u %n", &op->id, &c_start) < 1))
@@ -769,10 +758,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
                         next = end;
                         strtod(next, &end);
                 } while (next != end);
-                if ((args = malloc(sizeof(*args) + n * sizeof(args->dashes[0]))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args) + n * sizeof(args->dashes[0]))) == NULL)
+                        OOM_ABORT;
                 op->op = SET_DASH;
                 op->op_args = args;
                 args->num_dashes = n;
@@ -783,10 +770,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
                 struct set_line_cap_args *args;
                 char str[6 + 1];
 
-                if ((args = malloc(sizeof(*args))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
                 op->op = SET_LINE_CAP;
                 op->op_args = args;
                 if (sscanf(data, "%u %6s", &op->id, str) != 2)
@@ -803,10 +788,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
                 struct set_line_join_args *args;
                 char str[5 + 1];
 
-                if ((args = malloc(sizeof(*args))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
                 op->op = SET_LINE_JOIN;
                 op->op_args = args;
                 if (sscanf(data, "%u %5s", &op->id, str) != 2)
@@ -822,10 +805,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
         } else if (eql(action, "set_line_width")) {
                 struct set_line_width_args *args;
 
-                if ((args = malloc(sizeof(*args))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT
                 op->op = SET_LINE_WIDTH;
                 op->op_args = args;
                 if (sscanf(data, "%u %lf", &op->id, &args->width) != 2)
@@ -857,10 +838,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
                 if (sscanf(data, "%u %n", &op->id, &start) < 1)
                         return false;
                 len = strlen(data + start) + 1;
-                if ((args = malloc(sizeof(*args) + len * sizeof(args->text[0]))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args) + len * sizeof(args->text[0]))) == NULL)
+                        OOM_ABORT;
                 op->op = SHOW_TEXT;
                 op->op_args = args;
                 args->len = len; /* not used */
@@ -868,10 +847,8 @@ set_draw_op(struct draw_op *op, char* action, char *data)
         } else if (eql(action, "set_font_size")) {
                 struct set_font_size_args *args;
 
-                if ((args = malloc(sizeof(*args))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
                 op->op = SET_FONT_SIZE;
                 op->op_args = args;
                 if (sscanf(data, "%u %lf", &op->id, &args->size) != 2)
@@ -890,10 +867,8 @@ ins_draw_op(GtkWidget *widget, char *action, char *data)
         struct draw_op *op, *last_op;
         struct drawing *d;
 
-        if ((op = malloc(sizeof(*op))) == NULL) {
-                fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                abort();
-        }
+        if ((op = malloc(sizeof(*op))) == NULL)
+                OOM_ABORT;
         op->op_args = NULL;
         if (!set_draw_op(op, action, data)) {
                 free(op->op_args);
@@ -901,17 +876,15 @@ ins_draw_op(GtkWidget *widget, char *action, char *data)
                 return false;
         }
         for (d = drawings; d != NULL; d = d->next)
-                if (d->widget == widget) 
+                if (d->widget == widget)
                         break;
         if (d == NULL) {
-                if ((d = malloc(sizeof(*d))) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((d = malloc(sizeof(*d))) == NULL)
+                        OOM_ABORT;
                 if (drawings == NULL) {
                         drawings = d;
                         insque(d, NULL);
-                } else 
+                } else
                         insque(d, drawings);
                 d->widget = widget;
                 d->draw_ops = op;
@@ -940,7 +913,7 @@ rem_draw_op(GtkWidget *widget, char *data)
         if (sscanf(data, "%u", &id) != 1)
                 return false;
         for (d = drawings; d != NULL; d = d->next)
-                if (d->widget == widget) 
+                if (d->widget == widget)
                         break;
         if (d != NULL) {
                 op = d->draw_ops;
@@ -958,7 +931,7 @@ rem_draw_op(GtkWidget *widget, char *data)
         }
         return true;
 }
-        
+
 /*
  * Callback that draws on a GtkDrawingArea
  */
@@ -1019,7 +992,7 @@ update_ui(struct ui_data *ud)
         } else if (eql(action, "override_font")) {
                 if (data[0]) {
                         PangoFontDescription *font = pango_font_description_from_string(data);
-                        
+
                         gtk_widget_override_font(GTK_WIDGET(obj), font);
                         pango_font_description_free(font);
                 } else
@@ -1212,10 +1185,8 @@ update_ui(struct ui_data *ud)
                 bool arg0_n_valid = false, arg1_n_valid = false;
                 bool iter0_valid = false, iter1_valid = false;
 
-                if ((tokens = malloc(strlen(data) + 1)) == NULL) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((tokens = malloc(strlen(data) + 1)) == NULL)
+                        OOM_ABORT;
                 strcpy(tokens, data);
                 arg0_s = strtok(tokens, WHITESPACE);
                 arg1_s = strtok(NULL, WHITESPACE);
@@ -1339,10 +1310,8 @@ digest_msg(void *builder)
                 char first_char = '\0';
                 struct ui_data ud;
 
-                if ((ud.msg = malloc(ud.msg_size = 32)) == NULL ) {
-                        fprintf(stderr, "out of memory (%s in %s)\n", __func__, __FILE__);
-                        abort();
-                }
+                if ((ud.msg = malloc(ud.msg_size = 32)) == NULL )
+                        OOM_ABORT;
                 pthread_cleanup_push((void(*)(void *))free_at, &ud.msg);
                 pthread_testcancel();
                 read_buf(in, &ud.msg, &ud.msg_size);

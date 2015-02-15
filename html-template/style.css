@@ -6,8 +6,8 @@
  * See mdoc(7) and man(7) for macro explanations.
  */
 
-div.mandoc			{ min-width: 102ex; 
-				  width: 102ex; 
+div.mandoc			{ min-width: 102ex;
+				  width: 102ex;
 				  font-family: monospace; } /* This is the outer node of all mandoc -T[x]html documents. */
 div.mandoc h1			{ margin-bottom: 0ex; font-size: inherit; margin-left: -4ex; } /* Section header (Sh, SH). */
 div.mandoc h2			{ margin-bottom: 0ex; font-size: inherit; margin-left: -2ex; } /* Sub-section header (Ss, SS). */
@@ -36,7 +36,7 @@ div.mandoc .lit			{ font-style: normal; font-weight: normal; font-family: monosp
 div.mandoc i.addr		{ font-weight: normal; } /* Address (Ad). */
 div.mandoc i.arg		{ font-weight: normal; } /* Command argument (Ar). */
 div.mandoc span.author		{ } /* Author name (An). */
-div.mandoc b.cmd		{ font-style: normal; } /* Command (Cm). */ 
+div.mandoc b.cmd		{ font-style: normal; } /* Command (Cm). */
 div.mandoc b.config		{ font-style: normal; } /* Config statement (Cd). */
 div.mandoc span.define		{ } /* Defines (Dv). */
 div.mandoc span.desc		{ } /* Nd.  After em-dash. */
