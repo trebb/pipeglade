@@ -1,4 +1,4 @@
-(unreleased)
+2.2.0 (2015-02-20)
 ------------------
   * Add support for GtkDrawingArea.
 
