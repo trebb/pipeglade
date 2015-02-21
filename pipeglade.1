@@ -92,12 +92,8 @@ The interface should be created using the
 user interface designer and saved in GtkBuilder (.ui) format.  Widget
 names should be alphanumeric, including underscores.  The main window
 must be named
-.Ic window ;
-its
-.Ic destroy
-signal should be connected to
-.Ic gtk_main_quit .
-Certain signals of the other widgets should be connected to
+.Ic window .
+Certain signals of certain widgets should be connected to
 callbacks.  See
 .Sx GUI FEEDBACK MESSAGES
 for callback names, and see

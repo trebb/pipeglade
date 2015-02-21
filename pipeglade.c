@@ -1431,6 +1431,7 @@ main(int argc, char *argv[])
                 fprintf(stderr, "no toplevel window named \'window\'\n");
                 exit(EXIT_FAILURE);
         }
+        g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
         gtk_widget_show(GTK_WIDGET(window));
         gtk_main();
         if (in != stdin) {
