@@ -51,8 +51,8 @@
         echo "drawingarea1:move_to $S $C $C"
         echo "drawingarea1:arc $S $C $C $SL $S $S"
         echo "drawingarea1:set_source_rgba $S cyan"
-        echo "drawingarea1:set_line_width $S 1"
-        echo "drawingarea1:set_dash $S 2 2"
+        echo "drawingarea1:set_line_width $S 2"
+        echo "drawingarea1:set_dash $S 4 4"
         echo "drawingarea1:stroke $S"
         echo "drawingarea1:remove $S0"
         S0=$S

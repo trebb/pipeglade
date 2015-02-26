@@ -1486,7 +1486,7 @@ main(int argc, char *argv[])
         pthread_create(&receiver, NULL, digest_msg, (void*)builder);
         window = gtk_builder_get_object(builder, MAINWIN);
         if (!GTK_IS_WINDOW(window)) {
-                fprintf(stderr, "no toplevel window named \'window\'\n");
+                fprintf(stderr, "no toplevel window named \'" MAINWIN "\'\n");
                 exit(EXIT_FAILURE);
         }
         g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);

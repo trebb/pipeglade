@@ -73,7 +73,7 @@ check_call() {
 }
 
 check_call "./pipeglade -u nonexistent.ui" 1 "nonexistent.ui" ""
-check_call "./pipeglade -u bad_window.ui" 1 "no toplevel window named 'window'" ""
+check_call "./pipeglade -u bad_window.ui" 1 "no toplevel window named 'main'" ""
 check_call "./pipeglade -u html-template/404.html" 1 "'html'" ""
 check_call "./pipeglade -u README" 1 "Document must begin with an element" ""
 touch $BAD_FIFO
@@ -427,17 +427,25 @@ check 12 "statusbar1:push Click the highest line visible in the scrolled area (s
 
 check 1 "statusbar1:push Click the header of column \"col3\"" "treeviewcolumn3:clicked"
 
+check 0 "notebook1:set_current_page 2"
+check 1 "nonexistent_send_text:force" "nonexistent_send_text:clicked"
+check 1 "nonexistent_send_selection:force" "nonexistent_send_selection:clicked"
+check 1 "nonexistent_ok:force" "nonexistent_ok:clicked"
+check 1 "nonexistent_apply:force" "nonexistent_apply:clicked"
+check 1 "nonexistent_cancel:force" "nonexistent_cancel:clicked"
 check 0 "notebook1:set_current_page 1"
-check 1 "statusbar1:push Press \"send_text\"" "textview1_send_text:text some textnetcn"
-check 1 "statusbar1:push Press \"send_text\" again\n textview1:place_cursor 5\n textview1:insert_at_cursor MORE " "textview1_send_text:text some MORE textnetcn"
-check 1 "statusbar1:push Press \"send_text\" again\n textview1:place_cursor_at_line 1\n textview1:insert_at_cursor ETC " "textview1_send_text:text some MORE textnETC etcn"
-check 1 "statusbar1:push Press \"send_text\" once again\n textview1:delete" "textview1_send_text:text"
-check 1 "statusbar1:push Highlight the lowest visible text line and press \"send_selection\"\n textview1:place_cursor_at_line 1 \ntextview1:insert_at_cursor A\\\\nB\\\\nC\\\\nD\\\\nE\\\\nF\\\\nG\\\\nH\\\\nI\\\\nJ\\\\nK\\\\nL\\\\nM\\\\nN\\\\nO\\\\nP\\\\nQ\\\\nR\\\\nS\\\\nT\\\\nU\\\\nV\\\\nW\\\\nX\\\\nY\\\\nZ\\\\na\\\\nb\\\\nc\\\\nd\\\\ne\\\\nf\\\\ng\\\\nh\\\\ni\\\\nj\\\\nk\\\\nl\\\\nm\\\\nn\\\\no\\\\np\\\\nq\\\\nr\\\\ns\\\\nt\\\\nu\\\\nv\\\\nw\\\\nx\\\\ny\\\\nz \n textview1:place_cursor_at_line 46 \n textview1:scroll_to_cursor" "textview1_send_selection:text u"
-check 1 "statusbar1:push Again, highlight the lowest visible text line and press \"send_selection\"\n textview1:place_cursor end\n textview1:scroll_to_cursor" "textview1_send_selection:text z"
-check 1 "statusbar1:push Highlight the highest visible text line and press \"send_selection\"\n textview1:place_cursor 0 \n textview1:scroll_to_cursor" "textview1_send_selection:text A"
+check 1 "textview1_send_text:force" "textview1_send_text:text some textnetcn"
+check 1 "textview1:place_cursor 5\n textview1:insert_at_cursor MORE \n textview1_send_text:force" "textview1_send_text:text some MORE textnetcn"
+check 1 "textview1:place_cursor_at_line 1\n textview1:insert_at_cursor ETC \n textview1_send_text:force" "textview1_send_text:text some MORE textnETC etcn"
+check 1 "textview1:delete\n textview1_send_text:force" "textview1_send_text:text"
+# check 1 "statusbar1:push Highlight the lowest visible text line and press \"send_selection\"\n textview1:place_cursor_at_line 1 \ntextview1:insert_at_cursor A\\\\nB\\\\nC\\\\nD\\\\nE\\\\nF\\\\nG\\\\nH\\\\nI\\\\nJ\\\\nK\\\\nL\\\\nM\\\\nN\\\\nO\\\\nP\\\\nQ\\\\nR\\\\nS\\\\nT\\\\nU\\\\nV\\\\nW\\\\nX\\\\nY\\\\nZ\\\\na\\\\nb\\\\nc\\\\nd\\\\ne\\\\nf\\\\ng\\\\nh\\\\ni\\\\nj\\\\nk\\\\nl\\\\nm\\\\nn\\\\no\\\\np\\\\nq\\\\nr\\\\ns\\\\nt\\\\nu\\\\nv\\\\nw\\\\nx\\\\ny\\\\nz \n textview1:place_cursor_at_line 46 \n textview1:scroll_to_cursor" "textview1_send_selection:text u"
+# check 1 "statusbar1:push Again, highlight the lowest visible text line and press \"send_selection\"\n textview1:place_cursor end\n textview1:scroll_to_cursor" "textview1_send_selection:text z"
+# check 1 "statusbar1:push Highlight the highest visible text line and press \"send_selection\"\n textview1:place_cursor 0 \n textview1:scroll_to_cursor" "textview1_send_selection:text A"
 check 2 "scale1:set_value 10\n scale1:force" "scale1:value 10.000000" "scale1:forced 10.000000"
-check 2 "statusbar1:push Click \"Open\" in the \"File\" menu and there, click \"OK\"\n open_dialog:set_filename q.png" "file:active _File" "open_dialog:file $PWD/q.png" "open_dialog:folder $PWD"
-check 2 "statusbar1:push Click \"Save As\" in the \"File\" menu and there, click \"OK\"\n save_as_dialog:set_current_name /somewhere/crazy_idea" "file:active _File" "save_as_dialog:file /somewhere/crazy_idea" "save_as_dialog:folder"
+check 5 "open_dialog:set_filename q.png\n file:force\n open_dialog_invoke:force\n open_dialog_apply:force\n open_dialog_ok:force" "file:active _File" "open_dialog:file $PWD/q.png" "open_dialog:folder $PWD" "open_dialog:file $PWD/q.png" "open_dialog:folder $PWD"
+check 1 "file:force\n open_dialog_invoke:force\n open_dialog_cancel:force" "file:active _File"
+check 3 "save_as_dialog:set_current_name /somewhere/crazy_idea\n file:force\n save_as_dialog_invoke:force\n save_as_dialog_ok:force" "file:active _File" "save_as_dialog:file /somewhere/crazy_idea" "save_as_dialog:folder"
+check 1 "nonexistent_invoke:force" "nonexistent_invoke:active nonexistent"
 check 1 "statusbar1:push Press the \"button\" which should now be renamed \"OK\"\n button1:set_label OK" "button1:clicked"
 check 1 "statusbar1:push Press the \"togglebutton\" which should now be renamed \"on/off\"\n togglebutton1:set_label on/off" "togglebutton1:0"
 check 1 "statusbar1:push Press the \"checkbutton\" which should now be renamed \"REGISTER\"\n checkbutton1:set_label REGISTER" "checkbutton1:1"
@@ -459,12 +467,12 @@ check 2 "statusbar1:push Click the \"+\" of the spinbutton \n button1:set_label 
 check 1 "statusbar1:push Click the \"+\" of the spinbutton again \n button1:set_label OK" "spinbutton1:text 35.00"
 check 1 "statusbar1:push Click the \"+\" of the spinbutton once again \n button1:set_label OK" "spinbutton1:text 36.00"
 check 1 "statusbar1:push Using the file chooser button (now labelled \"etc\"), select \"File System\" (= \"/\")\n filechooserbutton1:set_filename /etc/" "filechooserbutton1:file /"
-check 1 "statusbar1:push Click the font button (now labelled \"Sans Bold 40\"), and then \"Select\"\n fontbutton1:set_font_name Sans Bold 40" "fontbutton1:font Sans Bold 40"
-check 1 "statusbar1:push Click the color button (now turned yellow), and then \"Select\"\n colorbutton1:set_color yellow" "colorbutton1:color rgb(255,255,0)"
-check 1 "colorbutton1:set_color rgb(0,255,0)\n colorbutton1:force" "colorbutton1:forced rgb(0,255,0)"
-check 1 "colorbutton1:set_color #00f\n colorbutton1:force" "colorbutton1:forced rgb(0,0,255)"
-check 1 "colorbutton1:set_color #ffff00000000\n colorbutton1:force" "colorbutton1:forced rgb(255,0,0)"
-check 1 "colorbutton1:set_color rgba(0,255,0,.5)\n colorbutton1:force" "colorbutton1:forced rgba(0,255,0,0.5)"
+check 1 "statusbar1:push Click \"Select\"\n fontbutton1:set_font_name Sans Bold 40\n fontbutton1:force" "fontbutton1:font Sans Bold 40"
+check 1 "statusbar1:push Click \"Select\" (1)\n colorbutton1:set_color yellow\n colorbutton1:force" "colorbutton1:color rgb(255,255,0)"
+check 1 "statusbar1:push Click \"Select\" (2)\n colorbutton1:set_color rgb(0,255,0)\n colorbutton1:force" "colorbutton1:color rgb(0,255,0)"
+check 1 "statusbar1:push Click \"Select\" (3)\n colorbutton1:set_color #00f\n colorbutton1:force" "colorbutton1:color rgb(0,0,255)"
+check 1 "statusbar1:push Click \"Select\" (4)\n colorbutton1:set_color #ffff00000000\n colorbutton1:force" "colorbutton1:color rgb(255,0,0)"
+check 1 "statusbar1:push Click \"Select\" (5)\n colorbutton1:set_color rgba(0,255,0,.5)\n colorbutton1:force" "colorbutton1:color rgba(0,255,0,0.5)"
 check 1 "statusbar1:push Press \"OK\" if both 1752-03-13 and 1752-03-14 are marked on the calendar\n calendar1:mark_day 13\n calendar1:mark_day 14" "button1:clicked"
 check 1 "statusbar1:push Press \"OK\" if 1752-03-13 and 1752-03-14 are no longer marked on the calendar\n calendar1:clear_marks" "button1:clicked"
 check 3 "statusbar1:push Double-click on 1752-03-13 in the calendar" "calendar1:clicked 1752-03-13" "calendar1:clicked 1752-03-13" "calendar1:doubleclicked 1752-03-13"
@@ -512,7 +520,7 @@ check 1 "statusbar1:push Press \"OK\" if there is a spinning spinner\n spinner1:
 check 1 "statusbar1:push Press \"OK\" if the spinner has stopped\n spinner1:stop" "button1:clicked"
 check 1 "statusbar1:push Press \"OK\" if there is now a \"Disconnect\" button\n button2:set_visible 1\n button2:set_sensitive 0" "button1:clicked"
 check 1 "statusbar1:push Press \"Disconnect\"\n button2:set_sensitive 1" "button2:clicked"
-check 1 "statusbar1:push Press \"OK\" if the window title is now \"ALMOST DONE\"\n window:set_title ALMOST DONE" "button1:clicked"
+check 1 "statusbar1:push Press \"OK\" if the window title is now \"ALMOST DONE\"\n main:set_title ALMOST DONE" "button1:clicked"
 check 1 "statusbar1:push Press \"OK\" if the progress bar shows 90%\n progressbar1:set_fraction .9" "button1:clicked"
 check 1 "statusbar1:push Press \"OK\" if the progress bar text reads \"The End\"\n progressbar1:set_text The End" "button1:clicked"
 check 1 "statusbar1:push Press \"No\"\n statusbar1:push nonsense 1\n statusbar1:push nonsense 2\n statusbar1:push nonsense 3\n statusbar1:pop\n statusbar1:pop\n statusbar1:pop" "no_button:clicked"
@@ -522,6 +530,45 @@ echo "_:main_quit" >$FIN
 sleep .5
 check_rm $FIN
 check_rm $FOUT
+
+
+./pipeglade -u simple_dialog.ui -i $FIN -o $FOUT &
+
+# wait for $FIN and $FOUT to appear
+while test ! \( -e $FIN -a -e $FOUT \); do :; done
+
+check 1 "main_apply:force" "main_apply:clicked"
+check 0 "main_cancel:force"
+
+sleep .5
+check_rm $FIN
+check_rm $FOUT
+
+
+./pipeglade -u simple_open.ui -i $FIN -o $FOUT &
+
+# wait for $FIN and $FOUT to appear
+while test ! \( -e $FIN -a -e $FOUT \); do :; done
+
+check 2 "main_apply:force" "main:file" "main:folder"
+check 0 "main_cancel:force"
+
+sleep .5
+check_rm $FIN
+check_rm $FOUT
+
+
+./pipeglade -u simple_open.ui -i $FIN -o $FOUT &
+
+# wait for $FIN and $FOUT to appear
+while test ! \( -e $FIN -a -e $FOUT \); do :; done
+
+check 2 "main_ok:force" "main:file" "main:folder"
+
+sleep .5
+check_rm $FIN
+check_rm $FOUT
+
 
 
 echo "PASSED: $OKS/$TESTS; FAILED: $FAILS/$TESTS"

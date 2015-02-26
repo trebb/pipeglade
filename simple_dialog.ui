@@ -16,7 +16,7 @@
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="main_cancel">
-                <property name="label">gtk-no</property>
+                <property name="label">gtk-close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -29,8 +29,8 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="main_ok">
-                <property name="label">gtk-yes</property>
+              <object class="GtkButton" id="main_apply">
+                <property name="label">gtk-apply</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
