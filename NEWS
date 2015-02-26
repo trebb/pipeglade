@@ -1,3 +1,9 @@
+(unreleased)
+------------------
+  * Change API: No user-visible callbacks anymore, which simplifies UI
+  creation.  (There are a few additional naming conventions, though.)
+  * Change API: Changed response messages for a couple of widgets.
+
 2.2.0 (2015-02-20)
 ------------------
   * Add support for GtkDrawingArea.

@@ -1,7 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
 <interface>
-  <requires lib="gtk+" version="3.0"/>
+  <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkDialog" id="about_dialog">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="type_hint">dialog</property>
+    <property name="transient_for">window</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="dialog-vbox1">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="dialog-action_area1">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <object class="GtkButton" id="about_dialog_cancel">
+                <property name="label">gtk-ok</property>
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="0">about_dialog_cancel</action-widget>
+    </action-widgets>
+  </object>
   <object class="GtkAdjustment" id="adjustment1">
     <property name="upper">100</property>
     <property name="step_increment">1</property>
@@ -93,6 +142,154 @@
       </row>
     </data>
   </object>
+  <object class="GtkFileChooserDialog" id="open_dialog">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="transient_for">window</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="filechooserdialog-vbox3">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="filechooserdialog-action_area3">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="open_dialog_cancel">
+                <property name="label">gtk-cancel</property>
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="open_dialog_ok">
+                <property name="label">gtk-ok</property>
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="0">open_dialog_cancel</action-widget>
+      <action-widget response="0">open_dialog_ok</action-widget>
+    </action-widgets>
+  </object>
+  <object class="GtkFileChooserDialog" id="save_as_dialog">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="transient_for">window</property>
+    <property name="action">save</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="filechooserdialog-vbox1">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="filechooserdialog-action_area1">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="save_as_dialog_cancel">
+                <property name="label">gtk-cancel</property>
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="save_as_dialog_apply">
+                <property name="label">gtk-apply</property>
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="save_as_dialog_ok">
+                <property name="label">gtk-ok</property>
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="0">save_as_dialog_cancel</action-widget>
+      <action-widget response="0">save_as_dialog_apply</action-widget>
+      <action-widget response="0">save_as_dialog_ok</action-widget>
+    </action-widgets>
+  </object>
   <object class="GtkTextBuffer" id="textbuffer1">
     <property name="text" translatable="yes">some text
 etc
@@ -131,18 +328,16 @@ etc
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="cb_0" swapped="no"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="open">
+                      <object class="GtkImageMenuItem" id="open_dialog_invoke">
                         <property name="label">gtk-open</property>
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="cb_0" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -153,18 +348,16 @@ etc
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="cb_0" swapped="no"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="save_as">
+                      <object class="GtkImageMenuItem" id="save_as_dialog_invoke">
                         <property name="label">gtk-save-as</property>
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="cb_0" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -182,7 +375,6 @@ etc
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="cb_0" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -201,14 +393,13 @@ etc
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="about">
+                      <object class="GtkImageMenuItem" id="about_dialog_invoke">
                         <property name="label">gtk-about</property>
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="cb_0" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -289,9 +480,9 @@ et dolore magna aliqua.
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="xalign">0</property>
                     <property name="draw_indicator">True</property>
-                    <signal name="toggled" handler="cb_0" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -318,10 +509,10 @@ et dolore magna aliqua.
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="xalign">0</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
-                    <signal name="toggled" handler="cb_0" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -336,11 +527,11 @@ et dolore magna aliqua.
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="xalign">0</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
                     <property name="group">radiobutton1</property>
-                    <signal name="toggled" handler="cb_0" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -367,7 +558,7 @@ et dolore magna aliqua.
                     <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <signal name="notify" handler="cb_0" swapped="no"/>
+                    <property name="use_action_appearance">False</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -394,7 +585,7 @@ et dolore magna aliqua.
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <signal name="clicked" handler="cb_0" swapped="no"/>
+                    <property name="use_action_appearance">False</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -409,7 +600,7 @@ et dolore magna aliqua.
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <signal name="clicked" handler="cb_0" swapped="no"/>
+                    <property name="use_action_appearance">False</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -424,7 +615,7 @@ et dolore magna aliqua.
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <signal name="toggled" handler="cb_0" swapped="no"/>
+                    <property name="use_action_appearance">False</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -437,7 +628,6 @@ et dolore magna aliqua.
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="action">select-folder</property>
-                    <signal name="file-set" handler="cb_0" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -451,8 +641,8 @@ et dolore magna aliqua.
                     <property name="use_action_appearance">False</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="use_stock">True</property>
-                    <signal name="clicked" handler="cb_1" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -482,7 +672,6 @@ et dolore magna aliqua.
                     <property name="adjustment">adjustment1</property>
                     <property name="climb_rate">1</property>
                     <property name="digits">2</property>
-                    <signal name="changed" handler="cb_0" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -497,7 +686,6 @@ et dolore magna aliqua.
                     <property name="invisible_char">●</property>
                     <property name="text" translatable="yes">ttxx</property>
                     <property name="shadow_type">out</property>
-                    <signal name="changed" handler="cb_0" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -516,7 +704,6 @@ et dolore magna aliqua.
                       <item translatable="yes">def</item>
                       <item translatable="yes">ghi</item>
                     </items>
-                    <signal name="changed" handler="cb_0" swapped="no"/>
                     <child internal-child="entry">
                       <object class="GtkEntry" id="comboboxtext-entry">
                         <property name="can_focus">True</property>
@@ -537,8 +724,8 @@ et dolore magna aliqua.
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="use_alpha">True</property>
-                    <signal name="color-set" handler="cb_0" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -552,9 +739,9 @@ et dolore magna aliqua.
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="font">Sans 12</property>
                     <property name="preview_text"/>
-                    <signal name="font-set" handler="cb_0" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -600,7 +787,6 @@ et dolore magna aliqua.
             <property name="fill_level">5</property>
             <property name="round_digits">3</property>
             <property name="digits">3</property>
-            <signal name="value-changed" handler="cb_0" swapped="no"/>
           </object>
           <packing>
             <property name="expand">True</property>
@@ -622,14 +808,12 @@ et dolore magna aliqua.
                 <child internal-child="selection">
                   <object class="GtkTreeSelection" id="treeview-selection">
                     <property name="mode">multiple</property>
-                    <signal name="changed" handler="cb_1" swapped="no"/>
                   </object>
                 </child>
                 <child>
                   <object class="GtkTreeViewColumn" id="treeviewcolumn1">
                     <property name="title" translatable="yes">col1</property>
                     <property name="clickable">True</property>
-                    <signal name="clicked" handler="cb_3" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererProgress" id="cellrendererprogress1"/>
                       <attributes>
@@ -648,7 +832,6 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn2">
                     <property name="title" translatable="yes">col2</property>
                     <property name="clickable">True</property>
-                    <signal name="clicked" handler="cb_3" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext1"/>
                       <attributes>
@@ -661,7 +844,6 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn3">
                     <property name="title" translatable="yes">col3</property>
                     <property name="clickable">True</property>
-                    <signal name="clicked" handler="cb_3" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererToggle" id="cellrenderertoggle1"/>
                       <attributes>
@@ -674,7 +856,6 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn4">
                     <property name="title" translatable="yes">col4</property>
                     <property name="clickable">True</property>
-                    <signal name="clicked" handler="cb_2" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext3"/>
                       <attributes>
@@ -687,7 +868,6 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn5">
                     <property name="title" translatable="yes">col5</property>
                     <property name="clickable">True</property>
-                    <signal name="clicked" handler="cb_2" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext4"/>
                       <attributes>
@@ -700,7 +880,6 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn6">
                     <property name="title" translatable="yes">col6</property>
                     <property name="clickable">True</property>
-                    <signal name="clicked" handler="cb_2" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext5"/>
                       <attributes>
@@ -713,7 +892,6 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn7">
                     <property name="title" translatable="yes">col7</property>
                     <property name="clickable">True</property>
-                    <signal name="clicked" handler="cb_2" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext6"/>
                       <attributes>
@@ -726,7 +904,6 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn8">
                     <property name="title" translatable="yes">col8</property>
                     <property name="clickable">True</property>
-                    <signal name="clicked" handler="cb_2" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext9"/>
                       <attributes>
@@ -739,7 +916,6 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn9">
                     <property name="title" translatable="yes">col9</property>
                     <property name="clickable">True</property>
-                    <signal name="clicked" handler="cb_2" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext8"/>
                       <attributes>
@@ -752,7 +928,6 @@ et dolore magna aliqua.
                   <object class="GtkTreeViewColumn" id="treeviewcolumn10">
                     <property name="title" translatable="yes">col10</property>
                     <property name="clickable">True</property>
-                    <signal name="clicked" handler="cb_2" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext7"/>
                       <attributes>
@@ -782,7 +957,7 @@ et dolore magna aliqua.
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="clicked" handler="cb_0" swapped="no"/>
+                <property name="use_action_appearance">False</property>
               </object>
             </child>
             <child type="label">
@@ -809,13 +984,13 @@ et dolore magna aliqua.
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkButton" id="send_text">
+                  <object class="GtkButton" id="textview1_send_text">
                     <property name="label" translatable="yes">send_text</property>
                     <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <signal name="clicked" handler="cb_send_text" object="textbuffer1" swapped="no"/>
+                    <property name="use_action_appearance">False</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -824,14 +999,14 @@ et dolore magna aliqua.
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="send_selection">
+                  <object class="GtkButton" id="textview1_send_selection">
                     <property name="label" translatable="yes">send
 selection</property>
                     <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <signal name="clicked" handler="cb_send_text_selection" object="textbuffer1" swapped="no"/>
+                    <property name="use_action_appearance">False</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -846,8 +1021,6 @@ selection</property>
                     <property name="year">2014</property>
                     <property name="month">11</property>
                     <property name="day">21</property>
-                    <signal name="day-selected" handler="cb_0" swapped="no"/>
-                    <signal name="day-selected-double-click" handler="cb_3" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -873,7 +1046,6 @@ selection</property>
                   <object class="GtkDrawingArea" id="drawingarea1">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <signal name="draw" handler="cb_draw" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -885,7 +1057,6 @@ selection</property>
                   <object class="GtkDrawingArea" id="drawingarea2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <signal name="draw" handler="cb_draw" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -956,7 +1127,7 @@ selection</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <signal name="clicked" handler="cb_0" swapped="no"/>
+                    <property name="use_action_appearance">False</property>
                   </object>
                   <packing>
                     <property name="position">2</property>
@@ -1021,192 +1192,5 @@ selection</property>
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkDialog" id="about_dialog">
-    <property name="can_focus">False</property>
-    <property name="border_width">5</property>
-    <property name="type_hint">dialog</property>
-    <property name="transient_for">window</property>
-    <signal name="close" handler="cb_hide_toplevel" swapped="no"/>
-    <signal name="delete-event" handler="cb_0" swapped="no"/>
-    <child internal-child="vbox">
-      <object class="GtkBox" id="dialog-vbox1">
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox" id="dialog-action_area1">
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <object class="GtkButton" id="ok_about">
-                <property name="label">gtk-ok</property>
-                <property name="use_action_appearance">False</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-                <signal name="clicked" handler="cb_hide_toplevel" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="pack_type">end</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="0">ok_about</action-widget>
-    </action-widgets>
-  </object>
-  <object class="GtkFileChooserDialog" id="open_dialog">
-    <property name="can_focus">False</property>
-    <property name="border_width">5</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="type_hint">dialog</property>
-    <property name="transient_for">window</property>
-    <signal name="delete-event" handler="cb_0" swapped="no"/>
-    <child internal-child="vbox">
-      <object class="GtkBox" id="filechooserdialog-vbox3">
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox" id="filechooserdialog-action_area3">
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
-            <child>
-              <object class="GtkButton" id="cancel_open">
-                <property name="label">gtk-cancel</property>
-                <property name="use_action_appearance">False</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-                <signal name="clicked" handler="cb_hide_toplevel" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="ok_open">
-                <property name="label">gtk-ok</property>
-                <property name="use_action_appearance">False</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-                <signal name="clicked" handler="cb_hide_toplevel" swapped="no"/>
-                <signal name="clicked" handler="cb_send_dialog_selection" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="pack_type">end</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="0">cancel_open</action-widget>
-      <action-widget response="0">ok_open</action-widget>
-    </action-widgets>
-  </object>
-  <object class="GtkFileChooserDialog" id="save_as_dialog">
-    <property name="can_focus">False</property>
-    <property name="border_width">5</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="type_hint">dialog</property>
-    <property name="transient_for">window</property>
-    <property name="action">save</property>
-    <signal name="delete-event" handler="cb_0" swapped="no"/>
-    <child internal-child="vbox">
-      <object class="GtkBox" id="filechooserdialog-vbox1">
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox" id="filechooserdialog-action_area1">
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
-            <child>
-              <object class="GtkButton" id="cancel_save_as">
-                <property name="label">gtk-cancel</property>
-                <property name="use_action_appearance">False</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-                <signal name="clicked" handler="cb_hide_toplevel" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="ok_save_as">
-                <property name="label">gtk-ok</property>
-                <property name="use_action_appearance">False</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-                <signal name="clicked" handler="cb_hide_toplevel" swapped="no"/>
-                <signal name="clicked" handler="cb_send_dialog_selection" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="pack_type">end</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="0">cancel_save_as</action-widget>
-      <action-widget response="0">ok_save_as</action-widget>
-    </action-widgets>
   </object>
 </interface>
