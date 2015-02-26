@@ -144,14 +144,14 @@ send_msg(GtkBuildable *obj, const char *section, ...)
         }
 }
 
-void
+static void
 cb_show(GtkBuildable *obj, gpointer user_data)
 {
         (void)obj;
         gtk_widget_show(user_data);
 }
 
-void
+static void
 cb_hide(GtkBuildable *obj, gpointer user_data)
 {
 
@@ -159,7 +159,7 @@ cb_hide(GtkBuildable *obj, gpointer user_data)
         gtk_widget_hide(user_data);
 }
 
-void
+static void
 cb_send_file_chooser_dialog_selection(GtkBuildable *obj, gpointer user_data)
 {
         (void)obj;
@@ -175,7 +175,7 @@ cb_send_file_chooser_dialog_selection(GtkBuildable *obj, gpointer user_data)
  * Callback that sends in a message the content of the text buffer
  * passed in user_data
  */
-void
+static void
 cb_send_text(GtkBuildable *obj, gpointer user_data)
 {
         GtkTextIter a, b;
@@ -188,7 +188,7 @@ cb_send_text(GtkBuildable *obj, gpointer user_data)
  * Callback that sends in a message the highlighted text from the text
  * buffer which was passed in user_data
  */
-void
+static void
 cb_send_text_selection(GtkBuildable *obj, gpointer user_data)
 {
         GtkTextIter a, b;
@@ -895,7 +895,7 @@ rem_draw_op(GtkWidget *widget, char *data)
 /*
  * Callback that draws on a GtkDrawingArea
  */
-gboolean
+static gboolean
 cb_draw (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
         struct draw_op *op;
