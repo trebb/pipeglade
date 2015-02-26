@@ -92,7 +92,7 @@ The interface should be created using the
 user interface designer and saved in GtkBuilder (.ui) format.  Widget
 names should be alphanumeric, including underscores.  The main window
 must be named
-.Ic window .
+.Ic main .
 .Sh GUI MANIPULATION COMMANDS
 A command is a line of text.  Lines whose first non-whitespace
 character is
@@ -482,7 +482,7 @@ named
 .Fa foo Ns
 .Ic _cancel
 or, if the dialog is the sole window of the GUI and therefore named
-.Ic window , window_cancel .
+.Ic main , main_cancel .
 .Bl -tag -width "commands"
 .It Commands
 none
@@ -812,7 +812,7 @@ named
 .Fa foo Ns
 .Ic _ok
 or, if the dialog is the sole window of the GUI and therefore named
-.Ic window , window_ok .
+.Ic main , main_ok .
 .Pp
 The
 .Ic GtkFileChooserDialog
@@ -823,7 +823,7 @@ named
 .Fa foo Ns
 .Ic _cancel
 or, if the dialog is the sole window of the GUI,
-.Ic window_cancel .
+.Ic main_cancel .
 .Pp
 The
 .Ic GtkFileChooserDialog
@@ -834,7 +834,7 @@ named
 .Fa foo Ns
 .Ic _apply
 or, if the dialog is the sole window of the GUI,
-.Ic window_apply .
+.Ic main_apply .
 .Bl -tag -width "commands"
 .It Commands
 .Qo
@@ -1355,7 +1355,7 @@ with an
 .Sq OK
 .Sx GtkButton
 named
-.Li window_ok .
+.Li main_ok .
 Invoking
 .Dl pipeglade -u simple_open.ui
 will open the dialog; pressing

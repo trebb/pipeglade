@@ -41,6 +41,7 @@
 #define VERSION "3.0.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
+#define MAINWIN "main"
 
 #define OOM_ABORT                                                       \
         {                                                               \
@@ -1387,7 +1388,7 @@ connect_signals(gpointer *obj, gpointer *builder)
                 /* button associated with (and part of) a GtkDialog */
                 else if ((suffix = strstr(name, "_cancel")) != NULL &&
                          GTK_IS_DIALOG(obj2 = obj_sans_suffix(suffix, name, builder)))
-                        if (eql(widget_name(obj2), "window"))
+                        if (eql(widget_name(obj2), MAINWIN))
                                 g_signal_connect(obj, "clicked", G_CALLBACK(gtk_main_quit), NULL);
                         else
                                 g_signal_connect(obj, "clicked", G_CALLBACK(cb_hide), obj2);
@@ -1397,7 +1398,7 @@ connect_signals(gpointer *obj, gpointer *builder)
                                 g_signal_connect(obj, "clicked", G_CALLBACK(cb_send_file_chooser_dialog_selection), obj2);
                         else  /* generic button */
                                 g_signal_connect(obj, "clicked", G_CALLBACK(cb), "clicked");
-                        if (eql(widget_name(obj2), "window"))
+                        if (eql(widget_name(obj2), MAINWIN))
                                 g_signal_connect(obj, "clicked", G_CALLBACK(gtk_main_quit), NULL);
                         else
                                 g_signal_connect(obj, "clicked", G_CALLBACK(cb_hide), obj2);
@@ -1416,7 +1417,7 @@ connect_signals(gpointer *obj, gpointer *builder)
                 else
                         g_signal_connect(obj, "activate", G_CALLBACK(cb), "active");
         else if (type == GTK_TYPE_DIALOG || type == GTK_TYPE_FILE_CHOOSER_DIALOG)
-                if (eql(name, "window"))
+                if (eql(name, MAINWIN))
                         g_signal_connect(obj, "delete-event", G_CALLBACK(gtk_main_quit), NULL);
                 else
                         g_signal_connect(obj, "delete-event", G_CALLBACK(cb), NULL);
@@ -1483,7 +1484,7 @@ main(int argc, char *argv[])
         in = fifo(in_fifo, "r");
         out = fifo(out_fifo, "w");
         pthread_create(&receiver, NULL, digest_msg, (void*)builder);
-        window = gtk_builder_get_object(builder, "window");
+        window = gtk_builder_get_object(builder, MAINWIN);
         if (!GTK_IS_WINDOW(window)) {
                 fprintf(stderr, "no toplevel window named \'window\'\n");
                 exit(EXIT_FAILURE);
