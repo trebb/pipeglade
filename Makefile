@@ -27,7 +27,7 @@ CCFLAGS += -D_XOPEN_SOURCE=700
 CCFLAGS += `pkg-config --cflags --libs gtk+-3.0 gmodule-2.0`
 CC != which cc
 
-pipeglade: pipeglade.c
+pipeglade: pipeglade.c Makefile
 	$(CC) $< -o $@ $(CCFLAGS)
 
 install: pipeglade pipeglade.1

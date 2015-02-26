@@ -938,7 +938,12 @@ update_ui(struct ui_data *ud)
                 goto done;
         }
         if (eql(action, "force")) {
-                cb(GTK_BUILDABLE(obj), "forced");
+                if (!GTK_IS_WIDGET(obj))
+                        ign_cmd(type, ud->msg);
+                else if (GTK_IS_ENTRY(obj) || GTK_IS_SPIN_BUTTON(obj))
+                        cb(GTK_BUILDABLE(obj), "text");
+                else if (!gtk_widget_activate(GTK_WIDGET(obj)))
+                        cb(GTK_BUILDABLE(obj), "forced");
                 goto done;
         }
         data = ud->msg + data_start;
@@ -1368,7 +1373,7 @@ connect_signals(gpointer *obj, gpointer *builder)
         if (GTK_IS_BUILDABLE(obj))
                 name = widget_name(obj);
         if (type == GTK_TYPE_TREE_VIEW_COLUMN)
-                        g_signal_connect(obj, "clicked", G_CALLBACK(cb), "clicked");
+                g_signal_connect(obj, "clicked", G_CALLBACK(cb), "clicked");
         if (type == GTK_TYPE_BUTTON) {
                 /* button associated with a GtkTextView */
                 if ((suffix = strstr(name, "_send_text")) != NULL &&
