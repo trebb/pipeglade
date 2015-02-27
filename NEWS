@@ -1,8 +1,10 @@
-(unreleased)
+3.0.0 (2015-02-27)
 ------------------
-  * Change API: No user-visible callbacks anymore, which simplifies UI
+  * Change API: No user-visible callbacks anymore, simplifying UI
   creation.  (There are a few additional naming conventions, though.)
-  * Change API: Changed response messages for a couple of widgets.
+  * Change API: Changed feedback messages for a couple of widgets.
+  * Synthetically fired events have become a bit more useful.
+  * Improve handling of GtkProgressBar and GtkStatusbar.
 
 2.2.0 (2015-02-20)
 ------------------

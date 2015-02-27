@@ -19,7 +19,7 @@
 .\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 .\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.Dd February 20, 2015
+.Dd February 27, 2015
 .Dt PIPEGLADE 1 CON
 .Os BSD
 .Sh NAME
@@ -55,28 +55,80 @@ Prints a help message and exits.
 .It Fl i Ar in-fifo
 Creates a named pipe
 .Ar in-fifo
-if necessary, and uses it for input.  It is an error if
+if necessary, and uses it for command input.
+.Pp
+A command is a line of text.  Its format is
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa action
+.Bq Fa data
+.Qc
+where
+.Fa name
+is the name of the receiving widget;
+.Fa data
+is separated from the rest of the command by a single whitespace
+character.  Commands whose first non-whitespace character is
+.Ic #
+are considered comments and ignored.
+Any occurences of the two-character sequences
+.Ic \en
+and
+.Ic \er
+will be converted into newline or carriage return, respectively.
+Every other character following a backslash will be left unchanged,
+but the backslash will be removed.  Invalid commands are reported on
+.Va stderr
+and are otherwise ignored.  See
+.Sx WIDGETS
+for applicable commands.
+.Pp
+It is an error if
 .Ar in-fifo
 exists but is not a named pipe.  The named pipe
 .Ar in-fifo
-is deleted upon successful program termination.  Default is
+is deleted upon successful program termination.
+.Pp
+Default command input is
 .Va stdin .
-See
-.Sx GUI MANIPULATION COMMANDS .
 .It Fl o Ar out-fifo
 Creates a named pipe
 .Ar out-fifo
-if necessary, and uses it for output.  It is an error if
+if necessary, and uses it for output of feedback messages from the
+graphical user interface.
+.Pp
+A feedback message a line of text; its format is
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa info
+.Bq Fa data
+.Qc
+where
+.Fa name
+ist the name of the sending widget.  See
+.Sx WIDGETS
+for possible feedback messages.
+.Pp
+It is an error if
 .Ar out-fifo
 exists but is not a named pipe.  The named pipe
 .Ar out-fifo
-is deleted upon successful program termination.  Default is
+is deleted upon successful program termination.
+.Pp
+Default feedback-message output is
 .Va stdout .
-See
-.Sx GUI FEEDBACK MESSAGES .
 .It Fl u Ar builder-file
-Displays the graphical user interface described in
-.Ar builder-file .
+Displays the graphical user interface
+.Ar builder-file
+which should be created using the
+.Xr glade 1
+user interface designer and saved in GtkBuilder (.ui) format.  Widget
+names should be alphanumeric, including underscores, and the main
+window must be named
+.Ic main .
+.Pp
 Default is
 .Pa ./pipeglade.ui .
 .It Fl G
@@ -86,64 +138,9 @@ Prints the
 .Nm pipeglade
 version and exits.
 .El
-.Sh INTERFACE CREATION (USING GLADE)
-The interface should be created using the
-.Xr glade 1
-user interface designer and saved in GtkBuilder (.ui) format.  Widget
-names should be alphanumeric, including underscores.  The main window
-must be named
-.Ic main .
-.Sh GUI MANIPULATION COMMANDS
-A command is a line of text.  Lines whose first non-whitespace
-character is
-.Ic #
-are considered comments and ignored.
-Any occurences of the two-character sequences
-.Ic \en
-and
-.Ic \er
-will be converted into newline or carriage return, respectively.
-Every other character following a backslash will be left unchanged,
-but the backslash will be removed.
-The format of the commands is
-.Qo
-.Fa name Ns
-.Ic \&: Ns
-.Fa action
-.Bq Fa data
-.Qc
-where
-.Fa name
-is the name of the receiving widget.
-.Fa data
-is separated from the rest of the command by whitespace.  See
-.Sx WIDGETS
-for possible commands.
-.Pp
-Invalid commands are reported on
-.Va stderr
-and are otherwise ignored.
-.Sh GUI FEEDBACK MESSAGES
-A message from the graphical user interface is a line of text.  The
-message format is either
-.Qo
-.Fa name Ns
-.Ic \&: Ns
-.Fa info
-.Qc
-or
-.Qo
-.Fa name Ns
-.Ic \&: Ns
-.Fa info data
-.Qc .
-.Pp
-See
-.Sx WIDGETS
-for possible feedback messages.
 .Sh WIDGETS
 .Ss Any Widget (including widgets not mentioned in this document)
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -202,22 +199,33 @@ examples:
 .Pp
 .Qo
 .Fa name Ns
-.Ic :force_cb
+.Ic :force
 .Qc
-initiates the standard callback.  The
+simulates a click on the
 .Fa name Ns
-d widget
-responds as if
-.Ic cb_0
-had been activated, but with a different
-.Fa section
-code:
-.Qo
-.Fa name Ns
-.Ic :forced
-.Fa data
-.Qc .
-The command doesn't change anything on the GUI.
+d widget, triggering a response as described with the widgets below.
+Exceptions:
+.Bl -dash -offset indent -compact
+.It
+The command is ignored by
+.Sx GtkComboBoxText
+(address its child
+.Sx GtkEntry
+instead),
+.Sx GtkTreeView ,
+and
+.Sx GtkTreeViewColumn ;
+.It
+.Sx GtkCalendar , GtkEntry , GtkFileChooserButton , GtkScale ,
+and
+.Sx GtkSpinButton
+report the currently selected item;
+.It
+.Sx GtkColorButton
+and
+.Sx GtkFontButton
+just open their respective dialogs.
+.El
 .Pp
 .Qo
 .Fa name Ns
@@ -228,7 +236,7 @@ kills the user interface.  A non-empty
 is required but ignored.
 .El
 .Ss GtkButton
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -255,17 +263,18 @@ and
 for details.
 .El
 .Ss GtkCalendar
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
 .Ic :select_date
-.Fa date
+.Fa yyyy Ns
+.Ic - Ns
+.Fa mm Ns
+.Ic - Ns
+.Fa dd
 .Qc
-selects
-.Fa date
-.Pq Li yyyy-mm-dd
-on the calendar.
+selects the date on the calendar.
 .Pp
 .Qo
 .Fa name Ns
@@ -286,21 +295,25 @@ unmarks all days on the calendar.
 .Qo
 .Fa name Ns
 .Ic \&:clicked
-.Fa date
+.Fa yyyy Ns
+.Ic - Ns
+.Fa mm Ns
+.Ic - Ns
+.Fa dd
 .Qc
-and
+.Pp
 .Qo
 .Fa name Ns
 .Ic \&:doubleclicked
-.Fa date
+.Fa yyyy Ns
+.Ic - Ns
+.Fa mm Ns
+.Ic - Ns
+.Fa dd
 .Qc
-with
-.Fa date
-formatted
-.Li yyyy-mm-dd .
 .El
 .Ss GtkCheckButton
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -331,7 +344,7 @@ if switched on, or
 otherwise.
 .El
 .Ss GtkColorButton
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -340,7 +353,7 @@ otherwise.
 .Qc
 preselects the color.
 .Fa color
-can be given as
+can be
 .Bl -dash -offset indent -compact
 .It
 a standard X11 color name, like
@@ -416,7 +429,7 @@ The
 .Ic GtkComboBoxText
 should contain a
 .Ic GtkEntry .
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -429,9 +442,8 @@ and
 .Ic :append_text
 .Fa string
 .Qc
-prepend/append
-.Fa string
-as a new selectable item.
+prepend/append a new selectable item marked
+.Fa string .
 .Pp
 .Qo
 .Fa name Ns
@@ -481,9 +493,12 @@ should have a
 named
 .Fa foo Ns
 .Ic _cancel
-or, if the dialog is the sole window of the GUI and therefore named
-.Ic main , main_cancel .
-.Bl -tag -width "commands"
+.Po
+.Ic main_cancel
+if the dialog is the sole window of the GUI and therefore named
+.Ic main
+.Pc .
+.Bl -tag -width "commands "
 .It Commands
 none
 .It Feedback
@@ -494,7 +509,7 @@ Most drawing commands expect an
 .Fa id
 parameter (an arbitrary non-negative integer) which can be used to reference the
 command for later removal.
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -535,7 +550,7 @@ adds a line segment from the current point to the point most recently
 passed to
 .Fa name Ns
 .Ic :move_to
-of
+or
 .Fa name Ns
 .Ic :rel_move_to .
 .Pp
@@ -732,7 +747,7 @@ strokes the current path without clearing it.
 none
 .El
 .Ss GtkEntry
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -746,10 +761,12 @@ replaces the user-editable text with
 .Fa name Ns
 .Ic \&:text
 .Fa text
-.Qc
+.Qc ,
+once for each change of
+.Fa text .
 .El
 .Ss GtkExpander
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -772,7 +789,7 @@ the child widget, or makes it visible
 none
 .El
 .Ss GtkFileChooserButton
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -811,8 +828,11 @@ should have an
 named
 .Fa foo Ns
 .Ic _ok
-or, if the dialog is the sole window of the GUI and therefore named
-.Ic main , main_ok .
+.Po
+.Ic main_ok
+if the dialog is the sole window of the GUI and therefore named
+.Ic main
+.Pc .
 .Pp
 The
 .Ic GtkFileChooserDialog
@@ -822,8 +842,11 @@ may have a
 named
 .Fa foo Ns
 .Ic _cancel
-or, if the dialog is the sole window of the GUI,
-.Ic main_cancel .
+.Po
+.Ic main_cancel
+if the dialog is the sole window of the GUI and therefore named
+.Ic main
+.Pc .
 .Pp
 The
 .Ic GtkFileChooserDialog
@@ -833,9 +856,12 @@ may have an
 named
 .Fa foo Ns
 .Ic _apply
-or, if the dialog is the sole window of the GUI,
-.Ic main_apply .
-.Bl -tag -width "commands"
+.Po
+.Ic main_apply
+if the dialog is the sole window of the GUI and therefore named
+.Ic main
+.Pc .
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -876,7 +902,7 @@ and/or
 .Qc
 .El
 .Ss GtkFontButton
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -892,7 +918,7 @@ preselects the font.
 .Qc
 .El
 .Ss GtkFrame
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -905,7 +931,7 @@ replaces the frame label text with
 none
 .El
 .Ss GtkImage
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -925,7 +951,7 @@ replaces the image by the one found at
 none
 .El
 .Ss GtkLabel
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -938,7 +964,7 @@ replaces the label text with
 none
 .El
 .Ss GtkMenuItem, GtkImageMenuItem
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 none
 .It Feedback
@@ -965,7 +991,7 @@ it reports
 .Qc .
 .El
 .Ss GtkNotebook
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -981,7 +1007,7 @@ starting from 0
 none
 .El
 .Ss GtkProgressBar
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -1001,11 +1027,17 @@ between 0 and 1
 .Qc
 replaces the text of the progress bar with
 .Fa string .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_text
+.Qc
+resets the progress bar text to the progress percentage.
 .It Feedback
 none
 .El
 .Ss GtkRadioButton
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -1034,7 +1066,7 @@ if switched on, or
 otherwise.
 .El
 .Ss GtkScale
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -1051,7 +1083,7 @@ moves the slider to value
 .Qc
 .El
 .Ss GtkSpinButton
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -1068,7 +1100,7 @@ sets the selected value to
 .Qc
 .El
 .Ss GtkSpinner
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -1084,7 +1116,7 @@ start and stop the spinner.
 none
 .El
 .Ss GtkStatusbar
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -1101,11 +1133,17 @@ in the statusbar.
 .Qc
 removes the last entry from the statusbar, revealing the penultimate
 entry.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :remove_all
+.Qc
+empties the statusbar.
 .It Feedback
 none
 .El
 .Ss GtkSwitch
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -1146,10 +1184,10 @@ a
 .Sx GtkButton
 named
 .Fa foo Ns
-.Ic _send_text
+.Ic _send_selection
 will send the highlighted part the
 .Ic GtkTextView .
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -1206,13 +1244,13 @@ being the name of the
 .Sx GtkButton .
 Line endings in
 .Fa text
- are replaced by
+are replaced by
 .Ic \en ,
 and backslashes are replaced by
 .Ic \e\e .
 .El
 .Ss GtkToggleButton
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -1254,7 +1292,7 @@ and
 .Fa column
 refer to the underlying model (usually a
 .Ic GtkListStore ) .
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 .Qo
 .Fa name Ns
@@ -1318,7 +1356,7 @@ one message per selected row and column in the underlying model if
 the set of selected rows has changed.
 .El
 .Ss GtkTreeViewColumn
-.Bl -tag -width "commands"
+.Bl -tag -width "commands "
 .It Commands
 none
 .It Feedback
@@ -1333,17 +1371,17 @@ Suppose the interface in
 .Pa ./pipeglade.ui
 has a
 .Sx GtkLabel
-.Li l1
+.Li label1
 and a
 .Sx GtkButton
-.Li b1 .
+.Li button1 .
 After invoking
 .Dl pipeglade
 and clicking the
 .Sx GtkButton ,
-.Qq b1:clicked
+.Qq button1:clicked
 will be reported on the terminal.  Typing
-.Dl l1:set_text Button Label
+.Dl label1:set_text Button Label
 will change the text shown on the label into
 .Qq Button Label .
 .Ss One-Shot File Dialog
