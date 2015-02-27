@@ -927,7 +927,7 @@ update_ui(struct ui_data *ud)
 
         name[0] = action[0] = '\0';
         sscanf(ud->msg,
-               " %[0-9a-zA-Z_]:%[0-9a-zA-Z_]%*[ \t] %n",
+               " %[0-9a-zA-Z_]:%[0-9a-zA-Z_]%*1[ \t]%n",
                name, action, &data_start);
         if (eql(action, "main_quit")) {
                 gtk_main_quit();
@@ -1093,7 +1093,7 @@ update_ui(struct ui_data *ud)
                         ign_cmd(type, ud->msg);
         } else if (type == GTK_TYPE_PROGRESS_BAR) {
                 if (eql(action, "set_text"))
-                        gtk_progress_bar_set_text(GTK_PROGRESS_BAR(obj), data);
+                        gtk_progress_bar_set_text(GTK_PROGRESS_BAR(obj), *data == '\0' ? NULL : data);
                 else if (eql(action, "set_fraction"))
                         gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(obj), strtod(data, NULL));
                 else
