@@ -281,8 +281,6 @@ cb(GtkBuildable *obj, gpointer user_data)
                 send_msg(obj, user_data, gtk_entry_get_text(GTK_ENTRY(obj)), NULL);
         else if (GTK_IS_MENU_ITEM(obj))
                 send_msg(obj, user_data, gtk_menu_item_get_label(GTK_MENU_ITEM(obj)), NULL);
-        /* else if (GTK_IS_COMBO_BOX_TEXT(obj)) */
-        /*         send_msg(obj, user_data, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(obj)), NULL); */
         else if (GTK_IS_RANGE(obj)) {
                 snprintf(str, BUFLEN, "%f", gtk_range_get_value(GTK_RANGE(obj)));
                 send_msg(obj, user_data, str, NULL);
@@ -938,6 +936,7 @@ update_ui(struct ui_data *ud)
                 ign_cmd(type, ud->msg);
                 goto done;
         }
+        type = G_TYPE_FROM_INSTANCE(obj);
         if (eql(action, "force")) {
                 if (!GTK_IS_WIDGET(obj))
                         ign_cmd(type, ud->msg);
@@ -984,7 +983,6 @@ update_ui(struct ui_data *ud)
                         gtk_widget_override_background_color(GTK_WIDGET(obj), GTK_STATE_FLAG_NORMAL, NULL);
                 goto done;
         }
-        type = G_TYPE_FROM_INSTANCE(obj);
         if (type == GTK_TYPE_LABEL) {
                 if (eql(action, "set_text"))
                         gtk_label_set_text(GTK_LABEL(obj), data);

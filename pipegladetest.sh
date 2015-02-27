@@ -132,7 +132,7 @@ check_error "" "ignoring command \"\""
 check_error "nnn" "ignoring command \"nnn\""
 check_error "nnn:set_text FFFF" "ignoring command \"nnn:set_text FFFF\""
 # Widget that shouldn't fire callbacks
-check_error "label1:force" "ignoring callback from label1"
+check_error "label1:force" "ignoring GtkLabel command \"label1:force\""
 # GtkLabel
 check_error "label1:nnn" "ignoring GtkLabel command \"label1:nnn\""
 # GtkImage
@@ -175,11 +175,11 @@ check_error "statusbar1:nnn" "ignoring GtkStatusbar command \"statusbar1:nnn\""
 check_error "comboboxtext1:nnn" "ignoring GtkComboBoxText command \"comboboxtext1:nnn\""
 check_error "comboboxtext1:force" "ignoring GtkComboBoxText command \"comboboxtext1:force\""
 # GtkTreeView
-check_error "treeview1:nnn" "ignoring GtkTreeview command \"treeview1:nnn\""
-check_error "treeview1:force" "ignoring GtkTreeview command \"treeview1:force\""
+check_error "treeview1:nnn" "ignoring GtkTreeView command \"treeview1:nnn\""
+check_error "treeview1:force" "ignoring GtkTreeView command \"treeview1:force\""
 # GtkTreeViewColumn
-check_error "treeviewcolumn3:nnn" "ignoring GtkTreeview command \"treeviewcolumn3:nnn\""
-check_error "treeviewcolumn3:force" "ignoring GtkTreeview command \"treeviewcolumn3:force\""
+check_error "treeviewcolumn3:nnn" "ignoring GtkTreeViewColumn command \"treeviewcolumn3:nnn\""
+check_error "treeviewcolumn3:force" "ignoring GtkTreeViewColumn command \"treeviewcolumn3:force\""
 # GtkEntry
 check_error "entry1:nnn" "ignoring GtkEntry command \"entry1:nnn\""
 # GtkTreeView insert_row
@@ -354,6 +354,7 @@ check_error "drawingarea1:set_font_size " "ignoring GtkDrawingArea command \"dra
 check_error "drawingarea1:set_font_size nnn" "ignoring GtkDrawingArea command \"drawingarea1:set_font_size nnn\""
 check_error "drawingarea1:set_font_size 1" "ignoring GtkDrawingArea command \"drawingarea1:set_font_size 1\""
 check_error "drawingarea1:set_font_size 1 nnn" "ignoring GtkDrawingArea command \"drawingarea1:set_font_size 1 nnn\""
+
 echo "_:main_quit" >$FIN
 
 sleep .5
@@ -395,6 +396,45 @@ check() {
     done
 }
 
+
+./pipeglade -u simple_dialog.ui -i $FIN -o $FOUT &
+
+# wait for $FIN and $FOUT to appear
+while test ! \( -e $FIN -a -e $FOUT \); do :; done
+
+check 1 "main_apply:force" "main_apply:clicked"
+check 0 "main_cancel:force"
+
+sleep .5
+check_rm $FIN
+check_rm $FOUT
+
+
+./pipeglade -u simple_open.ui -i $FIN -o $FOUT &
+
+# wait for $FIN and $FOUT to appear
+while test ! \( -e $FIN -a -e $FOUT \); do :; done
+
+check 2 "main_apply:force" "main:file" "main:folder"
+check 0 "main_cancel:force"
+
+sleep .5
+check_rm $FIN
+check_rm $FOUT
+
+
+./pipeglade -u simple_open.ui -i $FIN -o $FOUT &
+
+# wait for $FIN and $FOUT to appear
+while test ! \( -e $FIN -a -e $FOUT \); do :; done
+
+check 2 "main_ok:force" "main:file" "main:folder"
+
+sleep .5
+check_rm $FIN
+check_rm $FOUT
+
+
 ./pipeglade -i $FIN -o $FOUT &
 
 # wait for $FIN and $FOUT to appear
@@ -410,6 +450,7 @@ check 1 "switch1:set_active 1" "switch1:1"
 check 1 "switch1:set_active 0" "switch1:0"
 check 1 "togglebutton1:set_active 1" "togglebutton1:1"
 check 1 "calendar1:select_date 1752-03-29" "calendar1:clicked 1752-03-29"
+check 0 "progressbar1:set_text This Is A Progressbar."
 
 L=$(i=0
     while (( i<100 )); do
@@ -446,9 +487,9 @@ check 1 "textview1_send_text:force" "textview1_send_text:text some textnetcn"
 check 1 "textview1:place_cursor 5\n textview1:insert_at_cursor MORE \n textview1_send_text:force" "textview1_send_text:text some MORE textnetcn"
 check 1 "textview1:place_cursor_at_line 1\n textview1:insert_at_cursor ETC \n textview1_send_text:force" "textview1_send_text:text some MORE textnETC etcn"
 check 1 "textview1:delete\n textview1_send_text:force" "textview1_send_text:text"
-# check 1 "statusbar1:push Highlight the lowest visible text line and press \"send_selection\"\n textview1:place_cursor_at_line 1 \ntextview1:insert_at_cursor A\\\\nB\\\\nC\\\\nD\\\\nE\\\\nF\\\\nG\\\\nH\\\\nI\\\\nJ\\\\nK\\\\nL\\\\nM\\\\nN\\\\nO\\\\nP\\\\nQ\\\\nR\\\\nS\\\\nT\\\\nU\\\\nV\\\\nW\\\\nX\\\\nY\\\\nZ\\\\na\\\\nb\\\\nc\\\\nd\\\\ne\\\\nf\\\\ng\\\\nh\\\\ni\\\\nj\\\\nk\\\\nl\\\\nm\\\\nn\\\\no\\\\np\\\\nq\\\\nr\\\\ns\\\\nt\\\\nu\\\\nv\\\\nw\\\\nx\\\\ny\\\\nz \n textview1:place_cursor_at_line 46 \n textview1:scroll_to_cursor" "textview1_send_selection:text u"
-# check 1 "statusbar1:push Again, highlight the lowest visible text line and press \"send_selection\"\n textview1:place_cursor end\n textview1:scroll_to_cursor" "textview1_send_selection:text z"
-# check 1 "statusbar1:push Highlight the highest visible text line and press \"send_selection\"\n textview1:place_cursor 0 \n textview1:scroll_to_cursor" "textview1_send_selection:text A"
+check 1 "statusbar1:push Highlight the lowest visible text line and press \"send_selection\"\n textview1:place_cursor_at_line 1 \ntextview1:insert_at_cursor A\\\\nB\\\\nC\\\\nD\\\\nE\\\\nF\\\\nG\\\\nH\\\\nI\\\\nJ\\\\nK\\\\nL\\\\nM\\\\nN\\\\nO\\\\nP\\\\nQ\\\\nR\\\\nS\\\\nT\\\\nU\\\\nV\\\\nW\\\\nX\\\\nY\\\\nZ\\\\na\\\\nb\\\\nc\\\\nd\\\\ne\\\\nf\\\\ng\\\\nh\\\\ni\\\\nj\\\\nk\\\\nl\\\\nm\\\\nn\\\\no\\\\np\\\\nq\\\\nr\\\\ns\\\\nt\\\\nu\\\\nv\\\\nw\\\\nx\\\\ny\\\\nz \n textview1:place_cursor_at_line 46 \n textview1:scroll_to_cursor" "textview1_send_selection:text u"
+check 1 "statusbar1:push Again, highlight the lowest visible text line and press \"send_selection\"\n textview1:place_cursor end\n textview1:scroll_to_cursor" "textview1_send_selection:text z"
+check 1 "statusbar1:push Highlight the highest visible text line and press \"send_selection\"\n textview1:place_cursor 0 \n textview1:scroll_to_cursor" "textview1_send_selection:text A"
 check 1 "scale1:set_value 10\n scale1:force" "scale1:value 10.000000"
 check 5 "open_dialog:set_filename q.png\n file:force\n open_dialog_invoke:force\n open_dialog_apply:force\n open_dialog_ok:force" "file:active _File" "open_dialog:file $PWD/q.png" "open_dialog:folder $PWD" "open_dialog:file $PWD/q.png" "open_dialog:folder $PWD"
 check 1 "file:force\n open_dialog_invoke:force\n open_dialog_cancel:force" "file:active _File"
@@ -473,7 +514,7 @@ check 1 "statusbar1:push Press \"OK\" if the red dot has turned into a green \"Q
 check 1 "statusbar1:push Select \"FIRST\" from the combobox\n comboboxtext1:prepend_text FIRST" "comboboxtext1_entry:text FIRST"
 check 1 "statusbar1:push Select \"LAST\" from the combobox\n comboboxtext1:append_text LAST" "comboboxtext1_entry:text LAST"
 check 1 "statusbar1:push Select \"AVERAGE\" from the combobox\n comboboxtext1:insert_text 3 AVERAGE" "comboboxtext1_entry:text AVERAGE"
-check 1 "statusbar1:push Select the second entry from the combobox\n comboboxtext1:remove 0" "comboboxtext_entry:text def"
+check 1 "statusbar1:push Select the second entry from the combobox\n comboboxtext1:remove 0" "comboboxtext1_entry:text def"
 check 2 "statusbar1:push Click the \"+\" of the spinbutton" "spinbutton1:text 33.00" "spinbutton1:text 34.00"
 check 1 "statusbar1:push Click the \"+\" of the spinbutton again" "spinbutton1:text 35.00"
 check 1 "statusbar1:push Click the \"+\" of the spinbutton once again" "spinbutton1:text 36.00"
@@ -535,49 +576,11 @@ check 1 "statusbar1:push Press \"OK\" if the spinner has stopped\n spinner1:stop
 check 1 "statusbar1:push Press \"OK\" if there is now a \"Disconnect\" button\n button2:set_visible 1\n button2:set_sensitive 0" "button1:clicked"
 check 1 "statusbar1:push Press \"Disconnect\"\n button2:set_sensitive 1" "button2:clicked"
 check 1 "statusbar1:push Press \"OK\" if the window title is now \"ALMOST DONE\"\n main:set_title ALMOST DONE" "button1:clicked"
-check 1 "statusbar1:push Press \"OK\" if the progress bar shows 90%\n progressbar1:set_fraction .9" "button1:clicked"
+check 1 "statusbar1:push Press \"OK\" if the progress bar shows 90%\n progressbar1:set_fraction .9\n progressbar1:set_text" "button1:clicked"
 check 1 "statusbar1:push Press \"OK\" if the progress bar text reads \"The End\"\n progressbar1:set_text The End" "button1:clicked"
 check 1 "statusbar1:push Press \"No\"\n statusbar1:push nonsense 1\n statusbar1:push nonsense 2\n statusbar1:push nonsense 3\n statusbar1:pop\n statusbar1:pop\n statusbar1:pop" "no_button:clicked"
 
 echo "_:main_quit" >$FIN
-
-sleep .5
-check_rm $FIN
-check_rm $FOUT
-
-
-./pipeglade -u simple_dialog.ui -i $FIN -o $FOUT &
-
-# wait for $FIN and $FOUT to appear
-while test ! \( -e $FIN -a -e $FOUT \); do :; done
-
-check 1 "main_apply:force" "main_apply:clicked"
-check 0 "main_cancel:force"
-
-sleep .5
-check_rm $FIN
-check_rm $FOUT
-
-
-./pipeglade -u simple_open.ui -i $FIN -o $FOUT &
-
-# wait for $FIN and $FOUT to appear
-while test ! \( -e $FIN -a -e $FOUT \); do :; done
-
-check 2 "main_apply:force" "main:file" "main:folder"
-check 0 "main_cancel:force"
-
-sleep .5
-check_rm $FIN
-check_rm $FOUT
-
-
-./pipeglade -u simple_open.ui -i $FIN -o $FOUT &
-
-# wait for $FIN and $FOUT to appear
-while test ! \( -e $FIN -a -e $FOUT \); do :; done
-
-check 2 "main_ok:force" "main:file" "main:folder"
 
 sleep .5
 check_rm $FIN
