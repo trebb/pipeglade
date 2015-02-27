@@ -1124,6 +1124,8 @@ update_ui(struct ui_data *ud)
                         gtk_statusbar_push(GTK_STATUSBAR(obj), 0, data);
                 else if (eql(action, "pop"))
                         gtk_statusbar_pop(GTK_STATUSBAR(obj), 0);
+                else if (eql(action, "remove_all"))
+                        gtk_statusbar_remove_all(GTK_STATUSBAR(obj), 0);
                 else
                         ign_cmd(type, ud->msg);
         } else if (type == GTK_TYPE_CALENDAR) {
