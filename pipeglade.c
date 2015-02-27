@@ -943,8 +943,14 @@ update_ui(struct ui_data *ud)
                         ign_cmd(type, ud->msg);
                 else if (GTK_IS_ENTRY(obj) || GTK_IS_SPIN_BUTTON(obj))
                         cb(GTK_BUILDABLE(obj), "text");
+                else if (GTK_IS_SCALE(obj))
+                        cb(GTK_BUILDABLE(obj), "value");
+                else if (GTK_IS_CALENDAR(obj))
+                        cb(GTK_BUILDABLE(obj), "clicked");
+                else if (GTK_IS_FILE_CHOOSER_BUTTON(obj))
+                        cb(GTK_BUILDABLE(obj), "file");
                 else if (!gtk_widget_activate(GTK_WIDGET(obj)))
-                        cb(GTK_BUILDABLE(obj), "forced");
+                        ign_cmd(type, ud->msg);
                 goto done;
         }
         data = ud->msg + data_start;

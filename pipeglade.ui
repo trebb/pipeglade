@@ -505,7 +505,7 @@ et dolore magna aliqua.
                       <item translatable="yes">ghi</item>
                     </items>
                     <child internal-child="entry">
-                      <object class="GtkEntry" id="comboboxtext-entry">
+                      <object class="GtkEntry" id="comboboxtext1_entry">
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
                         <property name="width_chars">10</property>
