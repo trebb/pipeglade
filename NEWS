@@ -1,3 +1,7 @@
+(unreleased)
+------------------
+  * Code cleanup
+
 3.0.0 (2015-02-27)
 ------------------
   * Change API: No user-visible callbacks anymore, simplifying UI

@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 PREFIX = /usr/local
-CCFLAGS += -Wall -Wextra -pedantic
+CCFLAGS += -Wall -Wextra -pedantic -g
 CCFLAGS += -std=c99 -D_POSIX_C_SOURCE=200809L
 CCFLAGS += -D_XOPEN_SOURCE=700
 CCFLAGS += `pkg-config --cflags --libs gtk+-3.0 gmodule-2.0`
