@@ -19,7 +19,7 @@
 .\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 .\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.Dd February 27, 2015
+.Dd September 22, 2015
 .Dt PIPEGLADE 1 CON
 .Os BSD
 .Sh NAME
@@ -164,38 +164,32 @@ the widget, or makes it visible
 .Pp
 .Qo
 .Fa name Ns
-.Ic :override_color
-.Bq Fa color
+.Ic :style
+.Bo Fa prop Ic : Ns Fa val Ns
+.Bo
+.Ic ;
+.Fa prop Ic : Ns Fa val ...
+.Bc
+.Bc
 .Qc
-sets the color of the widget.  Default is the original color.  The
-format of
-.Fa color
-is identical to the format used with
+sets properties
+.Fa prop
+of the widget style to
+.Fa val .
+Properties not explicitly specified are reset to their default values.
+Examples:
+.Bl -dash -offset indent -compact
+.It
+.Qq Li label1:style font:Bold 11; background-color:green
+.It
+.Qq Li label1:style font-style:italic; font-weight:bold; color:blue
+.It
+.Qq Li frame1:style border-color:red yellow; border-width:5px
+.It
+.Qq Li frame1:style border-radius:10px; transition:10s
+.El
+For a description of possible color notations see
 .Sx GtkColorButton .
-.Pp
-.Qo
-.Fa name Ns
-.Ic :override_background_color
-.Bq Fa color
-.Qc
-sets the background color of the widget.  Default is the original
-background color.  The format of
-.Fa color
-is identical to the format used with
-.Sx GtkColorButton .
-.Pp
-.Qo
-.Fa name Ns
-.Ic :override_font
-.Bq Fa font
-.Qc
-sets the font of the widget.  Default is the original font.
-.Fa font
-examples:
-.Qq Li  Monospace,Serif Bold Italic Condensed 16 ,
-.Qq Li  Sans ,
-.Qq Li  Oblique ,
-.Qq Li  12 .
 .Pp
 .Qo
 .Fa name Ns
@@ -234,6 +228,24 @@ just open their respective dialogs.
 kills the user interface.  A non-empty
 .Fa name
 is required but ignored.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :override_color
+.Bq Fa color
+.Qc ,
+.Qo
+.Fa name Ns
+.Ic :override_background_color
+.Bq Fa color
+.Qc ,
+.Qo
+.Fa name Ns
+.Ic :override_font
+.Bq Fa font
+.Qc
+are deprecated.  They change the widget's color, background color, or
+font, respectively.
 .El
 .Ss GtkButton
 .Bl -tag -width "commands "

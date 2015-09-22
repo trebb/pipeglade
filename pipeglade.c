@@ -38,7 +38,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "3.0.1"
+#define VERSION "3.1.1"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 #define MAIN_WIN "main"
@@ -891,6 +891,17 @@ cb_draw(GtkWidget *widget, cairo_t *cr, gpointer data)
 }
 
 /*
+ * One style provider for each widget
+ */
+struct style_provider {
+        struct style_provider *next;
+        struct style_provider *prev;
+        const char *name;
+        GtkCssProvider *provider;
+        char *style_decl;
+} *widget_style_providers = NULL;
+
+/*
  * Perform various kinds of actions on the widget passed
  */
 static void
@@ -903,6 +914,30 @@ update_widget_font(GtkWidget *widget, char *data)
                 pango_font_description_free(font);
         } else
                 gtk_widget_override_font(widget, NULL);
+}
+
+static void
+update_widget_style(GtkWidget *widget, char *name , char *data)
+{
+        GtkStyleContext *context;
+        struct style_provider *sp;
+        char *prefix = "* {", *suffix = "}";
+        size_t sz;
+
+        sz = strlen(prefix) + strlen(suffix) + strlen(data) + 1;
+        context = gtk_widget_get_style_context(widget);
+        for (sp = widget_style_providers; !eql(name, sp->name); sp = sp->next);
+        gtk_style_context_remove_provider(context, GTK_STYLE_PROVIDER(sp->provider));
+        free(sp->style_decl);
+        if ((sp->style_decl = malloc(sz)) == NULL)
+                OOM_ABORT;
+        strcpy(sp->style_decl, prefix);
+        strcat(sp->style_decl, data);
+        strcat(sp->style_decl, suffix);
+        gtk_style_context_add_provider(context,
+                                       GTK_STYLE_PROVIDER(sp->provider),
+                                       GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+        gtk_css_provider_load_from_data(sp->provider, sp->style_decl, -1, NULL);
 }
 
 static void
@@ -1351,6 +1386,8 @@ update_ui(struct ui_data *ud)
                 gtk_widget_set_sensitive(GTK_WIDGET(obj), strtol(data, NULL, 10));
         else if (eql(action, "set_visible"))
                 gtk_widget_set_visible(GTK_WIDGET(obj), strtol(data, NULL, 10));
+        else if (eql(action, "style"))
+                update_widget_style(GTK_WIDGET(obj), name, data);
         else if (eql(action, "override_font"))
                 update_widget_font(GTK_WIDGET(obj), data);
         else if (eql(action, "override_color"))
@@ -1595,12 +1632,47 @@ connect_widget_signals(gpointer *obj, gpointer *builder)
 }
 
 static void
-connect_signals(GtkBuilder *builder)
+add_widget_style_provider(gpointer *obj, void *data)
+{
+        const char *name = NULL;
+        struct style_provider *sp = NULL, *last_sp = NULL;
+        GtkStyleContext *context;
+
+        (void)data;
+        if (!GTK_IS_WIDGET(obj))
+                return;
+        if ((sp = malloc(sizeof(struct style_provider))) == NULL)
+                OOM_ABORT;
+        name = widget_name(obj);
+        sp->name = name;
+        sp->provider = gtk_css_provider_new();
+        if ((sp->style_decl = malloc(sizeof('\0'))) == NULL)
+                OOM_ABORT;
+        *(sp->style_decl) = '\0';
+        context = gtk_widget_get_style_context(GTK_WIDGET(obj));
+        gtk_style_context_add_provider(context,
+                                       GTK_STYLE_PROVIDER(sp->provider),
+                                       GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+        gtk_css_provider_load_from_data(sp->provider, sp->style_decl, -1, NULL);
+        if (widget_style_providers == NULL) {
+                widget_style_providers = sp;
+                insque(widget_style_providers, NULL);
+        } else {
+                for (last_sp = widget_style_providers;
+                     last_sp->next != NULL;
+                     last_sp = last_sp->next);
+                insque(sp, last_sp);
+        }
+}
+
+static void
+prepare_widgets(GtkBuilder *builder)
 {
         GSList *objects = NULL;
 
         objects = gtk_builder_get_objects(builder);
         g_slist_foreach(objects, (GFunc)connect_widget_signals, builder);
+        g_slist_foreach(objects, (GFunc)add_widget_style_provider, NULL);
         g_slist_free(objects);
 }
 
@@ -1648,7 +1720,7 @@ main(int argc, char *argv[])
                 fprintf(stderr, "no toplevel window named \'" MAIN_WIN "\'\n");
                 exit(EXIT_FAILURE);
         }
-        connect_signals(builder);
+        prepare_widgets(builder);
         gtk_widget_show(GTK_WIDGET(main_window));
         gtk_main();
         if (in != stdin) {

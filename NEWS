@@ -1,6 +1,13 @@
-(unreleased)
+3.1.1 (2015-09-22)
 ------------------
-  * Code cleanup
+  * Fix 3.1.0 which lacked most of the advertised changes.
+
+3.1.0 (2015-09-22)
+------------------
+  * Code cleanup.
+  * Add command for changing widget style properties.
+  * Deprecate commands override_color, override-background-color, and
+  override_font.
 
 3.0.0 (2015-02-27)
 ------------------
