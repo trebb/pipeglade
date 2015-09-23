@@ -1650,6 +1650,8 @@ main(int argc, char *argv[])
         GError *error = NULL;
         GObject *main_window = NULL;
 
+        /* Disable runtime GLIB deprecation warnings: */
+        setenv("G_ENABLE_DIAGNOSTIC", "0", 0);
         in = NULL;
         out = NULL;
         while ((opt = getopt(argc, argv, "hi:o:u:GV")) != -1) {

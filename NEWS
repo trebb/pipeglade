@@ -1,7 +1,8 @@
-(unreleased)
+4.0.0 (2015-09-23)
 ------------------
   * Change API: Remove deprecated commands override_color,
-  override-background-color, and override_font.
+  override_background_color, and override_font.
+  * Disable runtime GLIB deprecation warnings.
 
 3.1.1 (2015-09-22)
 ------------------
