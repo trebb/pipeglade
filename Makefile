@@ -22,7 +22,8 @@
 
 PREFIX = /usr/local
 CCFLAGS += -Wall -Wextra -pedantic -g
-CCFLAGS += -std=c99 -D_POSIX_C_SOURCE=200809L
+CCFLAGS += -std=c99
+CCFLAGS += -D_POSIX_C_SOURCE=200809L
 CCFLAGS += -D_XOPEN_SOURCE=700
 CCFLAGS += `pkg-config --cflags --libs gtk+-3.0 gmodule-2.0`
 CC != which cc
@@ -67,9 +68,9 @@ MANPAGE_TODAY != date '+.Dd %B %e, %Y' | awk '{print $$1, $$2, $$3, $$4}'
 # Prepare the www directory
 gh-pages: gh-pages/index.html gh-pages/pipeglade.1.html gh-pages/clock.png
 
-gh-pages/index.html gh-pages/pipeglade.1.html: pipeglade.1 html-template/index.html Makefile
+gh-pages/index.html gh-pages/pipeglade.1.html: pipeglade.1 www-template/index.html Makefile
 	mkdir -p gh-pages
-	cp html-template/* gh-pages/
+	cp www-template/* gh-pages/
 	cp clock.sh gh-pages/clock.sh.txt
 	cp clock.ui gh-pages/clock.ui.txt
 	mandoc -T html -O style=style.css pipeglade.1 > gh-pages/pipeglade.1.html
