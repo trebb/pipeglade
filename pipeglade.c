@@ -38,7 +38,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "3.1.1"
+#define VERSION "4.0.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 #define MAIN_WIN "main"
@@ -902,20 +902,8 @@ struct style_provider {
 } *widget_style_providers = NULL;
 
 /*
- * Perform various kinds of actions on the widget passed
+ * Change the style of the widget passed
  */
-static void
-update_widget_font(GtkWidget *widget, char *data)
-{
-        if (data[0]) {
-                PangoFontDescription *font = pango_font_description_from_string(data);
-
-                gtk_widget_override_font(widget, font);
-                pango_font_description_free(font);
-        } else
-                gtk_widget_override_font(widget, NULL);
-}
-
 static void
 update_widget_style(GtkWidget *widget, char *name , char *data)
 {
@@ -938,30 +926,6 @@ update_widget_style(GtkWidget *widget, char *name , char *data)
                                        GTK_STYLE_PROVIDER(sp->provider),
                                        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
         gtk_css_provider_load_from_data(sp->provider, sp->style_decl, -1, NULL);
-}
-
-static void
-update_widget_color(GtkWidget *widget, char *data)
-{
-        GdkRGBA color;
-
-        if (data[0]) {
-                gdk_rgba_parse(&color, data);
-                gtk_widget_override_color(widget, GTK_STATE_FLAG_NORMAL, &color);
-        } else
-                gtk_widget_override_color(widget, GTK_STATE_FLAG_NORMAL, NULL);
-}
-
-static void
-update_widget_background_color(GtkWidget *widget, char *data)
-{
-        GdkRGBA color;
-
-        if (data[0]) {
-                gdk_rgba_parse(&color, data);
-                gtk_widget_override_background_color(widget, GTK_STATE_FLAG_NORMAL, &color);
-        } else
-                gtk_widget_override_background_color(widget, GTK_STATE_FLAG_NORMAL, NULL);
 }
 
 /*
@@ -1388,12 +1352,6 @@ update_ui(struct ui_data *ud)
                 gtk_widget_set_visible(GTK_WIDGET(obj), strtol(data, NULL, 10));
         else if (eql(action, "style"))
                 update_widget_style(GTK_WIDGET(obj), name, data);
-        else if (eql(action, "override_font"))
-                update_widget_font(GTK_WIDGET(obj), data);
-        else if (eql(action, "override_color"))
-                update_widget_color(GTK_WIDGET(obj), data);
-        else if (eql(action, "override_background_color"))
-                update_widget_background_color(GTK_WIDGET(obj), data);
         else if (type == GTK_TYPE_LABEL)
                 update_label(GTK_LABEL(obj), action, data, ud->msg);
         else if (type == GTK_TYPE_IMAGE)
@@ -1540,6 +1498,9 @@ fifo(const char *name, const char *mode)
         }
 }
 
+/* 
+ * Remove suffix from name; find the object named like this
+ */
 static GObject *
 obj_sans_suffix(char *suffix, const char *name, gpointer *builder)
 {
@@ -1631,6 +1592,9 @@ connect_widget_signals(gpointer *obj, gpointer *builder)
                 g_signal_connect(obj, "draw", G_CALLBACK(cb_draw), NULL);
 }
 
+/* 
+ * We keep a list of one widget style provider for each widget
+ */
 static void
 add_widget_style_provider(gpointer *obj, void *data)
 {
