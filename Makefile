@@ -20,13 +20,16 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-PREFIX = /usr/local
+PREFIX ?= /usr/local
 CCFLAGS += -Wall -Wextra -pedantic -g
 CCFLAGS += -std=c99
 CCFLAGS += -D_POSIX_C_SOURCE=200809L
 CCFLAGS += -D_XOPEN_SOURCE=700
 CCFLAGS += `pkg-config --cflags --libs gtk+-3.0 gmodule-2.0`
 CC != which cc
+
+
+all: pipeglade
 
 pipeglade: pipeglade.c Makefile
 	$(CC) $< -o $@ $(CCFLAGS)
@@ -57,6 +60,7 @@ clean:
 # It works with FreeBSD's version of make (aka pmake).  It won't work
 # with GNU make.
 ######################################################################
+.ifmake gh-pages || git-tag || publish
 VERSION != git describe --tags | cut -d "-" -f 1
 CODE_VERSION != awk '/\#define VERSION/{print $$3}' pipeglade.c | tr -d '"'
 NEWS_VERSION != awk '/^[0-9]+.[0-9]+.[0-9]+ .*(.+)/{print $$1}' NEWS | head -n1
@@ -114,3 +118,4 @@ publish: clean gh-pages
 	git add ./; \
 	git commit -a -m "gh-pages pseudo commit"; \
 	git push git@github.com:trebb/pipeglade.git +master:gh-pages)
+.endif
