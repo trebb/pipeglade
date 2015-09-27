@@ -1,6 +1,9 @@
 (unreleased)
 ------------------
-  * Improve build process
+  * Add support for the XEmbed protocol, both as a GtkPlug and a
+  GtkSocket.
+  * Add support for GtkPrintUnixDialog.
+  * Improve build process.
 
 4.0.0 (2015-09-23)
 ------------------

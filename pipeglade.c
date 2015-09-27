@@ -40,7 +40,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "4.0.0"
+#define VERSION "4.1.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 #define MAIN_WIN "main"
@@ -68,6 +68,7 @@ usage(char **argv)
         fprintf(stderr,
                 "usage: %s "
                 "[-h] "
+                "[-e xid] "
                 "[-i in-fifo] "
                 "[-o out-fifo] "
                 "[-u glade-builder-file.ui] "
@@ -1719,7 +1720,9 @@ int
 main(int argc, char *argv[])
 {
         char opt;
-        char *in_fifo = NULL, *out_fifo = NULL, *ui_file = NULL;
+        char *xid_s = NULL, *in_fifo = NULL, *out_fifo = NULL, *ui_file = NULL;
+        Window xid;
+        GtkWidget *plug, *body;
         GtkBuilder *builder;
         pthread_t receiver;
         GError *error = NULL;
@@ -1729,8 +1732,9 @@ main(int argc, char *argv[])
         setenv("G_ENABLE_DIAGNOSTIC", "0", 0);
         in = NULL;
         out = NULL;
-        while ((opt = getopt(argc, argv, "hi:o:u:GV")) != -1) {
+        while ((opt = getopt(argc, argv, "he:i:o:u:GV")) != -1) {
                 switch (opt) {
+                case 'e': xid_s = optarg; break;
                 case 'i': in_fifo = optarg; break;
                 case 'o': out_fifo = optarg; break;
                 case 'u': ui_file = optarg; break;
@@ -1762,7 +1766,16 @@ main(int argc, char *argv[])
                 exit(EXIT_FAILURE);
         }
         prepare_widgets(builder);
-        gtk_widget_show(GTK_WIDGET(main_window));
+        if (xid_s == NULL)      /* standalone */
+                gtk_widget_show(GTK_WIDGET(main_window));
+        else {                  /* We're being XEmbedded */
+                xid = strtoul(xid_s, NULL, 10);
+                body = gtk_bin_get_child(GTK_BIN(main_window));
+                gtk_container_remove(GTK_CONTAINER(main_window), body);
+                plug = gtk_plug_new(xid);
+                gtk_container_add(GTK_CONTAINER(plug), body);
+                gtk_widget_show(plug);
+        }
         gtk_main();
         if (in != stdin) {
                 fclose(in);
