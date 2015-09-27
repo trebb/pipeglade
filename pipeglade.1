@@ -1087,6 +1087,52 @@ moves the slider to value
 .Fa floating_point_text
 .Qc
 .El
+.Ss GtkSocket
+.Ic GtkSocket
+may be unsupported by Glade so its definition needs to be inserted
+manually into the GtkBuilder (.ui) file:
+.Bf -literal
+ <child>
+   <object class="GtkSocket" id="socket1">
+     <property name="visible">True</property>
+     <property name="can_focus">True</property>
+   </object>
+   <packing>
+     <property name="expand">False</property>
+     <property name="fill">True</property>
+     <property name="position">1</property>
+   </packing>
+ </child>
+.Ef
+.Bl -tag -width "commands "
+.It Commands
+.Qo
+.Fa name Ns
+.Ic :id
+.Qc
+requests a feedback message containing the socket
+.Fa id .
+.It Feedback
+.Qo
+.Fa name Ns
+.Ic :id
+.Fa id
+.Qc
+can be used by another process to XEmbed its widgets into the
+.Ic GtkSocket .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :plug-added
+.Qc ,
+.Qo
+.Fa name Ns
+.Ic :plug-removed
+.Qc .
+Notification that the other process has inserted its widgets into or
+removed them from the
+.Ic GtkSocket .
+.El
 .Ss GtkSpinButton
 .Bl -tag -width "commands "
 .It Commands

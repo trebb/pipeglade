@@ -25,6 +25,7 @@
 #include <fcntl.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkunixprint.h>
+#include <gtk/gtkx.h>
 #include <inttypes.h>
 #include <locale.h>
 #include <math.h>
@@ -106,21 +107,21 @@ widget_name(void *obj)
 
 /*
  * Send GUI feedback to global stream "out".  The message format is
- * "<origin>:<section> <data ...>".  The variadic arguments are
+ * "<origin>:<tag> <data ...>".  The variadic arguments are
  * strings; last argument must be NULL.  We're being patient with
  * receivers which may intermittently close their end of the fifo, and
  * make a couple of retries if an error occurs.
  */
 static void
-send_msg(GtkBuildable *obj, const char *section, ...)
+send_msg(GtkBuildable *obj, const char *tag, ...)
 {
         va_list ap;
         char *data;
         long nsec;
 
         for (nsec = 1e6; nsec < 1e9; nsec <<= 3) {
-                va_start(ap, section);
-                fprintf(out, "%s:%s ", widget_name(obj), section);
+                va_start(ap, tag);
+                fprintf(out, "%s:%s ", widget_name(obj), tag);
                 while ((data = va_arg(ap, char *)) != NULL) {
                         size_t i = 0;
                         char c;
@@ -281,7 +282,7 @@ cb(GtkBuildable *obj, gpointer user_data)
                 send_msg(obj, user_data, gtk_font_button_get_font_name(GTK_FONT_BUTTON(obj)), NULL);
         else if (GTK_IS_FILE_CHOOSER_BUTTON(obj))
                 send_msg(obj, user_data, gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(obj)), NULL);
-        else if (GTK_IS_BUTTON(obj) || GTK_IS_TREE_VIEW_COLUMN(obj))
+        else if (GTK_IS_BUTTON(obj) || GTK_IS_TREE_VIEW_COLUMN(obj) || GTK_IS_SOCKET(obj))
                 send_msg(obj, user_data, NULL);
         else if (GTK_IS_CALENDAR(obj)) {
                 gtk_calendar_get_date(GTK_CALENDAR(obj), &year, &month, &day);
@@ -295,6 +296,16 @@ cb(GtkBuildable *obj, gpointer user_data)
                                                     GTK_BUILDABLE(tree_view));
         } else
                 fprintf(stderr, "ignoring callback from %s\n", widget_name(obj));
+}
+
+/*
+ * Callback like cb(), but returning true.
+ */
+static bool
+cb_true(GtkBuildable *obj, gpointer user_data)
+{
+        cb(obj, user_data);
+        return true;
 }
 
 /*
@@ -1329,6 +1340,21 @@ update_tree_view(GtkTreeView *view, char *action, char *data, char *whole_msg)
 }
 
 static void
+update_socket(GtkSocket *socket, char *action, char *data, char *whole_msg)
+{
+        Window id;
+        char str[BUFLEN];
+
+        (void)data;
+        if (eql(action, "id")) {
+                id = gtk_socket_get_id(socket);
+                snprintf(str, BUFLEN, "%lu", id);
+                send_msg(GTK_BUILDABLE(socket), "id", str, NULL);
+        } else
+                ign_cmd(GTK_TYPE_WINDOW, whole_msg);
+}
+
+static void
 update_window(GtkWindow *window, char *action, char *data, char *whole_msg)
 {
         if (eql(action, "set_title"))
@@ -1436,6 +1462,8 @@ update_ui(struct ui_data *ud)
                 update_tree_view(GTK_TREE_VIEW(obj), action, data, ud->msg);
         else if (type == GTK_TYPE_DRAWING_AREA)
                 update_drawing_area(GTK_WIDGET(obj), action, data, ud->msg);
+        else if (type == GTK_TYPE_SOCKET)
+                update_socket(GTK_SOCKET(obj), action, data, ud->msg);
         else if (type == GTK_TYPE_WINDOW)
                 update_window(GTK_WINDOW(obj), action, data, ud->msg);
         else
@@ -1632,7 +1660,10 @@ connect_widget_signals(gpointer *obj, gpointer *builder)
                 g_signal_connect(obj, "day-selected", G_CALLBACK(cb), "clicked");
         } else if (type == GTK_TYPE_TREE_SELECTION)
                 g_signal_connect(obj, "changed", G_CALLBACK(cb), "clicked");
-        else if (type == GTK_TYPE_DRAWING_AREA)
+        else if (type == GTK_TYPE_SOCKET) {
+                g_signal_connect(obj, "plug-added", G_CALLBACK(cb), "plug-added");
+                g_signal_connect(obj, "plug-removed", G_CALLBACK(cb_true), "plug-removed");
+        } else if (type == GTK_TYPE_DRAWING_AREA)
                 g_signal_connect(obj, "draw", G_CALLBACK(cb_draw), NULL);
 }
 

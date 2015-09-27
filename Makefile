@@ -22,6 +22,11 @@
 
 PREFIX ?= /usr/local
 CCFLAGS += -Wall -Wextra -pedantic -g
+OS != uname
+# FreeBSD:
+# Suppressing warning: named variadic macros are a GNU extension
+# in /usr/local/include/X11/Xfuncproto.h:157:24:
+CCFLAGS += -Wno-variadic-macros
 CCFLAGS += -std=c99
 CCFLAGS += -D_POSIX_C_SOURCE=200809L
 CCFLAGS += -D_XOPEN_SOURCE=700
@@ -61,8 +66,7 @@ clean:
 # It works with FreeBSD's version of make (aka pmake).  It won't work
 # with GNU make.
 ######################################################################
-.ifmake gh-pages || git-tag || publish
-VERSION != git describe --tags | cut -d "-" -f 1
+VERSION != (which git >/dev/null && git describe --tags || echo "NONE") | cut -d "-" -f 1
 CODE_VERSION != awk '/\#define VERSION/{print $$3}' pipeglade.c | tr -d '"'
 NEWS_VERSION != awk '/^[0-9]+.[0-9]+.[0-9]+ .*(.+)/{print $$1}' NEWS | head -n1
 NEWS_DATE != awk '/^[0-9]+.[0-9]+.[0-9]+ .*(.+)/{print substr($$2, 2, 10)}' NEWS | head -n1
@@ -119,4 +123,3 @@ publish: clean gh-pages
 	git add ./; \
 	git commit -a -m "gh-pages pseudo commit"; \
 	git push git@github.com:trebb/pipeglade.git +master:gh-pages)
-.endif
