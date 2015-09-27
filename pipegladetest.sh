@@ -38,12 +38,13 @@ check_rm() {
     fi
 }
 
-
+echo "
 # BATCH ONE
 #
 # Situations where pipeglade should exit immediately.  These tests
 # should run automatically
 ######################################################################
+"
 
 check_call() {
     r=$2
@@ -74,7 +75,7 @@ check_call() {
 
 check_call "./pipeglade -u nonexistent.ui" 1 "nonexistent.ui" ""
 check_call "./pipeglade -u bad_window.ui" 1 "no toplevel window named 'main'" ""
-check_call "./pipeglade -u www-template/404.html" 1 "'html'" ""
+check_call "./pipeglade -u www-template/404.html" 1 "html" ""
 check_call "./pipeglade -u README" 1 "Document must begin with an element" ""
 touch $BAD_FIFO
 check_call "./pipeglade -i bad_fifo" 1 "making fifo" ""
@@ -99,18 +100,25 @@ check_rm $FOUT
 
 
 #exit
+echo "
 # BATCH TWO
 #
 # Error handling tests---bogus actions leading to appropriate error
-# messages.  These tests should run automatically.
+# messages.  Most of these tests should run automatically.
 ######################################################################
+"
 
 mkfifo $FERR
 
 check_error() {
     echo "SEND $1"
     echo -e "$1" >$FIN
-    read r <$FERR
+    while read r <$FERR; do
+        # ignore irrelevant GTK warnings
+        if test "$r" != "" && ! grep -q "WARNING"<<< "$r"; then
+            break;
+        fi
+    done
     if test "$2" = "$r"; then
         count_ok
         echo " OK $r"
@@ -163,6 +171,9 @@ check_error "open_dialog:nnn" "ignoring GtkFileChooserDialog command \"open_dial
 check_error "fontbutton1:nnn" "ignoring GtkFontButton command \"fontbutton1:nnn\""
 # GtkColorButton
 check_error "colorbutton1:nnn" "ignoring GtkColorButton command \"colorbutton1:nnn\""
+# GtkPrintUnixDialog
+check_error "printdialog:nnn" "ignoring GtkPrintUnixDialog command \"printdialog:nnn\""
+check_error "statusbar1:push Click \"Print\"\n printdialog:print nonexistent.ps" "ignoring GtkPrintUnixDialog command \" printdialog:print nonexistent.ps\""
 # GtkScale
 check_error "scale1:nnn" "ignoring GtkScale command \"scale1:nnn\""
 # GtkProgressBar
@@ -363,12 +374,14 @@ rm $FERR
 
 
 #exit
+echo "
 # BATCH THREE
 #
 # Tests for the principal functionality---valid actions leading to
 # correct results.  Manual intervention is required.  Instructions
 # will be given on the statusbar of the test GUI.
 ######################################################################
+"
 
 mkfifo $FOUT
 
@@ -527,6 +540,7 @@ check 1 "statusbar1:push Click \"Select\" (2)\n colorbutton1:set_color rgb(0,255
 check 1 "statusbar1:push Click \"Select\" (3)\n colorbutton1:set_color #00f\n colorbutton1:force" "colorbutton1:color rgb(0,0,255)"
 check 1 "statusbar1:push Click \"Select\" (4)\n colorbutton1:set_color #ffff00000000\n colorbutton1:force" "colorbutton1:color rgb(255,0,0)"
 check 1 "statusbar1:push Click \"Select\" (5)\n colorbutton1:set_color rgba(0,255,0,.5)\n colorbutton1:force" "colorbutton1:color rgba(0,255,0,0.5)"
+check 0 "statusbar1:push Click \"Cancel\"\n printdialog:print nonexistent.ps"
 check 1 "statusbar1:push Press \"OK\" if both 1752-03-13 and 1752-03-14 are marked on the calendar\n calendar1:mark_day 13\n calendar1:mark_day 14" "button1:clicked"
 check 1 "statusbar1:push Press \"OK\" if 1752-03-13 and 1752-03-14 are no longer marked on the calendar\n calendar1:clear_marks" "button1:clicked"
 check 3 "statusbar1:push Double-click on 1752-03-13 in the calendar" "calendar1:clicked 1752-03-13" "calendar1:clicked 1752-03-13" "calendar1:doubleclicked 1752-03-13"

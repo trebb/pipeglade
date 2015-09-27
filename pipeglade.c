@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <gtk/gtk.h>
+#include <gtk/gtkunixprint.h>
 #include <inttypes.h>
 #include <locale.h>
 #include <math.h>
@@ -1079,6 +1080,43 @@ update_font_button(GtkFontButton *font_button, char *action, char *data, char *w
 }
 
 static void
+update_print_dialog(GtkPrintUnixDialog *dialog, char *action, char *data, char *whole_msg)
+{
+        gint response_id;
+        GtkPrinter *printer;
+        GtkPrintSettings *settings;
+        GtkPageSetup *page_setup;
+        GtkPrintJob *job;
+
+        if (eql(action, "print")) {
+                response_id = gtk_dialog_run(GTK_DIALOG(dialog));
+                switch (response_id) {
+                case GTK_RESPONSE_OK:
+                        printer = gtk_print_unix_dialog_get_selected_printer(dialog);
+                        settings = gtk_print_unix_dialog_get_settings(dialog);
+                        page_setup = gtk_print_unix_dialog_get_page_setup(dialog);
+                        job = gtk_print_job_new(data, printer, settings, page_setup);
+                        if (gtk_print_job_set_source_file(job, data, NULL)) 
+                                gtk_print_job_send(job, NULL, NULL, NULL);
+                        else 
+                                ign_cmd(GTK_TYPE_PRINT_UNIX_DIALOG, whole_msg);
+                        g_clear_object(&settings);
+                        g_clear_object(&job);
+                        break;
+                case GTK_RESPONSE_CANCEL:
+                case GTK_RESPONSE_DELETE_EVENT:
+                        break;
+                default:
+                        fprintf(stderr, "%s sent an unexpected response id (%d)\n",
+                                widget_name(GTK_WIDGET(dialog)), response_id);
+                        break;
+                }
+                gtk_widget_hide(GTK_WIDGET(dialog));
+        } else
+                ign_cmd(GTK_TYPE_PRINT_UNIX_DIALOG, whole_msg);
+}
+
+static void
 update_image(GtkImage *image, char *action, char *data, char *whole_msg)
 {
         GtkIconSize size;
@@ -1374,6 +1412,8 @@ update_ui(struct ui_data *ud)
                 update_color_button(GTK_COLOR_CHOOSER(obj), action, data, ud->msg);
         else if (type == GTK_TYPE_FONT_BUTTON)
                 update_font_button(GTK_FONT_BUTTON(obj), action, data, ud->msg);
+        else if (type == GTK_TYPE_PRINT_UNIX_DIALOG)
+                update_print_dialog(GTK_PRINT_UNIX_DIALOG(obj), action, data, ud->msg);
         else if (type == GTK_TYPE_SWITCH)
                 update_switch(GTK_SWITCH(obj), action, data, ud->msg);
         else if (type == GTK_TYPE_TOGGLE_BUTTON || type == GTK_TYPE_RADIO_BUTTON || type == GTK_TYPE_CHECK_BUTTON)
@@ -1498,7 +1538,7 @@ fifo(const char *name, const char *mode)
         }
 }
 
-/* 
+/*
  * Remove suffix from name; find the object named like this
  */
 static GObject *
@@ -1525,8 +1565,8 @@ connect_widget_signals(gpointer *obj, gpointer *builder)
                 name = widget_name(obj);
         if (type == GTK_TYPE_TREE_VIEW_COLUMN)
                 g_signal_connect(obj, "clicked", G_CALLBACK(cb), "clicked");
-        if (type == GTK_TYPE_BUTTON) {
-                /* button associated with a GtkTextView */
+        else if (type == GTK_TYPE_BUTTON) {
+                /* Button associated with a GtkTextView. */
                 if ((suffix = strstr(name, "_send_text")) != NULL &&
                     GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(suffix, name, builder)))
                         g_signal_connect(obj, "clicked", G_CALLBACK(cb_send_text),
@@ -1535,7 +1575,11 @@ connect_widget_signals(gpointer *obj, gpointer *builder)
                          GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(suffix, name, builder)))
                         g_signal_connect(obj, "clicked", G_CALLBACK(cb_send_text_selection),
                                          gtk_text_view_get_buffer(GTK_TEXT_VIEW(obj2)));
-                /* button associated with (and part of) a GtkDialog */
+                /* Buttons associated with (and part of) a GtkDialog.
+                 * (We shun response ids which could be returned from
+                 * gtk_dialog_run() because that would require the
+                 * user to define those response ids in Glade,
+                 * numerically */
                 else if ((suffix = strstr(name, "_cancel")) != NULL &&
                          GTK_IS_DIALOG(obj2 = obj_sans_suffix(suffix, name, builder)))
                         if (eql(widget_name(obj2), MAIN_WIN))
@@ -1592,7 +1636,7 @@ connect_widget_signals(gpointer *obj, gpointer *builder)
                 g_signal_connect(obj, "draw", G_CALLBACK(cb_draw), NULL);
 }
 
-/* 
+/*
  * We keep a list of one widget style provider for each widget
  */
 static void
