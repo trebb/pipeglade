@@ -1093,20 +1093,20 @@ moves the slider to value
 .El
 .Ss GtkSocket
 .Ic GtkSocket
-may be unsupported by Glade, so its definition needs to be inserted
+may be unsupported by Glade, but its definition can be inserted
 manually into the GtkBuilder (.ui) file:
 .Bf -literal
- <child>
-   <object class="GtkSocket" id="socket1">
-     <property name="visible">True</property>
-     <property name="can_focus">True</property>
-   </object>
-   <packing>
-     <property name="expand">False</property>
-     <property name="fill">True</property>
-     <property name="position">1</property>
-   </packing>
- </child>
+ \ \ <child>
+ \ \ \ \ <object class="GtkSocket" id="socket1">
+ \ \ \ \ \ \ <property name="visible">True</property>
+ \ \ \ \ \ \ <property name="can_focus">True</property>
+ \ \ \ \ </object>
+ \ \ \ \ <packing>
+ \ \ \ \ \ \ <property name="expand">True</property>
+ \ \ \ \ \ \ <property name="fill">True</property>
+ \ \ \ \ \ \ <property name="position">1</property>
+ \ \ \ \ </packing>
+ \ \ </child>
 .Ef
 .Bl -tag -width "commands "
 .It Commands
