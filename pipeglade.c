@@ -71,7 +71,7 @@ usage(char **argv)
                 "[-e xid] "
                 "[-i in-fifo] "
                 "[-o out-fifo] "
-                "[-u glade-builder-file.ui] "
+                "[-u glade-file.ui] "
                 "[-G] "
                 "[-V]\n",
                 argv[0]);
@@ -1352,7 +1352,7 @@ update_socket(GtkSocket *socket, char *action, char *data, char *whole_msg)
                 snprintf(str, BUFLEN, "%lu", id);
                 send_msg(GTK_BUILDABLE(socket), "id", str, NULL);
         } else
-                ign_cmd(GTK_TYPE_WINDOW, whole_msg);
+                ign_cmd(GTK_TYPE_SOCKET, whole_msg);
 }
 
 static void
@@ -1720,7 +1720,8 @@ int
 main(int argc, char *argv[])
 {
         char opt;
-        char *xid_s = NULL, *in_fifo = NULL, *out_fifo = NULL, *ui_file = NULL;
+        char *in_fifo = NULL, *out_fifo = NULL, *ui_file = NULL;
+        char *xid_s = NULL, xid_t[BUFLEN];
         Window xid;
         GtkWidget *plug, *body;
         GtkBuilder *builder;
@@ -1770,6 +1771,11 @@ main(int argc, char *argv[])
                 gtk_widget_show(GTK_WIDGET(main_window));
         else {                  /* We're being XEmbedded */
                 xid = strtoul(xid_s, NULL, 10);
+                snprintf(xid_t, BUFLEN, "%lu", xid);
+                if (!eql(xid_s, xid_t)) {
+                        fprintf(stderr, "%s is not a valid XEmbed socket id\n", xid_s);
+                        exit(EXIT_FAILURE);
+                }
                 body = gtk_bin_get_child(GTK_BIN(main_window));
                 gtk_container_remove(GTK_CONTAINER(main_window), body);
                 plug = gtk_plug_new(xid);

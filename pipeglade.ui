@@ -798,7 +798,7 @@ et dolore magna aliqua.
             <property name="can_focus">True</property>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">7</property>
           </packing>
