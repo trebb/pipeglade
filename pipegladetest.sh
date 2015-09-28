@@ -77,14 +77,21 @@ check_call "./pipeglade -u nonexistent.ui" 1 "nonexistent.ui" ""
 check_call "./pipeglade -u bad_window.ui" 1 "no toplevel window named 'main'" ""
 check_call "./pipeglade -u www-template/404.html" 1 "html" ""
 check_call "./pipeglade -u README" 1 "Document must begin with an element" ""
+check_call "./pipeglade -e x" 1 "x is not a valid XEmbed socket id" ""
+check_call "./pipeglade -ex" 1 "x is not a valid XEmbed socket id" ""
+check_call "./pipeglade -e -77" 1 "-77 is not a valid XEmbed socket id" ""
+check_call "./pipeglade -e 77x" 1 "77x is not a valid XEmbed socket id" ""
+check_call "./pipeglade -e +77" 1 "+77 is not a valid XEmbed socket id" ""
+check_call "./pipeglade -e 999999999999999999999999999999" 1 "999999999999999999999999999999 is not a valid XEmbed socket id" ""
 touch $BAD_FIFO
 check_call "./pipeglade -i bad_fifo" 1 "making fifo" ""
 check_call "./pipeglade -o bad_fifo" 1 "making fifo" ""
 rm $BAD_FIFO
-check_call "./pipeglade -h" 0 "usage: ./pipeglade [-h] [-i in-fifo] [-o out-fifo] [-u glade-builder-file.ui] [-G] [-V]" ""
+check_call "./pipeglade -h" 0 "usage: ./pipeglade [-h] [-e xid] [-i in-fifo] [-o out-fifo] [-u glade-file.ui] [-G] [-V]" ""
 check_call "./pipeglade -G" 0 "" "GTK+ v"
 check_call "./pipeglade -V" 0 "" "."
 check_call "./pipeglade -X" 0 "option" ""
+check_call "./pipeglade -e" 0 "argument" ""
 check_call "./pipeglade -u" 0 "argument" ""
 check_call "./pipeglade -i" 0 "argument" ""
 check_call "./pipeglade -o" 0 "argument" ""
@@ -246,6 +253,8 @@ check_error "calendar1:select_date " "ignoring GtkCalendar command \"calendar1:s
 check_error "calendar1:select_date nnn" "ignoring GtkCalendar command \"calendar1:select_date nnn\""
 check_error "calendar1:select_date 2000-12-33" "ignoring GtkCalendar command \"calendar1:select_date 2000-12-33\""
 check_error "calendar1:select_date 2000-13-20" "ignoring GtkCalendar command \"calendar1:select_date 2000-13-20\""
+GtkSocket
+check_error "socket1:nnn" "ignoring GtkSocket command \"socket1:nnn\""
 # GtkDrawingArea
 check_error "drawingarea1:nnn" "ignoring GtkDrawingArea command \"drawingarea1:nnn\""
 check_error "drawingarea1:rectangle" "ignoring GtkDrawingArea command \"drawingarea1:rectangle\""
@@ -452,6 +461,14 @@ check_rm $FOUT
 
 # wait for $FIN and $FOUT to appear
 while test ! \( -e $FIN -a -e $FOUT \); do :; done
+
+check 0 "socket1:id"
+read XID <$FOUT
+XID=${XID/socket1:id }
+./pipeglade -u simple_dialog.ui -e $XID <<< "main_cancel:force" &
+check 2 "" "socket1:plug-added" "socket1:plug-removed"
+./pipeglade -u simple_dialog.ui -e $XID <<< "main_cancel:force" &
+check 2 "" "socket1:plug-added" "socket1:plug-removed"
 
 check 1 "entry1:set_text FFFF" "entry1:text FFFF"
 check 1 "entry1:set_text GGGG" "entry1:text GGGG"
