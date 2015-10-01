@@ -22,7 +22,6 @@
 
 PREFIX ?= /usr/local
 CCFLAGS += -Wall -Wextra -pedantic -g
-OS != uname
 # FreeBSD:
 # Suppressing warning: named variadic macros are a GNU extension
 # in /usr/local/include/X11/Xfuncproto.h:157:24:

@@ -66,5 +66,7 @@ broken.
 SUCCESSFUL BUILDS
 =================
 
-FreeBSD 10.1, GTK+ 3.14.5
 Debian wheezy, GTK+ 3.4.2
+Debian Jessie, GTK+ 3.14.5
+FreeBSD 10.1, GTK+ 3.14.5
+FreeBSD 10.2, GTK+ 3.16.6

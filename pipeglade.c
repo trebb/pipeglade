@@ -44,13 +44,22 @@
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 #define MAIN_WIN "main"
+#define USAGE                                   \
+        "usage: pipeglade "                     \
+        "[-h] "                                 \
+        "[-e xid] "                             \
+        "[-i in-fifo] "                         \
+        "[-o out-fifo] "                        \
+        "[-u glade-file.ui] "                   \
+        "[-G] "                                 \
+        "[-V]\n"
 
-#define OOM_ABORT                                                       \
-        {                                                               \
-                fprintf(stderr,                                         \
-                        "out of memory: %s (%s:%d)\n",                  \
-                        __func__, __FILE__, __LINE__);                  \
-                abort();                                                \
+#define OOM_ABORT                                       \
+        {                                               \
+                fprintf(stderr,                         \
+                        "out of memory: %s (%s:%d)\n",  \
+                        __func__, __FILE__, __LINE__);  \
+                abort();                                \
         }
 
 static FILE *in;
@@ -62,36 +71,20 @@ struct ui_data {
         bool msg_digested;
 };
 
+/*
+ * Print a formatted message to stream s and give up with status
+ */
 static void
-usage(char **argv)
+bye(int status, FILE *s, const char *fmt, ...)
 {
-        fprintf(stderr,
-                "usage: %s "
-                "[-h] "
-                "[-e xid] "
-                "[-i in-fifo] "
-                "[-o out-fifo] "
-                "[-u glade-file.ui] "
-                "[-G] "
-                "[-V]\n",
-                argv[0]);
-        exit(EXIT_SUCCESS);
-}
+        va_list ap0, ap;
 
-static void
-version(void)
-{
-        printf(VERSION "\n");
-        exit(EXIT_SUCCESS);
-}
-
-static void
-gtk_versions(void)
-{
-        printf("GTK+ v%d.%d.%d (running v%d.%d.%d)\n",
-               GTK_MAJOR_VERSION, GTK_MINOR_VERSION, GTK_MICRO_VERSION,
-               gtk_get_major_version(), gtk_get_minor_version(), gtk_get_micro_version());
-        exit(EXIT_SUCCESS);
+        va_start(ap0, fmt);
+        va_copy(ap, ap0);
+        vfprintf(s, fmt, ap);
+        va_end(ap);
+        va_end(ap0);
+        exit(status);
 }
 
 static bool
@@ -918,11 +911,11 @@ struct style_provider {
  * Change the style of the widget passed
  */
 static void
-update_widget_style(GtkWidget *widget, char *name , char *data)
+update_widget_style(GtkWidget *widget, const char *name , const char *data)
 {
         GtkStyleContext *context;
         struct style_provider *sp;
-        char *prefix = "* {", *suffix = "}";
+        const char *prefix = "* {", *suffix = "}";
         size_t sz;
 
         sz = strlen(prefix) + strlen(suffix) + strlen(data) + 1;
@@ -946,7 +939,8 @@ update_widget_style(GtkWidget *widget, char *name , char *data)
  * parameter
  */
 static void
-update_button(GtkButton *button, char *action, char *data, char *whole_msg)
+update_button(GtkButton *button, const char *action,
+              const char *data, const char *whole_msg)
 {
         if (eql(action, "set_label"))
                 gtk_button_set_label(button, data);
@@ -955,7 +949,8 @@ update_button(GtkButton *button, char *action, char *data, char *whole_msg)
 }
 
 static void
-update_calendar(GtkCalendar *calendar, char *action, char *data, char *whole_msg)
+update_calendar(GtkCalendar *calendar, const char *action,
+                const char *data, const char *whole_msg)
 {
         int year = 0, month = 0, day = 0;
 
@@ -979,7 +974,8 @@ update_calendar(GtkCalendar *calendar, char *action, char *data, char *whole_msg
 }
 
 static void
-update_color_button(GtkColorChooser *chooser, char *action, char *data, char *whole_msg)
+update_color_button(GtkColorChooser *chooser, const char *action,
+                    const char *data, const char *whole_msg)
 {
         GdkRGBA color;
 
@@ -991,7 +987,8 @@ update_color_button(GtkColorChooser *chooser, char *action, char *data, char *wh
 }
 
 static void
-update_combo_box_text(GtkComboBoxText *combobox, char *action, char *data, char *whole_msg)
+update_combo_box_text(GtkComboBoxText *combobox, const char *action,
+                      char *data, const char *whole_msg)
 {
         if (eql(action, "prepend_text"))
                 gtk_combo_box_text_prepend_text(combobox, data);
@@ -1009,7 +1006,8 @@ update_combo_box_text(GtkComboBoxText *combobox, char *action, char *data, char 
 }
 
 static void
-update_frame(GtkFrame *frame, char *action, char *data, char *whole_msg)
+update_frame(GtkFrame *frame, const char *action,
+             const char *data, const char *whole_msg)
 {
         if (eql(action, "set_label"))
                 gtk_frame_set_label(frame, data);
@@ -1018,7 +1016,8 @@ update_frame(GtkFrame *frame, char *action, char *data, char *whole_msg)
 }
 
 static void
-update_drawing_area(GtkWidget *widget, char *action, char *data, char *whole_msg)
+update_drawing_area(GtkWidget *widget, char *action,
+                    char *data, const char *whole_msg)
 {
         if (eql(action, "remove")) {
                 if (!rem_draw_op(widget, data))
@@ -1034,7 +1033,8 @@ update_drawing_area(GtkWidget *widget, char *action, char *data, char *whole_msg
 }
 
 static void
-update_entry(GtkEntry *entry, char *action, char *data, char *whole_msg, GType type)
+update_entry(GtkEntry *entry, const char *action,
+             const char *data, const char *whole_msg, GType type)
 {
         if (eql(action, "set_text"))
                 gtk_entry_set_text(entry, data);
@@ -1043,7 +1043,8 @@ update_entry(GtkEntry *entry, char *action, char *data, char *whole_msg, GType t
 }
 
 static void
-update_label(GtkLabel *label, char *action, char *data, char *whole_msg)
+update_label(GtkLabel *label, const char *action,
+             const char *data, const char *whole_msg)
 {
         if (eql(action, "set_text"))
                 gtk_label_set_text(label, data);
@@ -1052,7 +1053,8 @@ update_label(GtkLabel *label, char *action, char *data, char *whole_msg)
 }
 
 static void
-update_expander(GtkExpander *expander, char *action, char *data, char *whole_msg)
+update_expander(GtkExpander *expander, const char *action,
+                const char *data, const char *whole_msg)
 {
         if (eql(action, "set_expanded"))
                 gtk_expander_set_expanded(expander, strtol(data, NULL, 10));
@@ -1063,7 +1065,8 @@ update_expander(GtkExpander *expander, char *action, char *data, char *whole_msg
 }
 
 static void
-update_file_chooser_button(GtkFileChooser *chooser, char *action, char *data, char *whole_msg)
+update_file_chooser_button(GtkFileChooser *chooser, const char *action,
+                           const char *data, const char *whole_msg)
 {
         if (eql(action, "set_filename"))
                 gtk_file_chooser_set_filename(chooser, data);
@@ -1072,7 +1075,8 @@ update_file_chooser_button(GtkFileChooser *chooser, char *action, char *data, ch
 }
 
 static void
-update_file_chooser_dialog(GtkFileChooser *chooser, char *action, char *data, char *whole_msg)
+update_file_chooser_dialog(GtkFileChooser *chooser, const char *action,
+                           const char *data, const char *whole_msg)
 {
         if (eql(action, "set_filename"))
                 gtk_file_chooser_set_filename(chooser, data);
@@ -1083,7 +1087,8 @@ update_file_chooser_dialog(GtkFileChooser *chooser, char *action, char *data, ch
 }
 
 static void
-update_font_button(GtkFontButton *font_button, char *action, char *data, char *whole_msg)
+update_font_button(GtkFontButton *font_button, const char *action,
+                   const char *data, const char *whole_msg)
 {
         if (eql(action, "set_font_name"))
                 gtk_font_button_set_font_name(font_button, data);
@@ -1092,7 +1097,8 @@ update_font_button(GtkFontButton *font_button, char *action, char *data, char *w
 }
 
 static void
-update_print_dialog(GtkPrintUnixDialog *dialog, char *action, char *data, char *whole_msg)
+update_print_dialog(GtkPrintUnixDialog *dialog, const char *action,
+                    const char *data, const char *whole_msg)
 {
         gint response_id;
         GtkPrinter *printer;
@@ -1108,9 +1114,9 @@ update_print_dialog(GtkPrintUnixDialog *dialog, char *action, char *data, char *
                         settings = gtk_print_unix_dialog_get_settings(dialog);
                         page_setup = gtk_print_unix_dialog_get_page_setup(dialog);
                         job = gtk_print_job_new(data, printer, settings, page_setup);
-                        if (gtk_print_job_set_source_file(job, data, NULL)) 
+                        if (gtk_print_job_set_source_file(job, data, NULL))
                                 gtk_print_job_send(job, NULL, NULL, NULL);
-                        else 
+                        else
                                 ign_cmd(GTK_TYPE_PRINT_UNIX_DIALOG, whole_msg);
                         g_clear_object(&settings);
                         g_clear_object(&job);
@@ -1129,7 +1135,8 @@ update_print_dialog(GtkPrintUnixDialog *dialog, char *action, char *data, char *
 }
 
 static void
-update_image(GtkImage *image, char *action, char *data, char *whole_msg)
+update_image(GtkImage *image, const char *action,
+             const char *data, const char *whole_msg)
 {
         GtkIconSize size;
 
@@ -1143,7 +1150,8 @@ update_image(GtkImage *image, char *action, char *data, char *whole_msg)
 }
 
 static void
-update_notebook(GtkNotebook *notebook, char *action, char *data, char *whole_msg)
+update_notebook(GtkNotebook *notebook, const char *action,
+                const char *data, const char *whole_msg)
 {
         if (eql(action, "set_current_page"))
                 gtk_notebook_set_current_page(notebook, strtol(data, NULL, 10));
@@ -1152,7 +1160,8 @@ update_notebook(GtkNotebook *notebook, char *action, char *data, char *whole_msg
 }
 
 static void
-update_progress_bar(GtkProgressBar *progressbar, char *action, char *data, char *whole_msg)
+update_progress_bar(GtkProgressBar *progressbar, const char *action,
+                    const char *data, const char *whole_msg)
 {
         if (eql(action, "set_text"))
                 gtk_progress_bar_set_text(progressbar, *data == '\0' ? NULL : data);
@@ -1163,7 +1172,8 @@ update_progress_bar(GtkProgressBar *progressbar, char *action, char *data, char 
 }
 
 static void
-update_scale(GtkRange *range, char *action, char *data, char *whole_msg)
+update_scale(GtkRange *range, const char *action,
+             const char *data, const char *whole_msg)
 {
         if (eql(action, "set_value"))
                 gtk_range_set_value(range, strtod(data, NULL));
@@ -1172,7 +1182,7 @@ update_scale(GtkRange *range, char *action, char *data, char *whole_msg)
 }
 
 static void
-update_spinner(GtkSpinner *spinner, char *action, char *whole_msg)
+update_spinner(GtkSpinner *spinner, const char *action, const char *whole_msg)
 {
         if (eql(action, "start"))
                 gtk_spinner_start(spinner);
@@ -1183,7 +1193,8 @@ update_spinner(GtkSpinner *spinner, char *action, char *whole_msg)
 }
 
 static void
-update_statusbar(GtkStatusbar *statusbar, char *action, char *data, char *whole_msg)
+update_statusbar(GtkStatusbar *statusbar, const char *action,
+                 const char *data, const char *whole_msg)
 {
         if (eql(action, "push"))
                 gtk_statusbar_push(statusbar, 0, data);
@@ -1196,7 +1207,8 @@ update_statusbar(GtkStatusbar *statusbar, char *action, char *data, char *whole_
 }
 
 static void
-update_switch(GtkSwitch *switcher, char *action, char *data, char *whole_msg)
+update_switch(GtkSwitch *switcher, const char *action,
+              const char *data, const char *whole_msg)
 {
         if (eql(action, "set_active"))
                 gtk_switch_set_active(switcher, strtol(data, NULL, 10));
@@ -1205,7 +1217,8 @@ update_switch(GtkSwitch *switcher, char *action, char *data, char *whole_msg)
 }
 
 static void
-update_text_view(GtkTextView *view, char *action, char *data, char *whole_msg)
+update_text_view(GtkTextView *view, const char *action,
+                 const char *data, const char *whole_msg)
 {
         GtkTextBuffer *textbuf = gtk_text_view_get_buffer(view);
         GtkTextIter a, b;
@@ -1233,7 +1246,8 @@ update_text_view(GtkTextView *view, char *action, char *data, char *whole_msg)
 }
 
 static void
-update_toggle_button(GtkToggleButton *toggle, char *action, char *data, char *whole_msg, GType type)
+update_toggle_button(GtkToggleButton *toggle, const char *action,
+                     const char *data, const char *whole_msg, GType type)
 {
         if (eql(action, "set_label"))
                 gtk_button_set_label(GTK_BUTTON(toggle), data);
@@ -1244,7 +1258,8 @@ update_toggle_button(GtkToggleButton *toggle, char *action, char *data, char *wh
 }
 
 static void
-update_tree_view(GtkTreeView *view, char *action, char *data, char *whole_msg)
+update_tree_view(GtkTreeView *view, const char *action,
+                 const char *data, const char *whole_msg)
 {
         GtkTreeModel *model = gtk_tree_view_get_model(view);
         GtkListStore *store = GTK_LIST_STORE(model);
@@ -1341,7 +1356,8 @@ update_tree_view(GtkTreeView *view, char *action, char *data, char *whole_msg)
 }
 
 static void
-update_socket(GtkSocket *socket, char *action, char *data, char *whole_msg)
+update_socket(GtkSocket *socket, const char *action,
+              const char *data, const char *whole_msg)
 {
         Window id;
         char str[BUFLEN];
@@ -1356,7 +1372,8 @@ update_socket(GtkSocket *socket, char *action, char *data, char *whole_msg)
 }
 
 static void
-update_window(GtkWindow *window, char *action, char *data, char *whole_msg)
+update_window(GtkWindow *window, const char *action,
+              const char *data, const char *whole_msg)
 {
         if (eql(action, "set_title"))
                 gtk_window_set_title(window, data);
@@ -1365,7 +1382,7 @@ update_window(GtkWindow *window, char *action, char *data, char *whole_msg)
 }
 
 static void
-fake_ui_activity(GObject *obj, char *whole_msg, GType type)
+fake_ui_activity(GObject *obj, const char *whole_msg, GType type)
 {
         if (!GTK_IS_WIDGET(obj))
                 ign_cmd(type, whole_msg);
@@ -1519,23 +1536,21 @@ fifo(const char *name, const char *mode)
 {
         struct stat sb;
         int fd;
-        FILE *stream;
+        FILE *stream = NULL;
 
         if (name != NULL && (stat(name, &sb), !S_ISFIFO(sb.st_mode)))
-                if (mkfifo(name, 0666) != 0) {
-                        perror("making fifo");
-                        exit(EXIT_FAILURE);
-                }
+                if (mkfifo(name, 0666) != 0)
+                        bye(EXIT_FAILURE, stderr,
+                            "making fifo: %s\n", strerror(errno));
         switch (mode[0]) {
         case 'r':
                 if (name == NULL)
                         stream = stdin;
                 else {
                         fd = open(name, O_RDWR | O_NONBLOCK);
-                        if (fd < 0) {
-                                perror("opening fifo");
-                                exit(EXIT_FAILURE);
-                        }
+                        if (fd < 0)
+                                bye(EXIT_FAILURE, stderr,
+                                    "opening fifo: %s\n", strerror(errno));
                         stream = fdopen(fd, "r");
                 }
                 break;
@@ -1545,10 +1560,9 @@ fifo(const char *name, const char *mode)
                 else {
                         /* fopen blocks if there is no reader, so here is one */
                         fd = open(name, O_RDONLY | O_NONBLOCK);
-                        if (fd < 0) {
-                                perror("opening fifo");
-                                exit(EXIT_FAILURE);
-                        }
+                        if (fd < 0)
+                                bye(EXIT_FAILURE, stderr,
+                                    "opening fifo: %s\n", strerror(errno));
                         stream = fopen(name, "w");
                         /* unblocking done */
                         close(fd);
@@ -1558,20 +1572,18 @@ fifo(const char *name, const char *mode)
                 abort();
                 break;
         }
-        if (stream == NULL) {
-                perror("opening fifo");
-                exit(EXIT_FAILURE);
-        } else {
+        if (stream == NULL)
+                bye(EXIT_FAILURE, stderr, "opening fifo: %s\n", strerror(errno));
+        else
                 setvbuf(stream, NULL, _IOLBF, 0);
-                return stream;
-        }
+        return stream;
 }
 
 /*
  * Remove suffix from name; find the object named like this
  */
 static GObject *
-obj_sans_suffix(char *suffix, const char *name, gpointer *builder)
+obj_sans_suffix(const char *suffix, const char *name, gpointer *builder)
 {
         int str_l;
         char str[BUFLEN + 1] = {'\0'};
@@ -1739,46 +1751,48 @@ main(int argc, char *argv[])
                 case 'i': in_fifo = optarg; break;
                 case 'o': out_fifo = optarg; break;
                 case 'u': ui_file = optarg; break;
-                case 'G': gtk_versions(); break;
-                case 'V': version(); break;
+                case 'G': bye(EXIT_SUCCESS, stdout, "GTK+ v%d.%d.%d (running v%d.%d.%d)\n",
+                              GTK_MAJOR_VERSION, GTK_MINOR_VERSION, GTK_MICRO_VERSION,
+                              gtk_get_major_version(), gtk_get_minor_version(),
+                              gtk_get_micro_version());
+                        break;
+                case 'V': bye(EXIT_SUCCESS, stdout, "%s\n", VERSION); break;
+                case 'h': bye(EXIT_SUCCESS, stdout, USAGE); break;
                 case '?':
-                case 'h':
-                default: usage(argv); break;
+                default: bye(EXIT_FAILURE, stderr, USAGE); break;
                 }
         }
-        if (argv[optind] != NULL) {
-                fprintf(stderr, "illegal parameter '%s'\n", argv[optind]);
-                usage(argv);
-        }
+        if (argv[optind] != NULL)
+                bye(EXIT_FAILURE, stderr,
+                    "illegal parameter '%s'\n" USAGE, argv[optind]);
         if (ui_file == NULL)
                 ui_file = "pipeglade.ui";
         gtk_init(0, NULL);
         builder = gtk_builder_new();
-        if (gtk_builder_add_from_file(builder, ui_file, &error) == 0) {
-                fprintf(stderr, "%s\n", error->message);
-                exit(EXIT_FAILURE);
-        }
+        if (gtk_builder_add_from_file(builder, ui_file, &error) == 0)
+                bye(EXIT_FAILURE, stderr, "%s\n", error->message);
         in = fifo(in_fifo, "r");
         out = fifo(out_fifo, "w");
         pthread_create(&receiver, NULL, digest_msg, (void*)builder);
         main_window = gtk_builder_get_object(builder, MAIN_WIN);
-        if (!GTK_IS_WINDOW(main_window)) {
-                fprintf(stderr, "no toplevel window named \'" MAIN_WIN "\'\n");
-                exit(EXIT_FAILURE);
-        }
+        if (!GTK_IS_WINDOW(main_window))
+                bye(EXIT_FAILURE, stderr,
+                    "no toplevel window named \'" MAIN_WIN "\'\n");
         prepare_widgets(builder);
         if (xid_s == NULL)      /* standalone */
                 gtk_widget_show(GTK_WIDGET(main_window));
         else {                  /* We're being XEmbedded */
                 xid = strtoul(xid_s, NULL, 10);
                 snprintf(xid_t, BUFLEN, "%lu", xid);
-                if (!eql(xid_s, xid_t)) {
-                        fprintf(stderr, "%s is not a valid XEmbed socket id\n", xid_s);
-                        exit(EXIT_FAILURE);
-                }
+                if (!eql(xid_s, xid_t))
+                        bye(EXIT_FAILURE, stderr,
+                            "%s is not a valid XEmbed socket id\n", xid_s);
                 body = gtk_bin_get_child(GTK_BIN(main_window));
                 gtk_container_remove(GTK_CONTAINER(main_window), body);
                 plug = gtk_plug_new(xid);
+                if (!gtk_plug_get_embedded(GTK_PLUG(plug)))
+                        bye(EXIT_FAILURE, stderr,
+                            "unable to embed into XEmbed socket %s\n", xid_s);
                 gtk_container_add(GTK_CONTAINER(plug), body);
                 gtk_widget_show(plug);
         }
