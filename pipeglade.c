@@ -1038,6 +1038,8 @@ update_entry(GtkEntry *entry, const char *action,
 {
         if (eql(action, "set_text"))
                 gtk_entry_set_text(entry, data);
+        else if (eql(action, "set_placeholder_text"))
+                gtk_entry_set_placeholder_text(entry, data);
         else
                 ign_cmd(type, whole_msg);
 }

@@ -472,6 +472,11 @@ check 2 "" "socket1:plug-added" "socket1:plug-removed"
 check 2 "" "socket1:plug-added" "socket1:plug-removed"
 
 check 1 "entry1:set_text FFFF" "entry1:text FFFF"
+check 1 "entry1:set_text" "entry1:text"
+check 1 "entry1:set_text FFFF" "entry1:text FFFF"
+check 1 "entry1:set_text " "entry1:text"
+check 0 "entry1:set_placeholder_text hint hint" # not much of a test
+check 1 "entry1:set_text FFFF" "entry1:text FFFF"
 check 1 "entry1:set_text GGGG" "entry1:text GGGG"
 check 1 "entry1:force" "entry1:text GGGG"
 check 1 "spinbutton1:set_text 33.0" "spinbutton1:text 33.0"
