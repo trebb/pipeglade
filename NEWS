@@ -1,4 +1,4 @@
-(unreleased)
+4.1.0 (2015-10-02)
 ------------------
   * Add support for the XEmbed protocol, both as a GtkPlug and a
   GtkSocket.
