@@ -12,6 +12,8 @@ Visit http://pipeglade.boundp.org
 INSTALLATION
 ============
 
+GTK+ v3.2 or newer is required.
+
   make
 
 should build a usable binary.
