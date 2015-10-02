@@ -466,9 +466,9 @@ while test ! \( -e $FIN -a -e $FOUT \); do :; done
 check 0 "socket1:id"
 read XID <$FOUT
 XID=${XID/socket1:id }
-./pipeglade -u simple_dialog.ui -e $XID <<< "main_cancel:force" &
+(sleep .5; ./pipeglade -u simple_dialog.ui -e $XID <<< "main_cancel:force") &
 check 2 "" "socket1:plug-added" "socket1:plug-removed"
-./pipeglade -u simple_dialog.ui -e $XID <<< "main_cancel:force" &
+(sleep .5; ./pipeglade -u simple_dialog.ui -e $XID <<< "main_cancel:force") &
 check 2 "" "socket1:plug-added" "socket1:plug-removed"
 
 check 1 "entry1:set_text FFFF" "entry1:text FFFF"
