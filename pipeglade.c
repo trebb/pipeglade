@@ -303,17 +303,17 @@ cb_true(GtkBuildable *obj, gpointer user_data)
 }
 
 /*
- * Store a line from stream into buf, which should have been malloc'd
+ * Store a line from stream s into buf, which should have been malloc'd
  * to bufsize.  Enlarge buf and bufsize if necessary.
  */
 static size_t
-read_buf(FILE *stream, char **buf, size_t *bufsize)
+read_buf(FILE *s, char **buf, size_t *bufsize)
 {
         size_t i = 0;
         int c;
 
         for (;;) {
-                c = getc(stream);
+                c = getc(s);
                 if (c == EOF) {
                         i = 0;
                         nanosleep(&(struct timespec){0, 1e7}, NULL);
@@ -325,7 +325,7 @@ read_buf(FILE *stream, char **buf, size_t *bufsize)
                         if ((*buf = realloc(*buf, *bufsize = *bufsize * 2)) == NULL)
                                 OOM_ABORT;
                 if (c == '\\')
-                        switch (c = getc(stream)) {
+                        switch (c = getc(s)) {
                         case 'n': (*buf)[i++] = '\n'; break;
                         case 'r': (*buf)[i++] = '\r'; break;
                         default: (*buf)[i++] = c; break;
@@ -1538,7 +1538,7 @@ fifo(const char *name, const char *mode)
 {
         struct stat sb;
         int fd;
-        FILE *stream = NULL;
+        FILE *s = NULL;
 
         if (name != NULL && (stat(name, &sb), !S_ISFIFO(sb.st_mode)))
                 if (mkfifo(name, 0666) != 0)
@@ -1547,25 +1547,25 @@ fifo(const char *name, const char *mode)
         switch (mode[0]) {
         case 'r':
                 if (name == NULL)
-                        stream = stdin;
+                        s = stdin;
                 else {
                         fd = open(name, O_RDWR | O_NONBLOCK);
                         if (fd < 0)
                                 bye(EXIT_FAILURE, stderr,
                                     "opening fifo: %s\n", strerror(errno));
-                        stream = fdopen(fd, "r");
+                        s = fdopen(fd, "r");
                 }
                 break;
         case 'w':
                 if (name == NULL)
-                        stream = stdout;
+                        s = stdout;
                 else {
                         /* fopen blocks if there is no reader, so here is one */
                         fd = open(name, O_RDONLY | O_NONBLOCK);
                         if (fd < 0)
                                 bye(EXIT_FAILURE, stderr,
                                     "opening fifo: %s\n", strerror(errno));
-                        stream = fopen(name, "w");
+                        s = fopen(name, "w");
                         /* unblocking done */
                         close(fd);
                 }
@@ -1574,11 +1574,11 @@ fifo(const char *name, const char *mode)
                 abort();
                 break;
         }
-        if (stream == NULL)
+        if (s == NULL)
                 bye(EXIT_FAILURE, stderr, "opening fifo: %s\n", strerror(errno));
         else
-                setvbuf(stream, NULL, _IOLBF, 0);
-        return stream;
+                setvbuf(s, NULL, _IOLBF, 0);
+        return s;
 }
 
 /*
@@ -1735,7 +1735,7 @@ main(int argc, char *argv[])
 {
         char opt;
         char *in_fifo = NULL, *out_fifo = NULL, *ui_file = NULL;
-        char *xid_s = NULL, xid_t[BUFLEN];
+        char *xid_s = NULL, xid_s2[BUFLEN];
         Window xid;
         GtkWidget *plug, *body;
         GtkBuilder *builder;
@@ -1785,8 +1785,8 @@ main(int argc, char *argv[])
                 gtk_widget_show(GTK_WIDGET(main_window));
         else {                  /* We're being XEmbedded */
                 xid = strtoul(xid_s, NULL, 10);
-                snprintf(xid_t, BUFLEN, "%lu", xid);
-                if (!eql(xid_s, xid_t))
+                snprintf(xid_s2, BUFLEN, "%lu", xid);
+                if (!eql(xid_s, xid_s2))
                         bye(EXIT_FAILURE, stderr,
                             "%s is not a valid XEmbed socket id\n", xid_s);
                 body = gtk_bin_get_child(GTK_BIN(main_window));
