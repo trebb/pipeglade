@@ -31,6 +31,7 @@
 #include <math.h>
 #include <pthread.h>
 #include <search.h>
+#include <semaphore.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -69,8 +70,8 @@ struct ui_data {
         GtkBuilder *builder;
         size_t msg_size;
         char *msg;
-        bool msg_digested;
 };
+sem_t msg_digested;
 
 /*
  * Print a formatted message to stream s and give up with status
@@ -1493,7 +1494,7 @@ update_ui(struct ui_data *ud)
         else
                 ign_cmd(type, ud->msg);
 done:
-        ud->msg_digested = true;
+        sem_post(&msg_digested);
         return G_SOURCE_REMOVE;
 }
 
@@ -1522,11 +1523,9 @@ digest_msg(void *builder)
                 sscanf(ud.msg, " %c", &first_char);
                 ud.builder = builder;
                 if (first_char != '#') {
-                        ud.msg_digested = false;
                         pthread_testcancel();
                         gdk_threads_add_timeout(1, (GSourceFunc)update_ui, &ud);
-                        while (!ud.msg_digested)
-                                nanosleep(&(struct timespec){0, 1e6}, NULL);
+                        sem_wait(&msg_digested);
                 }
                 pthread_cleanup_pop(1);
         }
@@ -1774,6 +1773,7 @@ main(int argc, char *argv[])
                 bye(EXIT_FAILURE, stderr, "%s\n", error->message);
         in = fifo(in_fifo, "r");
         out = fifo(out_fifo, "w");
+        sem_init(&msg_digested, 0, 0);
         pthread_create(&receiver, NULL, digest_msg, (void*)builder);
         main_window = gtk_builder_get_object(builder, MAIN_WIN);
         if (!GTK_IS_WINDOW(main_window))
