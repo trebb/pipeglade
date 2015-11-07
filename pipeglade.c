@@ -123,7 +123,7 @@ send_msg(GtkBuildable *obj, const char *tag, ...)
                 while ((data = va_arg(ap, char *)) != NULL) {
                         size_t i = 0;
                         char c;
-                        
+
                         while ((c = data[i++]) != '\0')
                                 if (c == '\\')
                                         fprintf(out, "\\\\");
@@ -311,25 +311,29 @@ read_buf(FILE *s, char **buf, size_t *bufsize)
 {
         size_t i = 0;
         int c;
+        fd_set rfds;
+        int ifd = fileno(in);
+        bool esc = false;
 
+        FD_ZERO(&rfds);
+        FD_SET(ifd, &rfds);
         for (;;) {
+                select(ifd + 1, &rfds, NULL, NULL, NULL);
                 c = getc(s);
-                if (c == EOF) {
-                        i = 0;
-                        nanosleep(&(struct timespec){0, 1e7}, NULL);
-                        continue;
-                }
                 if (c == '\n')
                         break;
                 if (i >= *bufsize - 1)
                         if ((*buf = realloc(*buf, *bufsize = *bufsize * 2)) == NULL)
                                 OOM_ABORT;
-                if (c == '\\')
-                        switch (c = getc(s)) {
+                if (esc) {
+                        esc = false;
+                        switch (c) {
                         case 'n': (*buf)[i++] = '\n'; break;
                         case 'r': (*buf)[i++] = '\r'; break;
                         default: (*buf)[i++] = c; break;
                         }
+                } else if (c == '\\')
+                        esc = true;
                 else
                         (*buf)[i++] = c;
         }
@@ -1539,6 +1543,7 @@ fifo(const char *name, const char *mode)
         struct stat sb;
         int fd;
         FILE *s = NULL;
+        int bufmode;
 
         if (name != NULL && (stat(name, &sb), !S_ISFIFO(sb.st_mode)))
                 if (mkfifo(name, 0666) != 0)
@@ -1546,6 +1551,7 @@ fifo(const char *name, const char *mode)
                             "making fifo: %s\n", strerror(errno));
         switch (mode[0]) {
         case 'r':
+                bufmode = _IONBF;
                 if (name == NULL)
                         s = stdin;
                 else {
@@ -1557,6 +1563,7 @@ fifo(const char *name, const char *mode)
                 }
                 break;
         case 'w':
+                bufmode = _IOLBF;
                 if (name == NULL)
                         s = stdout;
                 else
@@ -1569,7 +1576,7 @@ fifo(const char *name, const char *mode)
         if (s == NULL)
                 bye(EXIT_FAILURE, stderr, "opening fifo: %s\n", strerror(errno));
         else
-                setvbuf(s, NULL, _IOLBF, 0);
+                setvbuf(s, NULL, bufmode, 0);
         return s;
 }
 
