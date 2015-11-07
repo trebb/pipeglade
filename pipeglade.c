@@ -36,6 +36,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/select.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
@@ -102,24 +103,27 @@ widget_name(void *obj)
 /*
  * Send GUI feedback to global stream "out".  The message format is
  * "<origin>:<tag> <data ...>".  The variadic arguments are
- * strings; last argument must be NULL.  We're being patient with
- * receivers which may intermittently close their end of the fifo, and
- * make a couple of retries if an error occurs.
+ * strings; last argument must be NULL.
  */
 static void
 send_msg(GtkBuildable *obj, const char *tag, ...)
 {
         va_list ap;
         char *data;
-        long nsec;
+        const char *w_name = widget_name(obj);
+        fd_set wfds;
+        int ofd = fileno(out);
+        struct timeval timeout = {1, 0};
 
-        for (nsec = 1e6; nsec < 1e9; nsec <<= 3) {
+        FD_ZERO(&wfds);
+        FD_SET(ofd, &wfds);
+        if (select(ofd + 1, NULL, &wfds, NULL, &timeout) == 1) {
                 va_start(ap, tag);
-                fprintf(out, "%s:%s ", widget_name(obj), tag);
+                fprintf(out, "%s:%s ", w_name, tag);
                 while ((data = va_arg(ap, char *)) != NULL) {
                         size_t i = 0;
                         char c;
-
+                        
                         while ((c = data[i++]) != '\0')
                                 if (c == '\\')
                                         fprintf(out, "\\\\");
@@ -130,14 +134,10 @@ send_msg(GtkBuildable *obj, const char *tag, ...)
                 }
                 va_end(ap);
                 putc('\n', out);
-                if (ferror(out)) {
-                        fprintf(stderr, "send error; retrying\n");
-                        clearerr(out);
-                        nanosleep(&(struct timespec){0, nsec}, NULL);
-                        putc('\n', out);
-                } else
-                        break;
-        }
+        } else
+                fprintf(stderr,
+                        "send error; discarding feedback message %s:%s\n",
+                        w_name, tag);
 }
 
 /*
@@ -1559,16 +1559,8 @@ fifo(const char *name, const char *mode)
         case 'w':
                 if (name == NULL)
                         s = stdout;
-                else {
-                        /* fopen blocks if there is no reader, so here is one */
-                        fd = open(name, O_RDONLY | O_NONBLOCK);
-                        if (fd < 0)
-                                bye(EXIT_FAILURE, stderr,
-                                    "opening fifo: %s\n", strerror(errno));
-                        s = fopen(name, "w");
-                        /* unblocking done */
-                        close(fd);
-                }
+                else
+                        s = fopen(name, "w+");
                 break;
         default:
                 abort();
