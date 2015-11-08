@@ -149,6 +149,12 @@ check_error "nnn" "ignoring command \"nnn\""
 check_error "nnn:set_text FFFF" "ignoring command \"nnn:set_text FFFF\""
 # Widget that shouldn't fire callbacks
 check_error "label1:force" "ignoring GtkLabel command \"label1:force\""
+# GtkWindow
+check_error "main:nnn" "ignoring GtkWindow command \"main:nnn\""
+check_error "main:move" "ignoring GtkWindow command \"main:move\""
+check_error "main:move " "ignoring GtkWindow command \"main:move \""
+check_error "main:move 700" "ignoring GtkWindow command \"main:move 700\""
+check_error "main:move 700 nnn" "ignoring GtkWindow command \"main:move 700 nnn\""
 # GtkLabel
 check_error "label1:nnn" "ignoring GtkLabel command \"label1:nnn\""
 # GtkImage
@@ -610,9 +616,20 @@ check 0 "drawingarea2:remove 3\n drawingarea2:refresh"
 
 check 1 "statusbar1:push Press \"OK\" if there is a spinning spinner\n spinner1:start" "button1:clicked"
 check 1 "statusbar1:push Press \"OK\" if the spinner has stopped\n spinner1:stop" "button1:clicked"
+
+check 1 "statusbar1:push Press \"OK\" if we are fullscreen now\n main:fullscreen" "button1:clicked"
+check 1 "statusbar1:push Press \"OK\" if we are back to default size\n main:unfullscreen" "button1:clicked"
+check 1 "statusbar1:push Press \"OK\" if window is 1000x1000 now\n main:resize 1000 1000" "button1:clicked"
+check 1 "statusbar1:push Press \"OK\" if we are back to default size again\n main:resize" "button1:clicked"
+check 1 "statusbar1:push Press \"OK\" if our NE corner is at 400, 200 now\n main:move 400 200" "button1:clicked"
+
 check 1 "statusbar1:push Press \"OK\" if there is now a \"Disconnect\" button\n button2:set_visible 1\n button2:set_sensitive 0" "button1:clicked"
 check 1 "statusbar1:push Press \"Disconnect\"\n button2:set_sensitive 1" "button2:clicked"
 check 1 "statusbar1:push Press \"OK\" if the window title is now \"ALMOST DONE\"\n main:set_title ALMOST DONE" "button1:clicked"
+
+check 1 "statusbar1:push Press \"BIG BUTTON\" inside the window titled \"PRESS ME\"\n window1:set_title PRESS ME\n window1:set_visible 1" "button3:clicked"
+check 0 "window1:set_visible 0"
+
 check 1 "statusbar1:push Press \"OK\" if the progress bar shows 90%\n progressbar1:set_fraction .9\n progressbar1:set_text" "button1:clicked"
 check 1 "statusbar1:push Press \"OK\" if the progress bar text reads \"The End\"\n progressbar1:set_text The End" "button1:clicked"
 check 1 "statusbar1:push Press \"No\"\n statusbar1:push nonsense 1\n statusbar1:push nonsense 2\n statusbar1:push nonsense 3\n statusbar1:pop\n statusbar1:pop\n statusbar1:pop" "no_button:clicked"

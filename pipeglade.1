@@ -1440,6 +1440,35 @@ none
 replaces the text in the title bar with
 .Fa string .
 .Pp
+.Qo
+.Fa name Ns
+.Ic :resize
+.Bq Fa width height
+.Qc
+changes the window size to
+.Fa width
+x
+.Fa height
+pixels if specified, or to the default size.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :move
+.Fa x y
+.Qc
+moves the window to position
+.Fa x , y .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :fullscreen
+.Qc
+and
+.Qo
+.Fa name Ns
+.Ic :unfullscreen
+.Qc
+switch fullscreen mode on and off.
 .It Feedback
 none
 .El

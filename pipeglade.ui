@@ -1343,4 +1343,17 @@ selection</property>
       <action-widget response="0">save_as_dialog_ok</action-widget>
     </action-widgets>
   </object>
+  <object class="GtkWindow" id="window1">
+    <property name="can_focus">False</property>
+    <property name="default_width">350</property>
+    <property name="default_height">350</property>
+    <child>
+      <object class="GtkButton" id="button3">
+        <property name="label" translatable="yes">BIG BUTTON</property>
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+      </object>
+    </child>
+  </object>
 </interface>

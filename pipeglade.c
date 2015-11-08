@@ -42,7 +42,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "4.1.0"
+#define VERSION "4.2.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 #define MAIN_WIN "main"
@@ -1382,9 +1382,24 @@ static void
 update_window(GtkWindow *window, const char *action,
               const char *data, const char *whole_msg)
 {
+        int x, y;
+
         if (eql(action, "set_title"))
                 gtk_window_set_title(window, data);
-        else
+        else if (eql(action, "fullscreen"))
+                gtk_window_fullscreen(window);
+        else if (eql(action, "unfullscreen"))
+                gtk_window_unfullscreen(window);
+        else if (eql(action, "resize")) {
+                if (sscanf(data, "%d %d", &x, &y) != 2)
+                        gtk_window_get_default_size(window, &x, &y);
+                gtk_window_resize(window, x, y);
+        } else if (eql(action, "move")) {
+                if (sscanf(data, "%d %d", &x, &y) == 2)
+                        gtk_window_move(window, x, y);
+                else
+                        ign_cmd(GTK_TYPE_WINDOW, whole_msg);
+        } else
                 ign_cmd(GTK_TYPE_WINDOW, whole_msg);
 }
 
