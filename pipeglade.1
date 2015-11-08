@@ -19,7 +19,7 @@
 .\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 .\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.Dd October 2, 2015
+.Dd November 8, 2015
 .Dt PIPEGLADE 1 CON
 .Os BSD
 .Sh NAME
@@ -1428,6 +1428,20 @@ none
 .Fa name Ns
 .Ic \&:clicked
 .Qc
+.El
+.Ss GtkWindow
+.Bl -tag -width "commands "
+.It Commands
+.Qo
+.Fa name Ns
+.Ic :set_title
+.Fa string
+.Qc
+replaces the text in the title bar with
+.Fa string .
+.Pp
+.It Feedback
+none
 .El
 .Sh EXAMPLES
 .Ss Discovering Pipeglade Interactively
