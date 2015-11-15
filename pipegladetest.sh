@@ -14,6 +14,15 @@ FERR=err.fifo
 BAD_FIFO=bad_fifo
 rm -f $FIN $FOUT $FERR $BAD_FIFO
 
+# colored messages: bright green
+OK=$'\E[32;1mOK\E[0m'
+# bright red
+FAIL=$'\E[31;1mFAIL\E[0m'
+EXPECTED=$'\E[31;1mEXPECTED\E[0m'
+# yellow
+CALL=$'\E[33mCALL\E[0m'
+SEND=$'\E[33mSEND\E[0m'
+
 TESTS=0
 FAILS=0
 OKS=0
@@ -31,12 +40,14 @@ count_ok() {
 check_rm() {
     if test -e $1; then
         count_fail
-        echo " FAIL $1 should be deleted"
+        echo " $FAIL $1 should be deleted"
     else
         count_ok
-        echo " OK   $1 deleted"
+        echo " $OK   $1 deleted"
     fi
 }
+
+
 
 echo "
 # BATCH ONE
@@ -54,22 +65,22 @@ check_call() {
     retval=$?
     error=$(<tmperr.txt)
     rm tmperr.txt
-    echo "CALL $1"
+    echo "$CALL $1"
     if test "$output" = "" -a "$o" = "" || (echo "$output" | grep -Fqe "$o"); then
         count_ok
-        echo " OK   STDOUT $output"
+        echo " $OK   STDOUT $output"
     else
         count_fail
-        echo " FAIL STDOUT $output"
-        echo "    EXPECTED $o"
+        echo " $FAIL STDOUT $output"
+        echo "    $EXPECTED $o"
     fi
     if test "$error" = "" -a "$e" = "" || test "$retval" -eq "$r" && (echo "$error" | grep -Fqe "$e"); then
         count_ok
-        echo " OK   EXIT/STDERR $retval $error"
+        echo " $OK   EXIT/STDERR $retval $error"
     else
         count_fail
-        echo " FAIL EXIT/STDERR $retval $error"
-        echo "         EXPECTED $r $e"
+        echo " $FAIL EXIT/STDERR $retval $error"
+        echo "         $EXPECTED $r $e"
     fi
 }
 
@@ -119,7 +130,7 @@ echo "
 mkfifo $FERR
 
 check_error() {
-    echo "SEND $1"
+    echo "$SEND $1"
     echo -e "$1" >$FIN
     while read r <$FERR; do
         # ignore irrelevant GTK warnings
@@ -129,11 +140,11 @@ check_error() {
     done
     if test "$2" = "$r"; then
         count_ok
-        echo " OK $r"
+        echo " $OK $r"
     else
         count_fail
-        echo " FAIL     $r"
-        echo " EXPECTED $2"
+        echo " $FAIL     $r"
+        echo " $EXPECTED $2"
     fi
 }
 
@@ -201,25 +212,28 @@ check_error "comboboxtext1:nnn" "ignoring GtkComboBoxText command \"comboboxtext
 check_error "comboboxtext1:force" "ignoring GtkComboBoxText command \"comboboxtext1:force\""
 # GtkTreeView
 check_error "treeview1:nnn" "ignoring GtkTreeView command \"treeview1:nnn\""
+check_error "treeview2:nnn" "ignoring GtkTreeView command \"treeview2:nnn\""
 check_error "treeview1:force" "ignoring GtkTreeView command \"treeview1:force\""
-# GtkTreeViewColumn
-check_error "treeviewcolumn3:nnn" "ignoring GtkTreeViewColumn command \"treeviewcolumn3:nnn\""
-check_error "treeviewcolumn3:force" "ignoring GtkTreeViewColumn command \"treeviewcolumn3:force\""
-# GtkEntry
-check_error "entry1:nnn" "ignoring GtkEntry command \"entry1:nnn\""
 # GtkTreeView insert_row
-check_error "treeview1:nnn" "ignoring GtkTreeView command \"treeview1:nnn\""
 check_error "treeview1:insert_row 10000" "ignoring GtkTreeView command \"treeview1:insert_row 10000\""
 check_error "treeview1:insert_row -1" "ignoring GtkTreeView command \"treeview1:insert_row -1\""
 check_error "treeview1:insert_row nnn" "ignoring GtkTreeView command \"treeview1:insert_row nnn\""
 check_error "treeview1:insert_row" "ignoring GtkTreeView command \"treeview1:insert_row\""
 check_error "treeview1:insert_row " "ignoring GtkTreeView command \"treeview1:insert_row \""
-# GtkTreeView remove_row
-check_error "treeview1:remove_row 10000" "ignoring GtkTreeView command \"treeview1:remove_row 10000\""
-check_error "treeview1:remove_row -1" "ignoring GtkTreeView command \"treeview1:remove_row -1\""
-check_error "treeview1:remove_row nnn" "ignoring GtkTreeView command \"treeview1:remove_row nnn\""
-check_error "treeview1:remove_row" "ignoring GtkTreeView command \"treeview1:remove_row\""
-check_error "treeview1:remove_row " "ignoring GtkTreeView command \"treeview1:remove_row \""
+check_error "treeview1:insert_row -1" "ignoring GtkTreeView command \"treeview1:insert_row -1\""
+check_error "treeview1:insert_row 1000" "ignoring GtkTreeView command \"treeview1:insert_row 1000\""
+check_error "treeview2:insert_row 0" "ignoring GtkTreeView command \"treeview2:insert_row 0\""
+check_error "treeview3:insert_row end" "missing model/ignoring GtkTreeView command \"treeview3:insert_row end\""
+check_error "treeview2:insert_row end\n treeview2:insert_row 0 as_child\n treeview2:insert_row 0:0 as_child\n treeview2:expand abc" "ignoring GtkTreeView command \" treeview2:expand abc\""
+check_error "treeview2:expand" "ignoring GtkTreeView command \"treeview2:expand\""
+check_error "treeview2:expand 0:abc" "ignoring GtkTreeView command \"treeview2:expand 0:abc\""
+check_error "treeview2:expand_all abc" "ignoring GtkTreeView command \"treeview2:expand_all abc\""
+check_error "treeview2:expand_all 0:abc" "ignoring GtkTreeView command \"treeview2:expand_all 0:abc\""
+check_error "treeview2:collapse abc" "ignoring GtkTreeView command \"treeview2:collapse abc\""
+check_error "treeview2:collapse 0:abc" "ignoring GtkTreeView command \"treeview2:collapse 0:abc\""
+check_error "treeview2:insert_row" "ignoring GtkTreeView command \"treeview2:insert_row\""
+check_error "treeview2:insert_row abc" "ignoring GtkTreeView command \"treeview2:insert_row abc\""
+check_error "treeview2:insert_row 0:abc" "ignoring GtkTreeView command \"treeview2:insert_row 0:abc\""
 # GtkTreeView move_row
 check_error "treeview1:move_row" "ignoring GtkTreeView command \"treeview1:move_row\""
 check_error "treeview1:move_row " "ignoring GtkTreeView command \"treeview1:move_row \""
@@ -230,6 +244,20 @@ check_error "treeview1:move_row nnn end" "ignoring GtkTreeView command \"treevie
 check_error "treeview1:move_row 0 10000" "ignoring GtkTreeView command \"treeview1:move_row 0 10000\""
 check_error "treeview1:move_row 0 -1" "ignoring GtkTreeView command \"treeview1:move_row 0 -1\""
 check_error "treeview1:move_row 0 nnn" "ignoring GtkTreeView command \"treeview1:move_row 0 nnn\""
+check_error "treeview2:move_row" "ignoring GtkTreeView command \"treeview2:move_row\""
+check_error "treeview2:move_row 0:0 abc" "ignoring GtkTreeView command \"treeview2:move_row 0:0 abc\""
+check_error "treeview2:move_row 0:0 0:abc" "ignoring GtkTreeView command \"treeview2:move_row 0:0 0:abc\""
+check_error "treeview2:move_row abc end" "ignoring GtkTreeView command \"treeview2:move_row abc end\""
+check_error "treeview2:move_row 0:abc end" "ignoring GtkTreeView command \"treeview2:move_row 0:abc end\""
+# GtkTreeView remove_row
+check_error "treeview1:remove_row 10000" "ignoring GtkTreeView command \"treeview1:remove_row 10000\""
+check_error "treeview1:remove_row -1" "ignoring GtkTreeView command \"treeview1:remove_row -1\""
+check_error "treeview1:remove_row nnn" "ignoring GtkTreeView command \"treeview1:remove_row nnn\""
+check_error "treeview1:remove_row" "ignoring GtkTreeView command \"treeview1:remove_row\""
+check_error "treeview1:remove_row " "ignoring GtkTreeView command \"treeview1:remove_row \""
+check_error "treeview2:remove_row" "ignoring GtkTreeView command \"treeview2:remove_row\""
+check_error "treeview2:remove_row abc" "ignoring GtkTreeView command \"treeview2:remove_row abc\""
+check_error "treeview2:remove_row 0:abc" "ignoring GtkTreeView command \"treeview2:remove_row 0:abc\""
 # GtkTreeView scroll
 check_error "treeview1:scroll" "ignoring GtkTreeView command \"treeview1:scroll\""
 check_error "treeview1:scroll " "ignoring GtkTreeView command \"treeview1:scroll \""
@@ -238,6 +266,17 @@ check_error "treeview1:scroll -1 1" "ignoring GtkTreeView command \"treeview1:sc
 check_error "treeview1:scroll 1 -1" "ignoring GtkTreeView command \"treeview1:scroll 1 -1\""
 check_error "treeview1:scroll nnn 1" "ignoring GtkTreeView command \"treeview1:scroll nnn 1\""
 check_error "treeview1:scroll 1 nnn" "ignoring GtkTreeView command \"treeview1:scroll 1 nnn\""
+check_error "treeview2:scroll" "ignoring GtkTreeView command \"treeview2:scroll\""
+check_error "treeview2:scroll abc" "ignoring GtkTreeView command \"treeview2:scroll abc\""
+check_error "treeview2:scroll 0:abc" "ignoring GtkTreeView command \"treeview2:scroll 0:abc\""
+check_error "treeview2:scroll abc 0" "ignoring GtkTreeView command \"treeview2:scroll abc 0\""
+check_error "treeview2:scroll 0:abc 0" "ignoring GtkTreeView command \"treeview2:scroll 0:abc 0\""
+check_error "treeview2:scroll 0:0" "ignoring GtkTreeView command \"treeview2:scroll 0:0\""
+check_error "treeview2:scroll 0:0 abc" "ignoring GtkTreeView command \"treeview2:scroll 0:0 abc\""
+check_error "treeview2:set_cursor abc" "ignoring GtkTreeView command \"treeview2:set_cursor abc\""
+check_error "treeview2:set_cursor 0:abc" "ignoring GtkTreeView command \"treeview2:set_cursor 0:abc\""
+check_error "treeview2:clear 0" "ignoring GtkTreeView command \"treeview2:clear 0\""
+check_error "treeview2:clear\n treeview2:insert_row 0" "ignoring GtkTreeView command \" treeview2:insert_row 0\""
 # GtkTreeView set
 check_error "treeview1:set" "ignoring GtkTreeView command \"treeview1:set\""
 check_error "treeview1:set " "ignoring GtkTreeView command \"treeview1:set \""
@@ -253,6 +292,12 @@ check_error "treeview1:set -1 1 77" "ignoring GtkTreeView command \"treeview1:se
 check_error "treeview1:set 1 -1 77" "ignoring GtkTreeView command \"treeview1:set 1 -1 77\""
 # GtkTree set "abc" into numeric column
 check_error "treeview1:set 1 1 abc" "ignoring GtkTreeView command \"treeview1:set 1 1 abc\""
+
+# GtkTreeViewColumn
+check_error "treeviewcolumn3:nnn" "ignoring GtkTreeViewColumn command \"treeviewcolumn3:nnn\""
+check_error "treeviewcolumn3:force" "ignoring GtkTreeViewColumn command \"treeviewcolumn3:force\""
+# GtkEntry
+check_error "entry1:nnn" "ignoring GtkEntry command \"entry1:nnn\""
 # GtkCalendar
 check_error "calendar1:nnn" "ignoring GtkCalendar command \"calendar1:nnn\""
 check_error "calendar1:select_date" "ignoring GtkCalendar command \"calendar1:select_date\""
@@ -389,6 +434,7 @@ check_rm $FIN
 rm $FERR
 
 
+
 #exit
 echo "
 # BATCH THREE
@@ -405,7 +451,7 @@ check() {
     # Flush stale pipeglade output
     while read -t .1 <$FOUT; do : ; done
     N=$1
-    echo "SEND $2"
+    echo "$SEND $2"
     echo -e "$2" >$FIN
     i=0
     while (( i<$N )); do
@@ -413,11 +459,11 @@ check() {
         if test "$r" != ""; then
             if test "$r" = "$3"; then
                 count_ok
-                echo " OK  ($i)  $r"
+                echo " $OK  ($i)  $r"
             else
                 count_fail
-                echo " FAIL($i)  $r"
-                echo " EXPECTED $3"
+                echo " $FAIL($i)  $r"
+                echo " $EXPECTED $3"
             fi
             shift
             (( i+=1 ))
@@ -504,19 +550,41 @@ check 1 "entry1:set_text $L" "entry1:text $L"
 check 1 "statusbar1:push Open what should now be named \"EXPANDER\" and click the \"button inside expander\"\n expander1:set_expanded 0\n expander1:set_label EXPANDER" "button6:clicked"
 check 0 "expander1:set_expanded 0"
 
-check 12 "statusbar1:push Click the 66% line\n treeview1:set 2 0 1\n treeview1:set 2 1 -30000\n treeview1:set 2 2 66\n treeview1:set 2 3 -2000000000\n treeview1:set 2 4 4000000000\n treeview1:set 2 5 -2000000000\n treeview1:set 2 6 4000000000\n treeview1:set 2 7 3.141\n treeview1:set 2 8 3.141\n treeview1:set 2 9 TEXT" "treeview1:clicked" "treeview1:gboolean 2 0 1" "treeview1:gint 2 1 -30000" "treeview1:guint 2 2 66" "treeview1:glong 2 3 -2000000000" "treeview1:glong 2 4 4000000000" "treeview1:glong 2 5 -2000000000" "treeview1:gulong 2 6 4000000000" "treeview1:gfloat 2 7 3.141000" "treeview1:gdouble 2 8 3.141000" "treeview1:gchararray 2 9 TEXT" "treeview1:gchararray 2 10 zzz"
-check 12 "statusbar1:push Click the 66% line again (insert_row)\n treeview1:insert_row 0\n treeview1:insert_row 2" "treeview1:clicked" "treeview1:gboolean 4 0 1" "treeview1:gint 4 1 -30000" "treeview1:guint 4 2 66" "treeview1:glong 4 3 -2000000000" "treeview1:glong 4 4 4000000000" "treeview1:glong 4 5 -2000000000" "treeview1:gulong 4 6 4000000000" "treeview1:gfloat 4 7 3.141000" "treeview1:gdouble 4 8 3.141000" "treeview1:gchararray 4 9 TEXT" "treeview1:gchararray 4 10 zzz"
-check 12 "statusbar1:push Click the 66% line again (move_row)\n treeview1:move_row 4 0" "treeview1:clicked" "treeview1:gboolean 0 0 1" "treeview1:gint 0 1 -30000" "treeview1:guint 0 2 66" "treeview1:glong 0 3 -2000000000" "treeview1:glong 0 4 4000000000" "treeview1:glong 0 5 -2000000000" "treeview1:gulong 0 6 4000000000" "treeview1:gfloat 0 7 3.141000" "treeview1:gdouble 0 8 3.141000" "treeview1:gchararray 0 9 TEXT" "treeview1:gchararray 0 10 zzz"
-check 12 "statusbar1:push Click the 66% line again (move_row)\n treeview1:move_row 0 2" "treeview1:clicked" "treeview1:gboolean 1 0 1" "treeview1:gint 1 1 -30000" "treeview1:guint 1 2 66" "treeview1:glong 1 3 -2000000000" "treeview1:glong 1 4 4000000000" "treeview1:glong 1 5 -2000000000" "treeview1:gulong 1 6 4000000000" "treeview1:gfloat 1 7 3.141000" "treeview1:gdouble 1 8 3.141000" "treeview1:gchararray 1 9 TEXT" "treeview1:gchararray 1 10 zzz"
-check 12 "statusbar1:push Click the 66% line again (insert_row, move_row)\n treeview1:insert_row end\n treeview1:move_row 1 end" "treeview1:clicked" "treeview1:gboolean 6 0 1" "treeview1:gint 6 1 -30000" "treeview1:guint 6 2 66" "treeview1:glong 6 3 -2000000000" "treeview1:glong 6 4 4000000000" "treeview1:glong 6 5 -2000000000" "treeview1:gulong 6 6 4000000000" "treeview1:gfloat 6 7 3.141000" "treeview1:gdouble 6 8 3.141000" "treeview1:gchararray 6 9 TEXT" "treeview1:gchararray 6 10 zzz"
-check 12 "statusbar1:push Click the 66% line again (remove_row)\n treeview1:remove_row 0\n treeview1:remove_row 2" "treeview1:clicked" "treeview1:gboolean 4 0 1" "treeview1:gint 4 1 -30000" "treeview1:guint 4 2 66" "treeview1:glong 4 3 -2000000000" "treeview1:glong 4 4 4000000000" "treeview1:glong 4 5 -2000000000" "treeview1:gulong 4 6 4000000000" "treeview1:gfloat 4 7 3.141000" "treeview1:gdouble 4 8 3.141000" "treeview1:gchararray 4 9 TEXT" "treeview1:gchararray 4 10 zzz"
-check 12 "statusbar1:push Click the 66% line once again (move_row)\n treeview1:move_row 0 end" "treeview1:clicked" "treeview1:gboolean 3 0 1" "treeview1:gint 3 1 -30000" "treeview1:guint 3 2 66" "treeview1:glong 3 3 -2000000000" "treeview1:glong 3 4 4000000000" "treeview1:glong 3 5 -2000000000" "treeview1:gulong 3 6 4000000000" "treeview1:gfloat 3 7 3.141000" "treeview1:gdouble 3 8 3.141000" "treeview1:gchararray 3 9 TEXT" "treeview1:gchararray 3 10 zzz"
+check 12 "treeview2:set_visible 0\n treeview1:set 2 0 1\n treeview1:set 2 1 -30000\n treeview1:set 2 2 66\n treeview1:set 2 3 -2000000000\n treeview1:set 2 4 4000000000\n treeview1:set 2 5 -2000000000\n treeview1:set 2 6 4000000000\n treeview1:set 2 7 3.141\n treeview1:set 2 8 3.141\n treeview1:set 2 9 TEXT\n treeview1:set_cursor 2" "treeview1:clicked" "treeview1:gboolean 2 0 1" "treeview1:gint 2 1 -30000" "treeview1:guint 2 2 66" "treeview1:glong 2 3 -2000000000" "treeview1:glong 2 4 4000000000" "treeview1:glong 2 5 -2000000000" "treeview1:gulong 2 6 4000000000" "treeview1:gfloat 2 7 3.141000" "treeview1:gdouble 2 8 3.141000" "treeview1:gchararray 2 9 TEXT" "treeview1:gchararray 2 10 zzz"
+check 1 "treeview1:set_cursor" "treeview1:clicked"
+check 12 "treeview1:insert_row 0\n treeview1:insert_row 2\n treeview1:set_cursor 4" "treeview1:clicked" "treeview1:gboolean 4 0 1" "treeview1:gint 4 1 -30000" "treeview1:guint 4 2 66" "treeview1:glong 4 3 -2000000000" "treeview1:glong 4 4 4000000000" "treeview1:glong 4 5 -2000000000" "treeview1:gulong 4 6 4000000000" "treeview1:gfloat 4 7 3.141000" "treeview1:gdouble 4 8 3.141000" "treeview1:gchararray 4 9 TEXT" "treeview1:gchararray 4 10 zzz"
+check 1 "treeview1:set_cursor" "treeview1:clicked"
+check 12 "treeview1:move_row 4 0\n treeview1:set_cursor 0" "treeview1:clicked" "treeview1:gboolean 0 0 1" "treeview1:gint 0 1 -30000" "treeview1:guint 0 2 66" "treeview1:glong 0 3 -2000000000" "treeview1:glong 0 4 4000000000" "treeview1:glong 0 5 -2000000000" "treeview1:gulong 0 6 4000000000" "treeview1:gfloat 0 7 3.141000" "treeview1:gdouble 0 8 3.141000" "treeview1:gchararray 0 9 TEXT" "treeview1:gchararray 0 10 zzz"
+check 1 "treeview1:set_cursor" "treeview1:clicked"
+check 12 "treeview1:move_row 0 2\n treeview1:set_cursor 1" "treeview1:clicked" "treeview1:gboolean 1 0 1" "treeview1:gint 1 1 -30000" "treeview1:guint 1 2 66" "treeview1:glong 1 3 -2000000000" "treeview1:glong 1 4 4000000000" "treeview1:glong 1 5 -2000000000" "treeview1:gulong 1 6 4000000000" "treeview1:gfloat 1 7 3.141000" "treeview1:gdouble 1 8 3.141000" "treeview1:gchararray 1 9 TEXT" "treeview1:gchararray 1 10 zzz"
+check 1 "treeview1:set_cursor" "treeview1:clicked"
+check 12 "treeview1:insert_row end\n treeview1:move_row 1 end\n treeview1:set_cursor 6" "treeview1:clicked" "treeview1:gboolean 6 0 1" "treeview1:gint 6 1 -30000" "treeview1:guint 6 2 66" "treeview1:glong 6 3 -2000000000" "treeview1:glong 6 4 4000000000" "treeview1:glong 6 5 -2000000000" "treeview1:gulong 6 6 4000000000" "treeview1:gfloat 6 7 3.141000" "treeview1:gdouble 6 8 3.141000" "treeview1:gchararray 6 9 TEXT" "treeview1:gchararray 6 10 zzz"
+check 1 "treeview1:set_cursor" "treeview1:clicked"
+check 12 "treeview1:remove_row 0\n treeview1:remove_row 2\n treeview1:set_cursor 4" "treeview1:clicked" "treeview1:gboolean 4 0 1" "treeview1:gint 4 1 -30000" "treeview1:guint 4 2 66" "treeview1:glong 4 3 -2000000000" "treeview1:glong 4 4 4000000000" "treeview1:glong 4 5 -2000000000" "treeview1:gulong 4 6 4000000000" "treeview1:gfloat 4 7 3.141000" "treeview1:gdouble 4 8 3.141000" "treeview1:gchararray 4 9 TEXT" "treeview1:gchararray 4 10 zzz"
+check 1 "treeview1:set_cursor" "treeview1:clicked"
+check 12 "statusbar1:push Click the 66% (move_row)\n treeview1:move_row 0 end\n treeview1:set_cursor 3" "treeview1:clicked" "treeview1:gboolean 3 0 1" "treeview1:gint 3 1 -30000" "treeview1:guint 3 2 66" "treeview1:glong 3 3 -2000000000" "treeview1:glong 3 4 4000000000" "treeview1:glong 3 5 -2000000000" "treeview1:gulong 3 6 4000000000" "treeview1:gfloat 3 7 3.141000" "treeview1:gdouble 3 8 3.141000" "treeview1:gchararray 3 9 TEXT" "treeview1:gchararray 3 10 zzz"
 check 24 "treeview1:remove_row 3" "treeview1:clicked" "treeview1:gboolean 3 0 0" "treeview1:gint 3 1 0" "treeview1:guint 3 2 0" "treeview1:glong 3 3 0" "treeview1:glong 3 4 0" "treeview1:glong 3 5 0" "treeview1:gulong 3 6 0" "treeview1:gfloat 3 7 0.000000" "treeview1:gdouble 3 8 0.000000" "treeview1:gchararray 3 9 abc" "treeview1:gchararray 3 10 xxx" "treeview1:clicked" "treeview1:gboolean 3 0 0" "treeview1:gint 3 1 0" "treeview1:guint 3 2 0" "treeview1:glong 3 3 0" "treeview1:glong 3 4 0" "treeview1:glong 3 5 0" "treeview1:gulong 3 6 0" "treeview1:gfloat 3 7 0.000000" "treeview1:gdouble 3 8 0.000000" "treeview1:gchararray 3 9 abc" "treeview1:gchararray 3 10 xxx"
-check 1 "statusbar1:push Press \"button\" if the 66% line has vanished" "button1:clicked"
 check 12 "statusbar1:push Click the lowest line visible in the scrolled area (scroll)\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:scroll 24 0" "treeview1:clicked" "treeview1:gboolean 24 0 0" "treeview1:gint 24 1 0" "treeview1:guint 24 2 0" "treeview1:glong 24 3 0" "treeview1:glong 24 4 0" "treeview1:glong 24 5 0" "treeview1:gulong 24 6 0" "treeview1:gfloat 24 7 0.000000" "treeview1:gdouble 24 8 0.000000" "treeview1:gchararray 24 9 abc" "treeview1:gchararray 24 10 xxx"
 check 12 "statusbar1:push Click the highest line visible in the scrolled area (scroll)\n treeview1:scroll 1 0" "treeview1:clicked" "treeview1:gboolean 1 0 0" "treeview1:gint 1 1 3" "treeview1:guint 1 2 0" "treeview1:glong 1 3 0" "treeview1:glong 1 4 0" "treeview1:glong 1 5 0" "treeview1:gulong 1 6 0" "treeview1:gfloat 1 7 0.000000" "treeview1:gdouble 1 8 0.000000" "treeview1:gchararray 1 9 jkl" "treeview1:gchararray 1 10 ZZZ"
 
 check 1 "statusbar1:push Click the header of column \"col3\"" "treeviewcolumn3:clicked"
+
+check 12 "treeview1:set_visible 0\n treeview2:set_visible 1\n treeview2:insert_row end\n treeview2:insert_row 0 as_child\n treeview2:insert_row 0:0 as_child\n treeview2:insert_row 0:0\n treeview2:expand_all\n treeview2:set 0:1:0 0 1\n treeview2:set 0:1:0 1 -30000\n treeview2:set 0:1:0 2 33\n treeview2:set 0:1:0 3 -2000000000\n treeview2:set 0:1:0 4 4000000000\n treeview2:set 0:1:0 5 -2000000000\n treeview2:set 0:1:0 6 4000000000\n treeview2:set 0:1:0 7 3.141\n treeview2:set 0:1:0 8 3.141\n treeview2:set 0:1:0 9 TEXT\n treeview2:set_cursor 0:1:0" "treeview2:clicked" "treeview2:gboolean 0:1:0 0 1" "treeview2:gint 0:1:0 1 -30000" "treeview2:guint 0:1:0 2 33" "treeview2:glong 0:1:0 3 -2000000000" "treeview2:glong 0:1:0 4 4000000000" "treeview2:glong 0:1:0 5 -2000000000" "treeview2:gulong 0:1:0 6 4000000000" "treeview2:gfloat 0:1:0 7 3.141000" "treeview2:gdouble 0:1:0 8 3.141000" "treeview2:gchararray 0:1:0 9 TEXT" "treeview2:gchararray 0:1:0 10"
+check 1 "treeview2:set_cursor" "treeview2:clicked"
+check 12 "treeview2:insert_row 0\n treeview2:insert_row 0\n treeview2:set 2:1 3 876543210\n treeview2:set 2 3 448822\n treeview2:collapse\n treeview2:set_cursor 2" "treeview2:clicked" "treeview2:gboolean 2 0 0" "treeview2:gint 2 1 0" "treeview2:guint 2 2 0" "treeview2:glong 2 3 448822" "treeview2:glong 2 4 0" "treeview2:glong 2 5 0" "treeview2:gulong 2 6 0" "treeview2:gfloat 2 7 0.000000" "treeview2:gdouble 2 8 0.000000" "treeview2:gchararray 2 9" "treeview2:gchararray 2 10"
+check 1 "treeview2:set_cursor" "treeview2:clicked"
+check 12 "treeview2:insert_row 0\n treeview2:collapse\n treeview2:set_cursor 3" "treeview2:clicked" "treeview2:gboolean 3 0 0" "treeview2:gint 3 1 0" "treeview2:guint 3 2 0" "treeview2:glong 3 3 448822" "treeview2:glong 3 4 0" "treeview2:glong 3 5 0" "treeview2:gulong 3 6 0" "treeview2:gfloat 3 7 0.000000" "treeview2:gdouble 3 8 0.000000" "treeview2:gchararray 3 9" "treeview2:gchararray 3 10"
+check 1 "treeview2:set_cursor" "treeview2:clicked"
+check 12 "statusbar1:push Click the lowest line visible in the scrolled area (1)\n treeview2:expand_all 3\n treeview2:scroll 3:1:0 0" "treeview2:clicked" "treeview2:gboolean 3:1:0 0 1" "treeview2:gint 3:1:0 1 -30000" "treeview2:guint 3:1:0 2 33" "treeview2:glong 3:1:0 3 -2000000000" "treeview2:glong 3:1:0 4 4000000000" "treeview2:glong 3:1:0 5 -2000000000" "treeview2:gulong 3:1:0 6 4000000000" "treeview2:gfloat 3:1:0 7 3.141000" "treeview2:gdouble 3:1:0 8 3.141000" "treeview2:gchararray 3:1:0 9 TEXT" "treeview2:gchararray 3:1:0 10"
+check 1 "treeview2:set_cursor" "treeview2:clicked"
+check 12 "statusbar1:push Click the lowest visible line (2)\n treeview2:collapse\n treeview2:expand 3\n treeview2:scroll 3:1 0" "treeview2:clicked" "treeview2:gboolean 3:1 0 0" "treeview2:gint 3:1 1 0" "treeview2:guint 3:1 2 0" "treeview2:glong 3:1 3 876543210" "treeview2:glong 3:1 4 0" "treeview2:glong 3:1 5 0" "treeview2:gulong 3:1 6 0" "treeview2:gfloat 3:1 7 0.000000" "treeview2:gdouble 3:1 8 0.000000" "treeview2:gchararray 3:1 9" "treeview2:gchararray 3:1 10"
+check 1 "treeview2:set_cursor" "treeview2:clicked"
+check 12 "statusbar1:push Click the lowest visible line (3)\n treeview2:collapse\n treeview2:expand_all\n treeview2:scroll 3:1:0 0" "treeview2:clicked" "treeview2:gboolean 3:1:0 0 1" "treeview2:gint 3:1:0 1 -30000" "treeview2:guint 3:1:0 2 33" "treeview2:glong 3:1:0 3 -2000000000" "treeview2:glong 3:1:0 4 4000000000" "treeview2:glong 3:1:0 5 -2000000000" "treeview2:gulong 3:1:0 6 4000000000" "treeview2:gfloat 3:1:0 7 3.141000" "treeview2:gdouble 3:1:0 8 3.141000" "treeview2:gchararray 3:1:0 9 TEXT" "treeview2:gchararray 3:1:0 10"
+check 1 "treeview2:set_cursor" "treeview2:clicked"
+check 12 "statusbar1:push Click the lowest visible line (4)\n treeview2:expand_all\n treeview2:collapse 3:1\n treeview2:scroll 3:1 0" "treeview2:clicked" "treeview2:gboolean 3:1 0 0" "treeview2:gint 3:1 1 0" "treeview2:guint 3:1 2 0" "treeview2:glong 3:1 3 876543210" "treeview2:glong 3:1 4 0" "treeview2:glong 3:1 5 0" "treeview2:gulong 3:1 6 0" "treeview2:gfloat 3:1 7 0.000000" "treeview2:gdouble 3:1 8 0.000000" "treeview2:gchararray 3:1 9" "treeview2:gchararray 3:1 10"
+check 1 "treeview2:set_cursor" "treeview2:clicked"
+
+check 1 "statusbar1:push Click the header of column \"col23\"" "treeviewcolumn23:clicked"
 
 check 0 "notebook1:set_current_page 2"
 check 1 "nonexistent_send_text:force" "nonexistent_send_text:clicked"

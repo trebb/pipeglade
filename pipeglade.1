@@ -1354,8 +1354,15 @@ and
 .Fa row
 and
 .Fa column
-refer to the underlying model (usually a
-.Ic GtkListStore ) .
+refer to the underlying model
+.Ic ( GtkListStore
+or
+.Ic GtkTreeStore ) .
+.Fa row
+is a sequence of one or more colon-separated integers, e.g.
+.Qq 3
+or
+.Qq 0:0:1 .
 .Bl -tag -width "commands "
 .It Commands
 .Qo
@@ -1372,11 +1379,15 @@ with
 .Pp
 .Qo
 .Fa name Ns
-.Ic :insert_row Brq Fa position | Ic end
+.Ic :insert_row Brq Fa row Bo Ic as_child Bc | Ic end
 .Qc
-inserts a new, empty row at
-.Fa position
-or at the end of the list.
+inserts a new, empty row; either as a sibling of
+.Fa row
+at position
+.Fa row ,
+or as a child of
+.Fa row ,
+or at the end of the list, respectively.
 .Pp
 .Qo
 .Fa name Ns
@@ -1385,17 +1396,58 @@ or at the end of the list.
 .Qc
 moves the row at
 .Fa origin
-to
+within its current level to
 .Fa destination
-or to the end of the list.
+or to the end.
 .Pp
 .Qo
 .Fa name Ns
 .Ic :remove_row
-.Fa position
+.Fa row
 .Qc
-removes the row at
-.Fa position .
+removes the row at position
+.Fa row .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :clear
+.Qc
+removes all rows.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :expand
+.Fa row
+.Qc
+expands one level of the subtree below
+.Fa row .
+.Pp
+.Qo
+.Fa name Ns
+.Ic :expand_all
+.Bq Fa row
+.Qc
+expands the subtree below
+.Fa row ,
+or the whole tree.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :collapse
+.Bq Fa row
+.Qc
+collapses the subtree below
+.Fa row ,
+or the whole tree.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :set_cursor
+.Bq Fa row
+.Qc
+sets the cursor to
+.Fa row ,
+or unsets it.
 .Pp
 .Qo
 .Fa name Ns

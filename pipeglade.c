@@ -89,6 +89,9 @@ bye(int status, FILE *s, const char *fmt, ...)
         exit(status);
 }
 
+/*
+ * Check if string s1 and s2 are equal
+ */
 static bool
 eql(const char *s1, const char *s2)
 {
@@ -1264,41 +1267,54 @@ update_toggle_button(GtkToggleButton *toggle, const char *action,
                 ign_cmd(type, whole_msg);
 }
 
+/*
+ * Check if s is a valid string representation of a GtkTreePath
+ */
+static bool
+is_path_string(char *s)
+{
+        return s != NULL &&
+                strlen(s) == strspn(s, ":0123456789") &&
+                strstr(s, "::") == NULL &&
+                strcspn(s, ":") > 0;
+}
+
 static void
 update_tree_view(GtkTreeView *view, const char *action,
                  const char *data, const char *whole_msg)
 {
         GtkTreeModel *model = gtk_tree_view_get_model(view);
-        GtkListStore *store = GTK_LIST_STORE(model);
+        GtkListStore *ls = NULL;
+        GtkTreeStore *ts = NULL;
         GtkTreeIter iter0, iter1;
-        char *tokens, *arg0_s, *arg1_s, *arg2_s, *endptr;
-        int arg0_n = 0, arg1_n = 0;
-        bool arg0_n_valid = false, arg1_n_valid = false;
-        bool iter0_valid = false, iter1_valid = false;
+        bool iter0_valid, iter1_valid;
+        char *tokens, *arg0, *arg1, *arg2, *endptr;
+        int col = -1;           /* invalid column number */
 
+        if (GTK_IS_LIST_STORE(model))
+                ls = GTK_LIST_STORE(model);
+        else if (GTK_IS_TREE_STORE(model))
+                ts = GTK_TREE_STORE(model);
+        else {
+                fprintf(stderr, "missing model/");
+                ign_cmd(GTK_TYPE_TREE_VIEW, whole_msg);
+                return;
+        }
         if ((tokens = malloc(strlen(data) + 1)) == NULL)
                 OOM_ABORT;
         strcpy(tokens, data);
-        arg0_s = strtok(tokens, WHITESPACE);
-        arg1_s = strtok(NULL, WHITESPACE);
-        arg2_s = strtok(NULL, "\n");
-        errno = 0;
-        endptr = NULL;
-        iter0_valid =
-                arg0_s != NULL &&
-                (arg0_n_valid = (arg0_n = strtol(arg0_s, &endptr, 10)) >= 0 &&
-                 errno == 0 && endptr != arg0_s) &&
-                gtk_tree_model_get_iter_from_string(model, &iter0, arg0_s);
-        errno = 0;
-        endptr = NULL;
-        iter1_valid =
-                arg1_s != NULL &&
-                (arg1_n_valid = (arg1_n = strtol(arg1_s, &endptr, 10)) >= 0 &&
-                 errno == 0 && endptr != arg1_s) &&
-                gtk_tree_model_get_iter_from_string(model, &iter1, arg1_s);
-        if (eql(action, "set") && iter0_valid && arg1_n_valid &&
-            arg1_n < gtk_tree_model_get_n_columns(model)) {
-                GType col_type = gtk_tree_model_get_column_type(model, arg1_n);
+        arg0 = strtok(tokens, WHITESPACE);
+        arg1 = strtok(NULL, WHITESPACE);
+        arg2 = strtok(NULL, "\n");
+        iter0_valid = is_path_string(arg0) &&
+                gtk_tree_model_get_iter_from_string(model, &iter0, arg0);
+        iter1_valid = is_path_string(arg1) &&
+                gtk_tree_model_get_iter_from_string(model, &iter1, arg1);
+        if (is_path_string(arg1))
+                col = strtol(arg1, NULL, 10);
+        if (eql(action, "set") && iter0_valid &&
+            col > -1 && col < gtk_tree_model_get_n_columns(model)) {
+                GType col_type = gtk_tree_model_get_column_type(model, col);
                 long long int n;
                 double d;
 
@@ -1312,9 +1328,12 @@ update_tree_view(GtkTreeView *view, const char *action,
                 case G_TYPE_UINT64:
                         errno = 0;
                         endptr = NULL;
-                        n = strtoll(arg2_s, &endptr, 10);
-                        if (!errno && endptr != arg2_s)
-                                gtk_list_store_set(store, &iter0, arg1_n, n, -1);
+                        n = strtoll(arg2, &endptr, 10);
+                        if (!errno && endptr != arg2)
+                                if (ls)
+                                        gtk_list_store_set(ls, &iter0, col, n, -1);
+                                else
+                                        gtk_tree_store_set(ts, &iter0, col, n, -1);
                         else
                                 ign_cmd(GTK_TYPE_TREE_VIEW, whole_msg);
                         break;
@@ -1322,41 +1341,81 @@ update_tree_view(GtkTreeView *view, const char *action,
                 case G_TYPE_DOUBLE:
                         errno = 0;
                         endptr = NULL;
-                        d = strtod(arg2_s, &endptr);
-                        if (!errno && endptr != arg2_s)
-                                gtk_list_store_set(store, &iter0, arg1_n, d, -1);
+                        d = strtod(arg2, &endptr);
+                        if (!errno && endptr != arg2)
+                                if (ls)
+                                        gtk_list_store_set(ls, &iter0, col, d, -1);
+                                else
+                                        gtk_tree_store_set(ts, &iter0, col, d, -1);
                         else
                                 ign_cmd(GTK_TYPE_TREE_VIEW, whole_msg);
-                        gtk_list_store_set(store, &iter0, arg1_n, strtod(arg2_s, NULL), -1);
+                        if (ls)
+                                gtk_list_store_set(ls, &iter0, col, strtod(arg2, NULL), -1);
+                        else
+                                gtk_tree_store_set(ts, &iter0, col, strtod(arg2, NULL), -1);
                         break;
                 case G_TYPE_STRING:
-                        gtk_list_store_set(store, &iter0, arg1_n, arg2_s, -1);
+                        if (ls)
+                                gtk_list_store_set(ls, &iter0, col, arg2, -1);
+                        else
+                                gtk_tree_store_set(ts, &iter0, col, arg2, -1);
                         break;
                 default:
-                        fprintf(stderr, "column %d: %s not implemented\n", arg1_n, g_type_name(col_type));
+                        fprintf(stderr, "column %d: %s not implemented\n", col, g_type_name(col_type));
                         break;
                 }
-        } else if (eql(action, "scroll") && arg0_n_valid && arg1_n_valid)
+        } else if (eql(action, "scroll") && iter0_valid && iter1_valid)
                 gtk_tree_view_scroll_to_cell (view,
-                                              gtk_tree_path_new_from_string(arg0_s),
-                                              gtk_tree_view_get_column(view, arg1_n),
+                                              gtk_tree_path_new_from_string(arg0),
+                                              gtk_tree_view_get_column(view, col),
                                               0, 0., 0.);
-        else if (eql(action, "insert_row"))
-                if (eql(arg0_s, "end"))
-                        gtk_list_store_insert_before(store, &iter1, NULL);
-                else if (iter0_valid)
-                        gtk_list_store_insert_before(store, &iter1, &iter0);
+        else if (eql(action, "expand") && iter0_valid)
+                gtk_tree_view_expand_row(view, gtk_tree_path_new_from_string(arg0), false);
+        else if (eql(action, "expand_all") && iter0_valid)
+                gtk_tree_view_expand_row(view, gtk_tree_path_new_from_string(arg0), true);
+        else if (eql(action, "expand_all") && arg0 == NULL)
+                gtk_tree_view_expand_all(view);
+        else if (eql(action, "collapse") && iter0_valid)
+                gtk_tree_view_collapse_row(view, gtk_tree_path_new_from_string(arg0));
+        else if (eql(action, "collapse") && arg0 == NULL)
+                gtk_tree_view_collapse_all(view);
+        else if (eql(action, "set_cursor") && iter0_valid)
+                gtk_tree_view_set_cursor(view, gtk_tree_path_new_from_string(arg0), NULL, false);
+        else if (eql(action, "set_cursor") && arg0 == NULL) {
+                gtk_tree_view_set_cursor(view, NULL, NULL, false);
+                gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(view));
+        } else if (eql(action, "insert_row") && eql(arg0, "end"))
+                if (ls)
+                        gtk_list_store_insert_before(ls, &iter1, NULL);
                 else
-                        ign_cmd(GTK_TYPE_TREE_VIEW, whole_msg);
-        else if (eql(action, "move_row") && iter0_valid)
-                if (eql(arg1_s, "end"))
-                        gtk_list_store_move_before(store, &iter0, NULL);
-                else if (iter1_valid)
-                        gtk_list_store_move_before(store, &iter0, &iter1);
+                        gtk_tree_store_insert_before(ts, &iter1, NULL, NULL);
+        else if (eql(action, "insert_row") && iter0_valid)
+                if (ls)
+                        gtk_list_store_insert_before(ls, &iter1, &iter0);
+                else if (eql(arg1, "as_child"))
+                        gtk_tree_store_insert_after(ts, &iter1, &iter0, NULL);
                 else
-                        ign_cmd(GTK_TYPE_TREE_VIEW, whole_msg);
+                        gtk_tree_store_insert_before(ts, &iter1, NULL, &iter0);
+        else if (eql(action, "move_row") && iter0_valid && eql(arg1, "end"))
+                if (ls)
+                        gtk_list_store_move_before(ls, &iter0, NULL);
+                else
+                        gtk_tree_store_move_before(ts, &iter0, NULL);
+        else if (eql(action, "move_row") && iter0_valid && iter1_valid)
+                if (ls)
+                        gtk_list_store_move_before(ls, &iter0, &iter1);
+                else
+                        gtk_tree_store_move_before(ts, &iter0, &iter1);
         else if (eql(action, "remove_row") && iter0_valid)
-                gtk_list_store_remove(store, &iter0);
+                if (ls)
+                        gtk_list_store_remove(ls, &iter0);
+                else
+                        gtk_tree_store_remove(ts, &iter0);
+        else if (eql(action, "clear") && arg0 == NULL)
+                if (ls)
+                        gtk_list_store_clear(ls);
+                else
+                        gtk_tree_store_clear(ts);
         else
                 ign_cmd(GTK_TYPE_TREE_VIEW, whole_msg);
         free(tokens);
