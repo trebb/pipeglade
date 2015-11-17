@@ -1480,8 +1480,8 @@ fake_ui_activity(GObject *obj, const char *whole_msg, GType type)
 }
 
 /*
- * Parse command pointed to by ud, and act on ui accordingly.  Set
- * ud->digested = true if done.  Runs once per command inside
+ * Parse command pointed to by ud, and act on ui accordingly.  Post
+ * semaphore msg_digested if done.  Runs once per command inside
  * gtk_main_loop()
  */
 static gboolean
