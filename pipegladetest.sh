@@ -12,7 +12,14 @@ FIN=to-g.fifo
 FOUT=from-g.fifo
 FERR=err.fifo
 BAD_FIFO=bad_fifo
-rm -f $FIN $FOUT $FERR $BAD_FIFO
+DIR=test.dir
+FILE1=saved1.txt
+FILE2=saved2.txt
+FILE3=saved3.txt
+FILE4=saved4.txt
+FILE5=saved5.txt
+FILE6=saved6.txt
+rm -rf $FIN $FOUT $FERR $BAD_FIFO $FILE1 $FILE2 $FILE3 $FILE4 $FILE5 $FILE6 $DIR
 
 # colored messages: bright green
 OK=$'\E[32;1mOK\E[0m'
@@ -47,7 +54,16 @@ check_rm() {
     fi
 }
 
-
+check_cmd() {
+    sleep .5
+    if $1; then
+        count_ok
+        echo " $OK   $1"
+    else
+        count_fail
+        echo " $FAIL $1"
+    fi
+}
 
 echo "
 # BATCH ONE
@@ -155,11 +171,26 @@ read r 2< $FERR &
 while test ! \( -e $FIN \); do :; done
 
 # Non-existent name
-check_error "" "ignoring command \"\""
 check_error "nnn" "ignoring command \"nnn\""
 check_error "nnn:set_text FFFF" "ignoring command \"nnn:set_text FFFF\""
 # Widget that shouldn't fire callbacks
 check_error "label1:force" "ignoring GtkLabel command \"label1:force\""
+# load file
+check_error "_:load" "ignoring command \"_:load\""
+check_error "_:load  " "ignoring command \"_:load  \""
+check_error "_:load nonexistent.txt" "ignoring command \"_:load nonexistent.txt\""
+mkdir -p $DIR
+cat >$DIR/$FILE1 <<< "blah"
+check_error "_:load $DIR/$FILE1" "ignoring command \"blah\""
+cat >$DIR/$FILE1 <<< "_:load $DIR/$FILE1"
+check_error "_:load $DIR/$FILE1" "ignoring command \"_:load $DIR/$FILE1\""
+cat >$DIR/$FILE1 <<< "_:load $DIR/$FILE2"
+cat >$DIR/$FILE2 <<< "_:load $DIR/$FILE1"
+check_error "_:load $DIR/$FILE1" "ignoring command \"_:load $DIR/$FILE1\""
+cat >$DIR/$FILE1 <<< "_:load $DIR/$FILE2"
+cat >$DIR/$FILE2 <<< "_:blah"
+check_error "_:load $DIR/$FILE1" "ignoring command \"_:blah\""
+rm -rf $DIR
 # GtkWindow
 check_error "main:nnn" "ignoring GtkWindow command \"main:nnn\""
 check_error "main:move" "ignoring GtkWindow command \"main:move\""
@@ -210,10 +241,17 @@ check_error "statusbar1:nnn" "ignoring GtkStatusbar command \"statusbar1:nnn\""
 # GtkComboBoxText
 check_error "comboboxtext1:nnn" "ignoring GtkComboBoxText command \"comboboxtext1:nnn\""
 check_error "comboboxtext1:force" "ignoring GtkComboBoxText command \"comboboxtext1:force\""
-# GtkTreeView
+
+# GtkTreeView #
 check_error "treeview1:nnn" "ignoring GtkTreeView command \"treeview1:nnn\""
 check_error "treeview2:nnn" "ignoring GtkTreeView command \"treeview2:nnn\""
 check_error "treeview1:force" "ignoring GtkTreeView command \"treeview1:force\""
+# GtkTreeView save
+check_error "treeview1:save" "ignoring GtkTreeView command \"treeview1:save\""
+mkdir $DIR; chmod a-w $DIR
+check_error "treeview1:save $DIR/$FILE1" "ignoring GtkTreeView command \"treeview1:save $DIR/$FILE1\""
+check_error "treeview1:save nonexistent/$FILE1" "ignoring GtkTreeView command \"treeview1:save nonexistent/$FILE1\""
+rm -rf $DIR
 # GtkTreeView insert_row
 check_error "treeview1:insert_row 10000" "ignoring GtkTreeView command \"treeview1:insert_row 10000\""
 check_error "treeview1:insert_row -1" "ignoring GtkTreeView command \"treeview1:insert_row -1\""
@@ -283,7 +321,6 @@ check_error "treeview1:set " "ignoring GtkTreeView command \"treeview1:set \""
 check_error "treeview1:set nnn" "ignoring GtkTreeView command \"treeview1:set nnn\""
 check_error "treeview1:set 0 nnn" "ignoring GtkTreeView command \"treeview1:set 0 nnn\""
 check_error "treeview1:set nnn 0" "ignoring GtkTreeView command \"treeview1:set nnn 0\""
-check_error "treeview1:set 10000 1 77" "ignoring GtkTreeView command \"treeview1:set 10000 1 77\""
 check_error "treeview1:set 1 10000 77" "ignoring GtkTreeView command \"treeview1:set 1 10000 77\""
 check_error "treeview1:set 1 11 77" "ignoring GtkTreeView command \"treeview1:set 1 11 77\""
 check_error "treeview1:set nnn 1 77" "ignoring GtkTreeView command \"treeview1:set nnn 1 77\""
@@ -550,7 +587,13 @@ check 1 "entry1:set_text $L" "entry1:text $L"
 check 1 "statusbar1:push Open what should now be named \"EXPANDER\" and click the \"button inside expander\"\n expander1:set_expanded 0\n expander1:set_label EXPANDER" "button6:clicked"
 check 0 "expander1:set_expanded 0"
 
+
+
+
 check 12 "treeview2:set_visible 0\n treeview1:set 2 0 1\n treeview1:set 2 1 -30000\n treeview1:set 2 2 66\n treeview1:set 2 3 -2000000000\n treeview1:set 2 4 4000000000\n treeview1:set 2 5 -2000000000\n treeview1:set 2 6 4000000000\n treeview1:set 2 7 3.141\n treeview1:set 2 8 3.141\n treeview1:set 2 9 TEXT\n treeview1:set_cursor 2" "treeview1:clicked" "treeview1:gboolean 2 0 1" "treeview1:gint 2 1 -30000" "treeview1:guint 2 2 66" "treeview1:glong 2 3 -2000000000" "treeview1:glong 2 4 4000000000" "treeview1:glong 2 5 -2000000000" "treeview1:gulong 2 6 4000000000" "treeview1:gfloat 2 7 3.141000" "treeview1:gdouble 2 8 3.141000" "treeview1:gchararray 2 9 TEXT" "treeview1:gchararray 2 10 zzz"
+mkdir -p $DIR
+check 0 "treeview1:save $DIR/$FILE1"
+check 0 "treeview1:save $DIR/$FILE1.bak"
 check 1 "treeview1:set_cursor" "treeview1:clicked"
 check 12 "treeview1:insert_row 0\n treeview1:insert_row 2\n treeview1:set_cursor 4" "treeview1:clicked" "treeview1:gboolean 4 0 1" "treeview1:gint 4 1 -30000" "treeview1:guint 4 2 66" "treeview1:glong 4 3 -2000000000" "treeview1:glong 4 4 4000000000" "treeview1:glong 4 5 -2000000000" "treeview1:gulong 4 6 4000000000" "treeview1:gfloat 4 7 3.141000" "treeview1:gdouble 4 8 3.141000" "treeview1:gchararray 4 9 TEXT" "treeview1:gchararray 4 10 zzz"
 check 1 "treeview1:set_cursor" "treeview1:clicked"
@@ -569,10 +612,14 @@ check 12 "statusbar1:push Click the highest line visible in the scrolled area (s
 
 check 1 "statusbar1:push Click the header of column \"col3\"" "treeviewcolumn3:clicked"
 
-check 12 "treeview1:set_visible 0\n treeview2:set_visible 1\n treeview2:insert_row end\n treeview2:insert_row 0 as_child\n treeview2:insert_row 0:0 as_child\n treeview2:insert_row 0:0\n treeview2:expand_all\n treeview2:set 0:1:0 0 1\n treeview2:set 0:1:0 1 -30000\n treeview2:set 0:1:0 2 33\n treeview2:set 0:1:0 3 -2000000000\n treeview2:set 0:1:0 4 4000000000\n treeview2:set 0:1:0 5 -2000000000\n treeview2:set 0:1:0 6 4000000000\n treeview2:set 0:1:0 7 3.141\n treeview2:set 0:1:0 8 3.141\n treeview2:set 0:1:0 9 TEXT\n treeview2:set_cursor 0:1:0" "treeview2:clicked" "treeview2:gboolean 0:1:0 0 1" "treeview2:gint 0:1:0 1 -30000" "treeview2:guint 0:1:0 2 33" "treeview2:glong 0:1:0 3 -2000000000" "treeview2:glong 0:1:0 4 4000000000" "treeview2:glong 0:1:0 5 -2000000000" "treeview2:gulong 0:1:0 6 4000000000" "treeview2:gfloat 0:1:0 7 3.141000" "treeview2:gdouble 0:1:0 8 3.141000" "treeview2:gchararray 0:1:0 9 TEXT" "treeview2:gchararray 0:1:0 10"
+check 2 "treeview1:clear\n button1:force" "treeview1:clicked" "button1:clicked"
+
+check 12 "treeview2:set_visible 1\n treeview2:insert_row end\n treeview2:insert_row 0 as_child\n treeview2:insert_row 0:0 as_child\n treeview2:insert_row 0:0\n treeview2:expand_all\n treeview2:set 0:1:0 0 1\n treeview2:set 0:1:0 1 -30000\n treeview2:set 0:1:0 2 33\n treeview2:set 0:1:0 3 -2000000000\n treeview2:set 0:1:0 4 4000000000\n treeview2:set 0:1:0 5 -2000000000\n treeview2:set 0:1:0 6 4000000000\n treeview2:set 0:1:0 7 3.141\n treeview2:set 0:1:0 8 3.141\n treeview2:set 0:1:0 9 TEXT\n treeview2:set_cursor 0:1:0" "treeview2:clicked" "treeview2:gboolean 0:1:0 0 1" "treeview2:gint 0:1:0 1 -30000" "treeview2:guint 0:1:0 2 33" "treeview2:glong 0:1:0 3 -2000000000" "treeview2:glong 0:1:0 4 4000000000" "treeview2:glong 0:1:0 5 -2000000000" "treeview2:gulong 0:1:0 6 4000000000" "treeview2:gfloat 0:1:0 7 3.141000" "treeview2:gdouble 0:1:0 8 3.141000" "treeview2:gchararray 0:1:0 9 TEXT" "treeview2:gchararray 0:1:0 10"
 check 1 "treeview2:set_cursor" "treeview2:clicked"
 check 12 "treeview2:insert_row 0\n treeview2:insert_row 0\n treeview2:set 2:1 3 876543210\n treeview2:set 2 3 448822\n treeview2:collapse\n treeview2:set_cursor 2" "treeview2:clicked" "treeview2:gboolean 2 0 0" "treeview2:gint 2 1 0" "treeview2:guint 2 2 0" "treeview2:glong 2 3 448822" "treeview2:glong 2 4 0" "treeview2:glong 2 5 0" "treeview2:gulong 2 6 0" "treeview2:gfloat 2 7 0.000000" "treeview2:gdouble 2 8 0.000000" "treeview2:gchararray 2 9" "treeview2:gchararray 2 10"
 check 1 "treeview2:set_cursor" "treeview2:clicked"
+check 0 "treeview2:save $DIR/$FILE2"
+check 0 "treeview2:save $DIR/$FILE2.bak"
 check 12 "treeview2:insert_row 0\n treeview2:collapse\n treeview2:set_cursor 3" "treeview2:clicked" "treeview2:gboolean 3 0 0" "treeview2:gint 3 1 0" "treeview2:guint 3 2 0" "treeview2:glong 3 3 448822" "treeview2:glong 3 4 0" "treeview2:glong 3 5 0" "treeview2:gulong 3 6 0" "treeview2:gfloat 3 7 0.000000" "treeview2:gdouble 3 8 0.000000" "treeview2:gchararray 3 9" "treeview2:gchararray 3 10"
 check 1 "treeview2:set_cursor" "treeview2:clicked"
 check 12 "statusbar1:push Click the lowest line visible in the scrolled area (1)\n treeview2:expand_all 3\n treeview2:scroll 3:1:0 0" "treeview2:clicked" "treeview2:gboolean 3:1:0 0 1" "treeview2:gint 3:1:0 1 -30000" "treeview2:guint 3:1:0 2 33" "treeview2:glong 3:1:0 3 -2000000000" "treeview2:glong 3:1:0 4 4000000000" "treeview2:glong 3:1:0 5 -2000000000" "treeview2:gulong 3:1:0 6 4000000000" "treeview2:gfloat 3:1:0 7 3.141000" "treeview2:gdouble 3:1:0 8 3.141000" "treeview2:gchararray 3:1:0 9 TEXT" "treeview2:gchararray 3:1:0 10"
@@ -583,6 +630,33 @@ check 12 "statusbar1:push Click the lowest visible line (3)\n treeview2:collapse
 check 1 "treeview2:set_cursor" "treeview2:clicked"
 check 12 "statusbar1:push Click the lowest visible line (4)\n treeview2:expand_all\n treeview2:collapse 3:1\n treeview2:scroll 3:1 0" "treeview2:clicked" "treeview2:gboolean 3:1 0 0" "treeview2:gint 3:1 1 0" "treeview2:guint 3:1 2 0" "treeview2:glong 3:1 3 876543210" "treeview2:glong 3:1 4 0" "treeview2:glong 3:1 5 0" "treeview2:gulong 3:1 6 0" "treeview2:gfloat 3:1 7 0.000000" "treeview2:gdouble 3:1 8 0.000000" "treeview2:gchararray 3:1 9" "treeview2:gchararray 3:1 10"
 check 1 "treeview2:set_cursor" "treeview2:clicked"
+
+check 12 "treeview1:clear\n treeview1:set 1 9 ABC\\\\nDEF\\\\nGHI\n treeview1:set_cursor 1" "treeview1:clicked" "treeview1:gboolean 1 0 0" "treeview1:gint 1 1 0" "treeview1:guint 1 2 0" "treeview1:glong 1 3 0" "treeview1:glong 1 4 0" "treeview1:glong 1 5 0" "treeview1:gulong 1 6 0" "treeview1:gfloat 1 7 0.000000" "treeview1:gdouble 1 8 0.000000" "treeview1:gchararray 1 9 ABCnDEFnGHI" "treeview1:gchararray 1 10"
+
+check 0 "treeview1:clear\n treeview2:clear"
+check 0 "_:load $DIR/$FILE1"
+rm -f $DIR/$FILE1
+check 0 "treeview1:save $DIR/$FILE1"
+check_cmd "cmp $DIR/$FILE1 $DIR/$FILE1.bak"
+check 0 "treeview1:clear\n treeview2:clear"
+check 0 "_:load $DIR/$FILE2"
+rm -f $DIR/$FILE2
+check 0 "treeview2:save $DIR/$FILE2"
+check_cmd "cmp $DIR/$FILE2 $DIR/$FILE2.bak"
+cat >$DIR/$FILE3 <<< "_:load $DIR/$FILE1.bak"
+cat >>$DIR/$FILE3 <<< "_:load $DIR/$FILE2.bak"
+cat >$DIR/$FILE4 <<< "_:load $DIR/$FILE3"
+cat >$DIR/$FILE5 <<< "_:load $DIR/$FILE4"
+cat >$DIR/$FILE6 <<< "_:load $DIR/$FILE5"
+rm -f $DIR/$FILE1 $DIR/$FILE2
+check 0 "treeview1:clear\n treeview2:clear"
+check 0 "_:load $DIR/$FILE6"
+rm -f $DIR/$FILE1 $DIR/$FILE2
+check 0 "treeview1:save $DIR/$FILE1\n treeview2:save $DIR/$FILE2"
+check_cmd "cmp $DIR/$FILE1 $DIR/$FILE1.bak"
+check_cmd "cmp $DIR/$FILE2 $DIR/$FILE2.bak"
+ rm -rf $DIR
+check 0 "treeview2:clear\n treeview2:set 2 0 1"
 
 check 1 "statusbar1:push Click the header of column \"col23\"" "treeviewcolumn23:clicked"
 
