@@ -75,7 +75,7 @@ is the name of the receiving widget;
 is separated from the rest of the command by a single whitespace
 character.  Commands whose first non-whitespace character is
 .Ic #
-are considered comments and ignored.
+are considered comments and ignored silently, as are empty input lines.
 Any occurences of the two-character sequences
 .Ic \en
 and
@@ -224,6 +224,25 @@ and
 .Sx GtkFontButton
 just open their respective dialogs.
 .El
+.Pp
+.Qo
+.Fa name Ns
+.Ic :load
+.Fa file
+.Qc
+reads arbitrary
+.Nm
+commands from
+.Fa file .
+A non-empty
+.Fa name
+is required but ignored.
+.Ic :load
+commands may be nested but on attempts to read from the same file, the
+inner
+.Ic :load
+is ignored.  There is also a save command; see
+.Sx GtkTreeView .
 .Pp
 .Qo
 .Fa name Ns
@@ -1376,6 +1395,9 @@ with
 .Fa data
 (which should be compatible with the type of
 .Fa column ) .
+If necessary, new tree nodes are created to obtain the minimal tree
+structure needed to support
+.Fa row .
 .Pp
 .Qo
 .Fa name Ns
@@ -1457,11 +1479,22 @@ or unsets it.
 scrolls the cell at
 .Pq Fa row , column
 into view.
+.Pp
+.Qo
+.Fa name Ns
+.Ic :save
+.Fa file
+.Qc
+stores the content of the underlying model as a sequence of
+.Nm
+commands into
+.Fa file .
 .It Feedback
 .Qo
 .Fa name Ns
 .Ic \&:clicked
 .Qc
+if the set of selected rows has changed.
 .Pp
 .Qo
 .Fa name Ns
