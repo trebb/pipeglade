@@ -89,7 +89,7 @@ struct ui_data {
         GType type;
         sem_t msg_digested;
 };
-static GtkBuilder *builder;
+static GtkBuilder *builder;     /* to be read from .ui file */
 
 /*
  * Print a formatted message to stream s and give up with status
@@ -981,17 +981,6 @@ cb_draw(GtkWidget *widget, cairo_t *cr, gpointer data)
 }
 
 /*
- * One style provider for each widget
- */
-struct style_provider {
-        struct style_provider *next;
-        struct style_provider *prev;
-        const char *name;
-        GtkCssProvider *provider;
-        char *style_decl;
-} *widget_style_providers = NULL;
-
-/*
  * Change the style of the widget passed
  */
 static void
@@ -1000,26 +989,28 @@ update_widget_style(GObject *obj, const char *name,
 {
         GtkWidget *widget = GTK_WIDGET(obj);
         GtkStyleContext *context;
-        struct style_provider *sp;
+        GtkCssProvider *style_provider;
+        char *style_decl;
         const char *prefix = "* {", *suffix = "}";
         size_t sz;
 
+        (void)name;
         (void)whole_msg;
         (void)type;
+        style_provider = g_object_get_data(G_OBJECT(obj), "style_provider");
         sz = strlen(prefix) + strlen(suffix) + strlen(data) + 1;
         context = gtk_widget_get_style_context(widget);
-        for (sp = widget_style_providers; !eql(name, sp->name); sp = sp->next);
-        gtk_style_context_remove_provider(context, GTK_STYLE_PROVIDER(sp->provider));
-        free(sp->style_decl);
-        if ((sp->style_decl = malloc(sz)) == NULL)
+        gtk_style_context_remove_provider(context, GTK_STYLE_PROVIDER(style_provider));
+        if ((style_decl = malloc(sz)) == NULL)
                 OOM_ABORT;
-        strcpy(sp->style_decl, prefix);
-        strcat(sp->style_decl, data);
-        strcat(sp->style_decl, suffix);
+        strcpy(style_decl, prefix);
+        strcat(style_decl, data);
+        strcat(style_decl, suffix);
         gtk_style_context_add_provider(context,
-                                       GTK_STYLE_PROVIDER(sp->provider),
+                                       GTK_STYLE_PROVIDER(style_provider),
                                        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-        gtk_css_provider_load_from_data(sp->provider, sp->style_decl, -1, NULL);
+        gtk_css_provider_load_from_data(style_provider, style_decl, -1, NULL);
+        free(style_decl);
 }
 
 /*
@@ -1510,7 +1501,7 @@ create_subtree(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter)
 
 static bool
 set_tree_view_cell(GtkTreeModel *model, GtkTreeIter *iter,
-                   char *path_s, int col, char *new_text)
+                   const char *path_s, int col, const char *new_text)
 {
         GType col_type = gtk_tree_model_get_column_type(model, col);
         long long int n;
@@ -1942,17 +1933,6 @@ digest_msg(FILE *cmd)
 }
 
 /*
- * Read lines from global stream "in" and perform the appropriate
- * actions on the GUI
- */
-static void *
-digest_msg_in()
-{
-        digest_msg(in);
-        return NULL;
-}
-
-/*
  * Create a fifo if necessary, and open it.  Give up if the file
  * exists but is not a fifo
  */
@@ -2018,8 +1998,8 @@ obj_sans_suffix(const char *suffix, const char *name)
  * underlying model
  */
 static void
-cb_tree_model_edit(GtkCellRenderer *renderer, gchar *path_s,
-                  gchar *new_text, gpointer model)
+cb_tree_model_edit(GtkCellRenderer *renderer, const gchar *path_s,
+                  const gchar *new_text, gpointer model)
 {
         GtkTreeIter iter;
         GtkTreeView *view;
@@ -2242,40 +2222,23 @@ connect_widget_signals(gpointer *obj, char *ui_file)
 }
 
 /*
- * We keep a list of one widget style provider for each widget
+ * We keep a style provider with each widget
  */
 static void
 add_widget_style_provider(gpointer *obj, void *data)
 {
-        const char *name = NULL;
-        struct style_provider *sp = NULL, *last_sp = NULL;
         GtkStyleContext *context;
+        GtkCssProvider *style_provider;
 
         (void)data;
         if (!GTK_IS_WIDGET(obj))
                 return;
-        if ((sp = malloc(sizeof(struct style_provider))) == NULL)
-                OOM_ABORT;
-        name = widget_name(obj);
-        sp->name = name;
-        sp->provider = gtk_css_provider_new();
-        if ((sp->style_decl = malloc(sizeof('\0'))) == NULL)
-                OOM_ABORT;
-        *(sp->style_decl) = '\0';
+        style_provider = gtk_css_provider_new();
         context = gtk_widget_get_style_context(GTK_WIDGET(obj));
         gtk_style_context_add_provider(context,
-                                       GTK_STYLE_PROVIDER(sp->provider),
+                                       GTK_STYLE_PROVIDER(style_provider),
                                        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-        gtk_css_provider_load_from_data(sp->provider, sp->style_decl, -1, NULL);
-        if (widget_style_providers == NULL) {
-                widget_style_providers = sp;
-                insque(widget_style_providers, NULL);
-        } else {
-                for (last_sp = widget_style_providers;
-                     last_sp->next != NULL;
-                     last_sp = last_sp->next);
-                insque(sp, last_sp);
-        }
+        g_object_set_data(G_OBJECT(obj), "style_provider", style_provider);
 }
 
 static void
@@ -2335,7 +2298,7 @@ main(int argc, char *argv[])
                 bye(EXIT_FAILURE, stderr, "%s\n", error->message);
         in = fifo(in_fifo, "r");
         out = fifo(out_fifo, "w");
-        pthread_create(&receiver, NULL, digest_msg_in, NULL);
+        pthread_create(&receiver, NULL, (void *(*)(void *))digest_msg, in);
         main_window = gtk_builder_get_object(builder, MAIN_WIN);
         if (!GTK_IS_WINDOW(main_window))
                 bye(EXIT_FAILURE, stderr,
