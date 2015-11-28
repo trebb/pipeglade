@@ -714,7 +714,9 @@ selection</property>
                         <property name="title" translatable="yes">col2</property>
                         <property name="clickable">True</property>
                         <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext1"/>
+                          <object class="GtkCellRendererText" id="cellrenderertext1">
+                            <property name="editable">True</property>
+                          </object>
                           <attributes>
                             <attribute name="text">9</attribute>
                           </attributes>
@@ -738,7 +740,9 @@ selection</property>
                         <property name="title" translatable="yes">col4</property>
                         <property name="clickable">True</property>
                         <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext3"/>
+                          <object class="GtkCellRendererText" id="cellrenderertext3">
+                            <property name="editable">True</property>
+                          </object>
                           <attributes>
                             <attribute name="text">1</attribute>
                           </attributes>
@@ -750,7 +754,9 @@ selection</property>
                         <property name="title" translatable="yes">col5</property>
                         <property name="clickable">True</property>
                         <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext4"/>
+                          <object class="GtkCellRendererText" id="cellrenderertext4">
+                            <property name="editable">True</property>
+                          </object>
                           <attributes>
                             <attribute name="text">3</attribute>
                           </attributes>
@@ -762,7 +768,9 @@ selection</property>
                         <property name="title" translatable="yes">col6</property>
                         <property name="clickable">True</property>
                         <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext5"/>
+                          <object class="GtkCellRendererText" id="cellrenderertext5">
+                            <property name="editable">True</property>
+                          </object>
                           <attributes>
                             <attribute name="text">4</attribute>
                           </attributes>
@@ -774,7 +782,9 @@ selection</property>
                         <property name="title" translatable="yes">col7</property>
                         <property name="clickable">True</property>
                         <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext6"/>
+                          <object class="GtkCellRendererText" id="cellrenderertext6">
+                            <property name="editable">True</property>
+                          </object>
                           <attributes>
                             <attribute name="text">5</attribute>
                           </attributes>
@@ -786,7 +796,9 @@ selection</property>
                         <property name="title" translatable="yes">col8</property>
                         <property name="clickable">True</property>
                         <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext9"/>
+                          <object class="GtkCellRendererText" id="cellrenderertext9">
+                            <property name="editable">True</property>
+                          </object>
                           <attributes>
                             <attribute name="text">6</attribute>
                           </attributes>
@@ -798,7 +810,9 @@ selection</property>
                         <property name="title" translatable="yes">col9</property>
                         <property name="clickable">True</property>
                         <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext8"/>
+                          <object class="GtkCellRendererText" id="cellrenderertext8">
+                            <property name="editable">True</property>
+                          </object>
                           <attributes>
                             <attribute name="text">7</attribute>
                           </attributes>
@@ -810,7 +824,9 @@ selection</property>
                         <property name="title" translatable="yes">col10</property>
                         <property name="clickable">True</property>
                         <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext7"/>
+                          <object class="GtkCellRendererText" id="cellrenderertext7">
+                            <property name="editable">True</property>
+                          </object>
                           <attributes>
                             <attribute name="text">8</attribute>
                           </attributes>
@@ -868,7 +884,9 @@ selection</property>
                         <property name="title" translatable="yes">col12</property>
                         <property name="clickable">True</property>
                         <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext11"/>
+                          <object class="GtkCellRendererText" id="cellrenderertext11">
+                            <property name="editable">True</property>
+                          </object>
                           <attributes>
                             <attribute name="text">9</attribute>
                           </attributes>
@@ -892,7 +910,9 @@ selection</property>
                         <property name="title" translatable="yes">col14</property>
                         <property name="clickable">True</property>
                         <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext12"/>
+                          <object class="GtkCellRendererText" id="cellrenderertext12">
+                            <property name="editable">True</property>
+                          </object>
                           <attributes>
                             <attribute name="text">1</attribute>
                           </attributes>
@@ -952,9 +972,11 @@ selection</property>
                         <property name="title" translatable="yes">col19</property>
                         <property name="clickable">True</property>
                         <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext17"/>
+                          <object class="GtkCellRendererText" id="cellrenderertext17">
+                            <property name="editable">True</property>
+                          </object>
                           <attributes>
-                            <attribute name="text">7</attribute>
+                            <attribute name="text">9</attribute>
                           </attributes>
                         </child>
                       </object>

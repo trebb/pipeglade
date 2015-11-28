@@ -53,7 +53,7 @@ see
 .It Fl h
 Prints a help message and exits.
 .It Fl e Ar parent-xid
-Embeds the main window into the XEmbed socket  
+Embeds the main window into the XEmbed socket
 .Ar parent-xid
 of another process.
 .It Fl i Ar in-fifo
@@ -1494,15 +1494,22 @@ commands into
 .Fa name Ns
 .Ic \&:clicked
 .Qc
-if the set of selected rows has changed.
 .Pp
 .Qo
 .Fa name Ns
 .Ic \&: Ns
 .Fa column_type row column value
 .Qc ,
-one message per selected row and column in the underlying model if
-the set of selected rows has changed.
+one message per cell in the underlying model for each selected row; or
+.Pp
+.Qo
+.Fa name Ns
+.Ic \&: Ns
+.Fa column_type row column new_value
+.Qc ,
+if the cell at
+.Pq Fa row , column
+has been edited.
 .El
 .Ss GtkTreeViewColumn
 .Bl -tag -width "commands "

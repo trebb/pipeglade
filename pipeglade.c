@@ -27,6 +27,7 @@
 #include <gtk/gtkunixprint.h>
 #include <gtk/gtkx.h>
 #include <inttypes.h>
+#include <libxml/xpath.h>
 #include <locale.h>
 #include <math.h>
 #include <pthread.h>
@@ -88,6 +89,7 @@ struct ui_data {
         GType type;
         sem_t msg_digested;
 };
+static GtkBuilder *builder;
 
 /*
  * Print a formatted message to stream s and give up with status
@@ -119,7 +121,7 @@ widget_name(void *obj)
 }
 
 static void
-        send_msg_to(FILE* o, GtkBuildable *obj, const char *tag, va_list ap)
+send_msg_to(FILE* o, GtkBuildable *obj, const char *tag, va_list ap)
 {
         char *data;
         const char *w_name = widget_name(obj);
@@ -214,70 +216,87 @@ cb_send_text_selection(GtkBuildable *obj, gpointer user_data)
 }
 
 /*
+ * Use msg_sender() to send a message describing a particular cell.
+ */
+static void
+send_tree_cell_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
+                      GtkTreeModel *model, const char *path_s,
+                      GtkTreeIter *iter, int col, GtkBuildable *obj)
+{
+        GValue value = G_VALUE_INIT;
+        GType col_type;
+        char str[BUFLEN];
+
+        gtk_tree_model_get_value(model, iter, col, &value);
+        col_type = gtk_tree_model_get_column_type(model, col);
+        switch (col_type) {
+        case G_TYPE_INT:
+                snprintf(str, BUFLEN, " %d %d", col, g_value_get_int(&value));
+                msg_sender(obj, "gint", path_s, str, NULL);
+                break;
+        case G_TYPE_LONG:
+                snprintf(str, BUFLEN, " %d %ld", col, g_value_get_long(&value));
+                msg_sender(obj, "glong", path_s, str, NULL);
+                break;
+        case G_TYPE_INT64:
+                snprintf(str, BUFLEN, " %d %" PRId64, col, g_value_get_int64(&value));
+                msg_sender(obj, "gint64", path_s, str, NULL);
+                break;
+        case G_TYPE_UINT:
+                snprintf(str, BUFLEN, " %d %u", col, g_value_get_uint(&value));
+                msg_sender(obj, "guint", path_s, str, NULL);
+                break;
+        case G_TYPE_ULONG:
+                snprintf(str, BUFLEN, " %d %lu", col, g_value_get_ulong(&value));
+                msg_sender(obj, "gulong", path_s, str, NULL);
+                break;
+        case G_TYPE_UINT64:
+                snprintf(str, BUFLEN, " %d %" PRIu64, col, g_value_get_uint64(&value));
+                msg_sender(obj, "guint64", path_s, str, NULL);
+                break;
+        case G_TYPE_BOOLEAN:
+                snprintf(str, BUFLEN, " %d %d", col, g_value_get_boolean(&value));
+                msg_sender(obj, "gboolean", path_s, str, NULL);
+                break;
+        case G_TYPE_FLOAT:
+                snprintf(str, BUFLEN, " %d %f", col, g_value_get_float(&value));
+                msg_sender(obj, "gfloat", path_s, str, NULL);
+                break;
+        case G_TYPE_DOUBLE:
+                snprintf(str, BUFLEN, " %d %f", col, g_value_get_double(&value));
+                msg_sender(obj, "gdouble", path_s, str, NULL);
+                break;
+        case G_TYPE_STRING:
+                snprintf(str, BUFLEN, " %d ", col);
+                msg_sender(obj, "gchararray", path_s, str, g_value_get_string(&value), NULL);
+                break;
+        default:
+                fprintf(stderr, "column %d not implemented: %s\n", col, G_VALUE_TYPE_NAME(&value));
+                break;
+        }
+        g_value_unset(&value);
+}
+
+static void
+send_tree_cell_msg(GtkTreeModel *model, const char *path_s,
+                   GtkTreeIter *iter, int col, GtkBuildable *obj)
+{
+        send_tree_cell_msg_by(send_msg, model, path_s, iter, col, obj);
+}
+
+/*
  * Use msg_sender() to send one message per column for a single row.
  */
 static void
 send_tree_row_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
-                     GtkTreeModel *model,
-                     GtkTreePath *path, GtkTreeIter *iter, GtkBuildable *obj)
+                     GtkTreeModel *model, GtkTreePath *path,
+                     GtkTreeIter *iter, GtkBuildable *obj)
 {
         char *path_s = gtk_tree_path_to_string(path);
         int col;
 
-        for (col = 0; col < gtk_tree_model_get_n_columns(model); col++) {
-                GValue value = G_VALUE_INIT;
-                GType col_type;
-                char str[BUFLEN];
-
-                gtk_tree_model_get_value(model, iter, col, &value);
-                col_type = gtk_tree_model_get_column_type(model, col);
-                switch (col_type) {
-                case G_TYPE_INT:
-                        snprintf(str, BUFLEN, " %d %d", col, g_value_get_int(&value));
-                        msg_sender(obj, "gint", path_s, str, NULL);
-                        break;
-                case G_TYPE_LONG:
-                        snprintf(str, BUFLEN, " %d %ld", col, g_value_get_long(&value));
-                        msg_sender(obj, "glong", path_s, str, NULL);
-                        break;
-                case G_TYPE_INT64:
-                        snprintf(str, BUFLEN, " %d %" PRId64, col, g_value_get_int64(&value));
-                        msg_sender(obj, "gint64", path_s, str, NULL);
-                        break;
-                case G_TYPE_UINT:
-                        snprintf(str, BUFLEN, " %d %u", col, g_value_get_uint(&value));
-                        msg_sender(obj, "guint", path_s, str, NULL);
-                        break;
-                case G_TYPE_ULONG:
-                        snprintf(str, BUFLEN, " %d %lu", col, g_value_get_ulong(&value));
-                        msg_sender(obj, "gulong", path_s, str, NULL);
-                        break;
-                case G_TYPE_UINT64:
-                        snprintf(str, BUFLEN, " %d %" PRIu64, col, g_value_get_uint64(&value));
-                        msg_sender(obj, "guint64", path_s, str, NULL);
-                        break;
-                case G_TYPE_BOOLEAN:
-                        snprintf(str, BUFLEN, " %d %d", col, g_value_get_boolean(&value));
-                        msg_sender(obj, "gboolean", path_s, str, NULL);
-                        break;
-                case G_TYPE_FLOAT:
-                        snprintf(str, BUFLEN, " %d %f", col, g_value_get_float(&value));
-                        msg_sender(obj, "gfloat", path_s, str, NULL);
-                        break;
-                case G_TYPE_DOUBLE:
-                        snprintf(str, BUFLEN, " %d %f", col, g_value_get_double(&value));
-                        msg_sender(obj, "gdouble", path_s, str, NULL);
-                        break;
-                case G_TYPE_STRING:
-                        snprintf(str, BUFLEN, " %d ", col);
-                        msg_sender(obj, "gchararray", path_s, str, g_value_get_string(&value), NULL);
-                        break;
-                default:
-                        fprintf(stderr, "column %d not implemented: %s\n", col, G_VALUE_TYPE_NAME(&value));
-                        break;
-                }
-                g_value_unset(&value);
-        }
+        for (col = 0; col < gtk_tree_model_get_n_columns(model); col++)
+                send_tree_cell_msg_by(msg_sender, model, path_s, iter, col, obj);
         g_free(path_s);
 }
 
@@ -1488,6 +1507,60 @@ create_subtree(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter)
         gtk_tree_path_free(path_1);
 }
 
+
+static bool
+set_tree_view_cell(GtkTreeModel *model, GtkTreeIter *iter,
+                   char *path_s, int col, char *new_text)
+{
+        GType col_type = gtk_tree_model_get_column_type(model, col);
+        long long int n;
+        double d;
+        GtkTreePath *path;
+        char *endptr;
+        bool ok = false;
+
+        path = gtk_tree_path_new_from_string(path_s);
+        create_subtree(model, path, iter);
+        gtk_tree_path_free(path);
+        switch (col_type) {
+        case G_TYPE_BOOLEAN:
+        case G_TYPE_INT:
+        case G_TYPE_LONG:
+        case G_TYPE_INT64:
+        case G_TYPE_UINT:
+        case G_TYPE_ULONG:
+        case G_TYPE_UINT64:
+                errno = 0;
+                endptr = NULL;
+                n = strtoll(new_text, &endptr, 10);
+                if (!errno && endptr != new_text) {
+                        tree_model_set(model, iter, col, n, -1);
+                        ok = true;
+                }
+                break;
+        case G_TYPE_FLOAT:
+        case G_TYPE_DOUBLE:
+                errno = 0;
+                endptr = NULL;
+                d = strtod(new_text, &endptr);
+                if (!errno && endptr != new_text) {
+                        tree_model_set(model, iter, col, d, -1);
+                        ok = true;
+                }
+                break;
+        case G_TYPE_STRING:
+                tree_model_set(model, iter, col, new_text, -1);
+                ok = true;
+                break;
+        default:
+                fprintf(stderr, "column %d: %s not implemented\n",
+                        col, g_type_name(col_type));
+                ok = true;
+                break;
+        }
+        return ok;
+}
+
 static void
 update_tree_view(GObject *obj, const char *action,
                  const char *data, const char *whole_msg, GType type)
@@ -1495,8 +1568,9 @@ update_tree_view(GObject *obj, const char *action,
         GtkTreeView *view = GTK_TREE_VIEW(obj);
         GtkTreeModel *model = gtk_tree_view_get_model(view);
         GtkTreeIter iter0, iter1;
+        GtkTreePath *path = NULL;
         bool iter0_valid, iter1_valid;
-        char *tokens, *arg0, *arg1, *arg2, *endptr;
+        char *tokens, *arg0, *arg1, *arg2;
         int col = -1;           /* invalid column number */
 
         if (!GTK_IS_LIST_STORE(model) && !GTK_IS_TREE_STORE(model))
@@ -1520,66 +1594,31 @@ update_tree_view(GObject *obj, const char *action,
         if (eql(action, "set")
             && col > -1 && col < gtk_tree_model_get_n_columns(model) &&
             is_path_string(arg0)) {
-                GType col_type = gtk_tree_model_get_column_type(model, col);
-                long long int n;
-                double d;
-                GtkTreePath *path;
-
+                if (set_tree_view_cell(model, &iter0, arg0, col, arg2) == false)
+                        ign_cmd(type, whole_msg);
+        } else if (eql(action, "scroll") && iter0_valid && iter1_valid) {
                 path = gtk_tree_path_new_from_string(arg0);
-                create_subtree(model, path, &iter0);
-                gtk_tree_path_free(path);
-                switch (col_type) {
-                case G_TYPE_BOOLEAN:
-                case G_TYPE_INT:
-                case G_TYPE_LONG:
-                case G_TYPE_INT64:
-                case G_TYPE_UINT:
-                case G_TYPE_ULONG:
-                case G_TYPE_UINT64:
-                        errno = 0;
-                        endptr = NULL;
-                        n = strtoll(arg2, &endptr, 10);
-                        if (!errno && endptr != arg2)
-                                tree_model_set(model, &iter0, col, n, -1);
-                        else
-                                ign_cmd(type, whole_msg);
-                        break;
-                case G_TYPE_FLOAT:
-                case G_TYPE_DOUBLE:
-                        errno = 0;
-                        endptr = NULL;
-                        d = strtod(arg2, &endptr);
-                        if (!errno && endptr != arg2)
-                                tree_model_set(model, &iter0, col, d, -1);
-                        else
-                                ign_cmd(type, whole_msg);
-                        break;
-                case G_TYPE_STRING:
-                        tree_model_set(model, &iter0, col, arg2, -1);
-                        break;
-                default:
-                        fprintf(stderr, "column %d: %s not implemented\n",
-                                col, g_type_name(col_type));
-                        break;
-                }
-        } else if (eql(action, "scroll") && iter0_valid && iter1_valid)
                 gtk_tree_view_scroll_to_cell (view,
-                                              gtk_tree_path_new_from_string(arg0),
+                                              path,
                                               gtk_tree_view_get_column(view, col),
                                               0, 0., 0.);
-        else if (eql(action, "expand") && iter0_valid)
-                gtk_tree_view_expand_row(view, gtk_tree_path_new_from_string(arg0), false);
-        else if (eql(action, "expand_all") && iter0_valid)
-                gtk_tree_view_expand_row(view, gtk_tree_path_new_from_string(arg0), true);
-        else if (eql(action, "expand_all") && arg0 == NULL)
+        } else if (eql(action, "expand") && iter0_valid) {
+                path = gtk_tree_path_new_from_string(arg0);
+                gtk_tree_view_expand_row(view, path, false);
+        } else if (eql(action, "expand_all") && iter0_valid) {
+                path = gtk_tree_path_new_from_string(arg0);
+                gtk_tree_view_expand_row(view, path, true);
+        } else if (eql(action, "expand_all") && arg0 == NULL)
                 gtk_tree_view_expand_all(view);
-        else if (eql(action, "collapse") && iter0_valid)
-                gtk_tree_view_collapse_row(view, gtk_tree_path_new_from_string(arg0));
-        else if (eql(action, "collapse") && arg0 == NULL)
+        else if (eql(action, "collapse") && iter0_valid) {
+                path = gtk_tree_path_new_from_string(arg0);
+                gtk_tree_view_collapse_row(view, path);
+        } else if (eql(action, "collapse") && arg0 == NULL)
                 gtk_tree_view_collapse_all(view);
-        else if (eql(action, "set_cursor") && iter0_valid)
-                gtk_tree_view_set_cursor(view, gtk_tree_path_new_from_string(arg0), NULL, false);
-        else if (eql(action, "set_cursor") && arg0 == NULL) {
+        else if (eql(action, "set_cursor") && iter0_valid) {
+                path = gtk_tree_path_new_from_string(arg0);
+                gtk_tree_view_set_cursor(view, path, NULL, false);
+        } else if (eql(action, "set_cursor") && arg0 == NULL) {
                 gtk_tree_view_set_cursor(view, NULL, NULL, false);
                 gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(view));
         } else if (eql(action, "insert_row") && eql(arg0, "end"))
@@ -1605,6 +1644,7 @@ update_tree_view(GObject *obj, const char *action,
         } else
                 ign_cmd(type, whole_msg);
         free(tokens);
+        gtk_tree_path_free(path);
 }
 
 static void
@@ -1775,7 +1815,7 @@ update_ui_in(struct ui_data *ud)
  * GUI
  */
 static void *
-digest_msg(void *builder, FILE *cmd)
+digest_msg(FILE *cmd)
 {
         struct ui_data ud;
         FILE *load;             /* restoring user data */
@@ -1819,7 +1859,7 @@ digest_msg(void *builder, FILE *cmd)
                 if (eql(ud.action, "load") && strlen(ud.data) > 0 &&
                     (load = fopen(ud.data, "r")) != NULL &&
                     push_loading_file(ud.data)) {
-                        digest_msg(builder, load);
+                        digest_msg(load);
                         fclose(load);
                         pop_loading_file();
                         goto cleanup;
@@ -1906,9 +1946,9 @@ digest_msg(void *builder, FILE *cmd)
  * actions on the GUI
  */
 static void *
-digest_msg_in(void *builder)
+digest_msg_in()
 {
-        digest_msg(builder, in);
+        digest_msg(in);
         return NULL;
 }
 
@@ -1963,18 +2003,137 @@ fifo(const char *name, const char *mode)
  * Remove suffix from name; find the object named like this
  */
 static GObject *
-obj_sans_suffix(const char *suffix, const char *name, gpointer *builder)
+obj_sans_suffix(const char *suffix, const char *name)
 {
         int str_l;
         char str[BUFLEN + 1] = {'\0'};
 
         str_l = suffix - name;
         strncpy(str, name, str_l < BUFLEN ? str_l : BUFLEN);
-        return gtk_builder_get_object(GTK_BUILDER(builder), str);
+        return gtk_builder_get_object(builder, str);
+}
+
+/*
+ * Callback that forwards a modification of a tree view cell to the
+ * underlying model
+ */
+static void
+cb_tree_model_edit(GtkCellRenderer *renderer, gchar *path_s,
+                  gchar *new_text, gpointer model)
+{
+        GtkTreeIter iter;
+        GtkTreeView *view;
+        void *col;
+
+        gtk_tree_model_get_iter_from_string(model, &iter, path_s);
+        view = g_object_get_data(G_OBJECT(renderer), "tree_view");
+        col = g_object_get_data(G_OBJECT(renderer), "col_number");
+        set_tree_view_cell(model, &iter, path_s, GPOINTER_TO_INT(col),
+                           new_text);
+        send_tree_cell_msg(model, path_s, &iter, GPOINTER_TO_INT(col),
+                           GTK_BUILDABLE(view));
 }
 
 static void
-connect_widget_signals(gpointer *obj, gpointer *builder)
+cb_tree_model_toggle(GtkCellRenderer *renderer, gchar *path_s, gpointer model)
+{
+        GtkTreeIter iter;
+        void *col;
+        bool toggle_state;
+
+        gtk_tree_model_get_iter_from_string(model, &iter, path_s);
+        col = g_object_get_data(G_OBJECT(renderer), "col_number");
+        gtk_tree_model_get(model, &iter, col, &toggle_state, -1);
+        set_tree_view_cell(model, &iter, path_s, GPOINTER_TO_INT(col),
+                           toggle_state? "0" : "1");
+}
+
+/*
+ * Attach to renderer key "col_number".  Associate "col_number" with
+ * the corresponding column number in the underlying model.
+ * Due to what looks like a gap in the GTK API, renderer id and column
+ * number are taken directly from the XML .ui file.
+ */
+static bool
+tree_view_column_get_renderer_column(const char *ui_file, GtkTreeViewColumn *t_col,
+                                     int n, GtkCellRenderer **renderer)
+{
+        xmlDocPtr doc;
+        xmlXPathContextPtr xpath_ctx;
+        xmlXPathObjectPtr xpath_obj;
+        xmlNodeSetPtr nodes;
+        xmlNodePtr cur;
+        int i;
+        xmlChar *xpath, *renderer_name = NULL, *m_col_s = NULL;
+        char *xpath_base1 = "//object[@class=\"GtkTreeViewColumn\" and @id=\"";
+        const char *xpath_id = widget_name(t_col);
+        char *xpath_base2 = "\"]/child[";
+        size_t xpath_n_len = 3;    /* Big Enough (TM) */
+        char *xpath_base3 = "]/object[@class=\"GtkCellRendererText\""
+                " or @class=\"GtkCellRendererToggle\"]/";
+        char *xpath_text_col = "../attributes/attribute[@name=\"text\""
+                " or @name=\"active\"]";
+        char *xpath_renderer_id = "/@id";
+        size_t xpath_len;
+        bool r = false;
+
+        if ((doc = xmlParseFile(ui_file)) == NULL)
+                return false;
+        if ((xpath_ctx = xmlXPathNewContext(doc)) == NULL) {
+                xmlFreeDoc(doc);
+                return false;
+        }
+        xpath_len = 2 * (strlen(xpath_base1) + strlen(xpath_id) +
+                         strlen(xpath_base2) + xpath_n_len +
+                         strlen(xpath_base3))
+                + 1             /* "|" */
+                + strlen(xpath_text_col) + strlen(xpath_renderer_id)
+                + 1;            /* '\0' */
+        if ((xpath = malloc(xpath_len)) == NULL) {
+                xmlFreeDoc(doc);
+                return false;
+        }
+        snprintf((char *)xpath, xpath_len, "%s%s%s%d%s%s|%s%s%s%d%s%s",
+                 xpath_base1, xpath_id, xpath_base2, n, xpath_base3, xpath_text_col,
+                 xpath_base1, xpath_id, xpath_base2, n, xpath_base3, xpath_renderer_id);
+        if ((xpath_obj = xmlXPathEvalExpression(xpath, xpath_ctx)) == NULL) {
+                xmlXPathFreeContext(xpath_ctx);
+                free(xpath);
+                xmlFreeDoc(doc);
+                return false;
+        }
+        if ((nodes = xpath_obj->nodesetval) != NULL) {
+                for (i = 0; i < nodes->nodeNr; ++i) {
+                        if (nodes->nodeTab[i]->type == XML_ELEMENT_NODE) {
+                                cur = nodes->nodeTab[i];
+                                m_col_s = xmlNodeGetContent(cur);
+                        } else {
+                                cur = nodes->nodeTab[i];
+                                renderer_name = xmlNodeGetContent(cur);
+                        }
+                }
+        }
+        if (renderer_name) {
+                *renderer = GTK_CELL_RENDERER(
+                        gtk_builder_get_object(builder, (char *)renderer_name));
+                if (m_col_s) {
+                        g_object_set_data(G_OBJECT(*renderer), "col_number",
+                                          GINT_TO_POINTER(strtol((char *)m_col_s,
+                                                                 NULL, 10)));
+                        xmlFree(m_col_s);
+                        r = true;
+                }
+                xmlFree(renderer_name);
+        }
+        xmlXPathFreeObject(xpath_obj);
+        xmlXPathFreeContext(xpath_ctx);
+                free(xpath);
+        xmlFreeDoc(doc);
+        return r;
+}
+
+static void
+connect_widget_signals(gpointer *obj, char *ui_file)
 {
         const char *name = NULL;
         char *suffix = NULL;
@@ -1984,16 +2143,39 @@ connect_widget_signals(gpointer *obj, gpointer *builder)
         type = G_TYPE_FROM_INSTANCE(obj);
         if (GTK_IS_BUILDABLE(obj))
                 name = widget_name(obj);
-        if (type == GTK_TYPE_TREE_VIEW_COLUMN)
+        if (type == GTK_TYPE_TREE_VIEW_COLUMN) {
+                gboolean editable = FALSE;
+                GtkTreeView *view;
+                GtkTreeModel *model;
+                GtkCellRenderer *renderer;
+                int i;
+
                 g_signal_connect(obj, "clicked", G_CALLBACK(cb), "clicked");
+                view = GTK_TREE_VIEW(gtk_tree_view_column_get_tree_view(GTK_TREE_VIEW_COLUMN(obj)));
+                model = gtk_tree_view_get_model(view);
+                for (i = 1;; i++) {
+                        if (!tree_view_column_get_renderer_column(ui_file, GTK_TREE_VIEW_COLUMN(obj), i, &renderer))
+                                break;
+                        g_object_set_data(G_OBJECT(renderer), "tree_view", view);
+                        if (GTK_IS_CELL_RENDERER_TEXT(renderer)) {
+                                g_object_get(renderer, "editable", &editable, NULL);
+                                if (editable)
+                                        g_signal_connect(renderer, "edited", G_CALLBACK(cb_tree_model_edit), model);
+                        } else if (GTK_IS_CELL_RENDERER_TOGGLE(renderer)) {
+                                g_object_get(renderer, "activatable", &editable, NULL);
+                                if (editable)
+                                        g_signal_connect(renderer, "toggled", G_CALLBACK(cb_tree_model_toggle), model);
+                        }
+                }
+        }
         else if (type == GTK_TYPE_BUTTON) {
                 /* Button associated with a GtkTextView. */
                 if ((suffix = strstr(name, "_send_text")) != NULL &&
-                    GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(suffix, name, builder)))
+                    GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(suffix, name)))
                         g_signal_connect(obj, "clicked", G_CALLBACK(cb_send_text),
                                          gtk_text_view_get_buffer(GTK_TEXT_VIEW(obj2)));
                 else if ((suffix = strstr(name, "_send_selection")) != NULL &&
-                         GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(suffix, name, builder)))
+                         GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(suffix, name)))
                         g_signal_connect(obj, "clicked", G_CALLBACK(cb_send_text_selection),
                                          gtk_text_view_get_buffer(GTK_TEXT_VIEW(obj2)));
                 /* Buttons associated with (and part of) a GtkDialog.
@@ -2002,13 +2184,13 @@ connect_widget_signals(gpointer *obj, gpointer *builder)
                  * user to define those response ids in Glade,
                  * numerically */
                 else if ((suffix = strstr(name, "_cancel")) != NULL &&
-                         GTK_IS_DIALOG(obj2 = obj_sans_suffix(suffix, name, builder)))
+                         GTK_IS_DIALOG(obj2 = obj_sans_suffix(suffix, name)))
                         if (eql(widget_name(obj2), MAIN_WIN))
                                 g_signal_connect(obj, "clicked", G_CALLBACK(gtk_main_quit), NULL);
                         else
                                 g_signal_connect_swapped(obj, "clicked", G_CALLBACK(gtk_widget_hide), obj2);
                 else if ((suffix = strstr(name, "_ok")) != NULL &&
-                         GTK_IS_DIALOG(obj2 = obj_sans_suffix(suffix, name, builder))) {
+                         GTK_IS_DIALOG(obj2 = obj_sans_suffix(suffix, name))) {
                         if (GTK_IS_FILE_CHOOSER_DIALOG(obj2))
                                 g_signal_connect_swapped(obj, "clicked", G_CALLBACK(cb_send_file_chooser_dialog_selection), obj2);
                         else  /* generic button */
@@ -2018,14 +2200,13 @@ connect_widget_signals(gpointer *obj, gpointer *builder)
                         else
                                 g_signal_connect_swapped(obj, "clicked", G_CALLBACK(gtk_widget_hide), obj2);
                 } else if ((suffix = strstr(name, "_apply")) != NULL &&
-                           GTK_IS_FILE_CHOOSER_DIALOG(obj2 = obj_sans_suffix(suffix, name, builder)))
+                           GTK_IS_FILE_CHOOSER_DIALOG(obj2 = obj_sans_suffix(suffix, name)))
                         g_signal_connect_swapped(obj, "clicked", G_CALLBACK(cb_send_file_chooser_dialog_selection), obj2);
                 else  /* generic button */
                         g_signal_connect(obj, "clicked", G_CALLBACK(cb), "clicked");
-        }
-        else if (GTK_IS_MENU_ITEM(obj))
+        } else if (GTK_IS_MENU_ITEM(obj))
                 if ((suffix = strstr(name, "_invoke")) != NULL &&
-                    GTK_IS_DIALOG(obj2 = obj_sans_suffix(suffix, name, builder)))
+                    GTK_IS_DIALOG(obj2 = obj_sans_suffix(suffix, name)))
                         g_signal_connect_swapped(obj, "activate", G_CALLBACK(gtk_widget_show), obj2);
                 else
                         g_signal_connect(obj, "activate", G_CALLBACK(cb), "active");
@@ -2098,12 +2279,12 @@ add_widget_style_provider(gpointer *obj, void *data)
 }
 
 static void
-prepare_widgets(GtkBuilder *builder)
+prepare_widgets(char *ui_file)
 {
         GSList *objects = NULL;
 
         objects = gtk_builder_get_objects(builder);
-        g_slist_foreach(objects, (GFunc)connect_widget_signals, builder);
+        g_slist_foreach(objects, (GFunc)connect_widget_signals, ui_file);
         g_slist_foreach(objects, (GFunc)add_widget_style_provider, NULL);
         g_slist_free(objects);
 }
@@ -2116,7 +2297,6 @@ main(int argc, char *argv[])
         char *xid_s = NULL, xid_s2[BUFLEN];
         Window xid;
         GtkWidget *plug, *body;
-        GtkBuilder *builder;
         pthread_t receiver;
         GError *error = NULL;
         GObject *main_window = NULL;
@@ -2155,12 +2335,14 @@ main(int argc, char *argv[])
                 bye(EXIT_FAILURE, stderr, "%s\n", error->message);
         in = fifo(in_fifo, "r");
         out = fifo(out_fifo, "w");
-        pthread_create(&receiver, NULL, digest_msg_in, (void*)builder);
+        pthread_create(&receiver, NULL, digest_msg_in, NULL);
         main_window = gtk_builder_get_object(builder, MAIN_WIN);
         if (!GTK_IS_WINDOW(main_window))
                 bye(EXIT_FAILURE, stderr,
                     "no toplevel window named \'" MAIN_WIN "\'\n");
-        prepare_widgets(builder);
+        xmlInitParser();
+        LIBXML_TEST_VERSION;
+        prepare_widgets(ui_file);
         if (xid_s == NULL)      /* standalone */
                 gtk_widget_show(GTK_WIDGET(main_window));
         else {                  /* We're being XEmbedded */
@@ -2189,5 +2371,6 @@ main(int argc, char *argv[])
         }
         pthread_cancel(receiver);
         pthread_join(receiver, NULL);
+        xmlCleanupParser();
         exit(EXIT_SUCCESS);
 }

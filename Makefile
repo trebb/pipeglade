@@ -31,6 +31,7 @@ CCFLAGS += -D_POSIX_C_SOURCE=200809L
 CCFLAGS += -D_XOPEN_SOURCE=700
 CCFLAGS += `pkg-config --cflags --libs gtk+-3.0 gmodule-2.0`
 CCFLAGS += `pkg-config --cflags --libs gtk+-unix-print-3.0`
+CCFLAGS += `pkg-config --cflags --libs libxml-2.0`
 CC != which cc
 
 
