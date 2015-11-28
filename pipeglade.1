@@ -62,12 +62,7 @@ Creates a named pipe
 if necessary, and uses it for command input.
 .Pp
 A command is a line of text.  Its format is
-.Qo
-.Fa name Ns
-.Ic \&: Ns
-.Fa action
-.Bq Fa data
-.Qc
+.Qq Fa name Ns Ic \&: Ns Fa action Bq Fa data
 where
 .Fa name
 is the name of the receiving widget;
@@ -103,12 +98,7 @@ if necessary, and uses it for output of feedback messages from the
 graphical user interface.
 .Pp
 A feedback message is a line of text; its format is
-.Qo
-.Fa name Ns
-.Ic \&: Ns
-.Fa info
-.Bq Fa data
-.Qc
+.Qq Fa name Ns Ic \&: Ns Fa info Bq Fa data
 where
 .Fa name
 is the name of the sending widget.  See
@@ -139,42 +129,28 @@ Default is
 Prints the GTK+ version and exits.
 .It Fl V
 Prints the
-.Nm pipeglade
+.Nm
 version and exits.
 .El
 .Sh WIDGETS
 .Ss Any Widget (including widgets not mentioned in this document)
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_sensitive
-.Brq Ic 0 |  1
-.Qc
+.Qq Fa name Ns Ic :set_sensitive Brq Ic 0 | 1
 makes the widget grayed out
 .Pq Ic 0
 or responsive
 .Pq Ic 1 .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_visible
-.Brq Ic 0 |  1
-.Qc
+.Qq Fa name Ns Ic :set_visible Brq Ic 0 |  1
 hides
 .Pq Ic 0
 the widget, or makes it visible
 .Pq Ic 1 .
 .Pp
 .Qo
-.Fa name Ns
-.Ic :style
-.Bo Fa prop Ic : Ns Fa val Ns
-.Bo
-.Ic ;
-.Fa prop Ic : Ns Fa val ...
-.Bc
-.Bc
+.Fa name Ns Ic :style
+.Bo Fa prop Ic : Ns Fa val Ns Bo Ic ; Fa prop Ic : Ns Fa val ... Bc Bc
 .Qc
 sets properties
 .Fa prop
@@ -195,10 +171,7 @@ Examples:
 For a description of possible color notations see
 .Sx GtkColorButton .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :force
-.Qc
+.Qq Fa name Ns Ic :force
 simulates a click on the
 .Fa name Ns
 d widget, triggering a response as described with the widgets below.
@@ -225,11 +198,7 @@ and
 just open their respective dialogs.
 .El
 .Pp
-.Qo
-.Fa name Ns
-.Ic :load
-.Fa file
-.Qc
+.Qq Fa name Ns Ic :load Fa file
 reads arbitrary
 .Nm
 commands from
@@ -244,10 +213,7 @@ inner
 is ignored.  There is also a save command; see
 .Sx GtkTreeView .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :main_quit
-.Qc
+.Qq Fa name Ns Ic :main_quit
 kills the user interface.  A non-empty
 .Fa name
 is required but ignored.
@@ -255,18 +221,11 @@ is required but ignored.
 .Ss GtkButton
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_label
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :set_label Fa string
 replaces the button text with
 .Fa string .
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic \&:clicked
-.Qc
+.Qq Fa name Ns Ic \&:clicked
 .Pp
 .Ic GtkButton Ns
 s with names ending in
@@ -282,92 +241,43 @@ for details.
 .Ss GtkCalendar
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :select_date
-.Fa yyyy Ns
-.Ic - Ns
-.Fa mm Ns
-.Ic - Ns
-.Fa dd
-.Qc
+.Qq Fa name Ns Ic :select_date Fa yyyy Ns Ic - Ns Fa mm Ns Ic - Ns Fa dd
 selects the date on the calendar.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :mark_day
-.Fa day
-.Qc
+.Qq Fa name Ns Ic :mark_day Fa day
 marks
-.Fa day
-.Pq 1-31
+.Fa day Pq 1-31
 on the calendar.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :clear_marks
-.Qc
+.Qq Fa name Ns Ic :clear_marks
 unmarks all days on the calendar.
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic \&:clicked
-.Fa yyyy Ns
-.Ic - Ns
-.Fa mm Ns
-.Ic - Ns
-.Fa dd
-.Qc
+.Qq Fa name Ns Ic \&:clicked Fa yyyy Ns Ic - Ns Fa mm Ns Ic - Ns Fa dd
 .Pp
-.Qo
-.Fa name Ns
-.Ic \&:doubleclicked
-.Fa yyyy Ns
-.Ic - Ns
-.Fa mm Ns
-.Ic - Ns
-.Fa dd
-.Qc
+.Qq Fa name Ns Ic \&:doubleclicked Fa yyyy Ns Ic - Ns Fa mm Ns Ic - Ns Fa dd
 .El
 .Ss GtkCheckButton
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_active Brq Ic 0 | 1
-.Qc
+.Qq Fa name Ns Ic :set_active Brq Ic 0 | 1
 switches the check mark off
 .Pq Ic 0
 or on
 .Pq Ic 1 .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_label
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :set_label Fa string
 replaces the button text with
 .Fa string .
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic \&:1
-.Qc
+.Qq Fa name Ns Ic \&:1
 if switched on, or
-.Qo
-.Fa name Ns
-.Ic \&:0
-.Qc
+.Qq Fa name Ns Ic \&:0
 otherwise.
 .El
 .Ss GtkColorButton
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_color
-.Fa color
-.Qc
+.Qq Fa name Ns Ic :set_color Fa color
 preselects the color.
 .Fa color
 can be
@@ -377,63 +287,22 @@ a standard X11 color name, like
 .Qq Li Dark Sea Green ,
 .It
 a hexadecimal value in the form
-.Ic # Ns
-.Fa rgb ,
-.Ic # Ns
-.Fa rrggbb ,
-.Ic # Ns
-.Fa rrrgggbbb ,
+.Ic # Ns Fa rgb , Ic # Ns Fa rrggbb , Ic # Ns Fa rrrgggbbb ,
 or
-.Ic # Ns
-.Fa rrrrggggbbbb ,
+.Ic # Ns Fa rrrrggggbbbb ,
 .It
 an RGB color in the form
-.Ic rgb( Ns
-.Fa red Ns
-.Ic \&, Ns
-.Fa green Ns
-.Ic \&, Ns
-.Fa blue Ns
-.Ic \&) ,
+.Ic rgb( Ns Fa red Ns Ic \&, Ns Fa green Ns Ic \&, Ns Fa blue Ns Ic \&) ,
 or
 .It
 an RGBA color in the form
-.Ic rgba( Ns
-.Fa red Ns
-.Ic \&, Ns
-.Fa green Ns
-.Ic \&, Ns
-.Fa blue Ns
-.Ic \&, Ns
-.Fa alpha Ns
-.Ic \&) .
+.Ic rgba( Ns Fa red Ns Ic \&, Ns Fa green Ns Ic \&, Ns
+.Fa blue Ns Ic \&, Ns Fa alpha Ns Ic \&) .
 .El
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic \&:color
-.Ic rgb( Ns
-.Fa red Ns
-.Ic \&, Ns
-.Fa green Ns
-.Ic \&, Ns
-.Fa blue Ns
-.Ic \&)
-.Qc
+.Qq Fa name Ns Ic \&:color Ic rgb( Ns Fa red Ns Ic \&, Ns Fa green Ns Ic \&, Ns Fa blue Ns Ic \&)
 or
-.Qo
-.Fa name Ns
-.Ic \&:color
-.Ic rgba( Ns
-.Fa red Ns
-.Ic \&, Ns
-.Fa green Ns
-.Ic \&, Ns
-.Fa blue Ns
-.Ic \&, Ns
-.Fa alpha Ns
-.Ic \&)
-.Qc .
+.Qq Fa name Ns Ic \&:color Ic rgba( Ns Fa red Ns Ic \&, Ns Fa green Ns Ic \&, Ns Fa blue Ns Ic \&, Ns Fa alpha Ns Ic \&) .
 .Fa red , green ,
 and
 .Fa blue
@@ -448,43 +317,23 @@ should contain a
 .Ic GtkEntry .
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :prepend_text
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :prepend_text Fa string
 and
-.Qo
-.Fa name Ns
-.Ic :append_text
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :append_text Fa string
 prepend/append a new selectable item marked
 .Fa string .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :insert_text
-.Fa position string
-.Qc
+.Qq Fa name Ns Ic :insert_text Fa position string
 inserts item
 .Fa string
 at
 .Fa position .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :remove
-.Fa position
-.Qc
+.Qq Fa name Ns Ic :remove Fa position
 removes the item at
 .Fa position .
 .It Feedback
-.Qo
-.Fa entry_name Ns
-.Ic \&:text
-.Fa text
-.Qc ,
+.Qq Fa entry_name Ns Ic \&:text Fa text ,
 .Fa entry_name
 being the name of the child
 .Ic GtkEntry .
@@ -499,8 +348,7 @@ will be invoked by a
 or a
 .Sx GtkImageMenuItem
 that is named
-.Fa foo Ns
-.Ic _invoke .
+.Fa foo Ns Ic _invoke .
 .Pp
 The
 .Ic GtkDialog
@@ -508,10 +356,8 @@ should have a
 .Sq Cancel
 .Sx GtkButton
 named
-.Fa foo Ns
-.Ic _cancel
-.Po
-.Ic main_cancel
+.Fa foo Ns Ic _cancel
+.Po Ic main_cancel
 if the dialog is the sole window of the GUI and therefore named
 .Ic main
 .Pc .
@@ -528,11 +374,7 @@ parameter (an arbitrary non-negative integer) which can be used to reference the
 command for later removal.
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :arc
-.Fa id x y radius angle1 angle2
-.Qc
+.Qq Fa name Ns Ic :arc Fa id x y radius angle1 angle2
 adds a circular arc to the current path.  The arc is centered at
 .Pq Fa x , y
 and proceeds clockwise from
@@ -543,11 +385,7 @@ to
 in degrees
 .Pc .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :arc_negative
-.Fa id x y radius angle1 angle2
-.Qc
+.Qq Fa name Ns Ic :arc_negative Fa id x y radius angle1 angle2
 adds a circular arc to the current path.  The arc is centered at
 .Pq Fa x , y
 and proceeds counterclockwise from
@@ -558,24 +396,14 @@ to
 in degrees
 .Pc .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :close_path
-.Fa id
-.Qc
+.Qq Fa name Ns Ic :close_path Fa id
 adds a line segment from the current point to the point most recently
 passed to
-.Fa name Ns
-.Ic :move_to
+.Fa name Ns Ic :move_to
 or
-.Fa name Ns
-.Ic :rel_move_to .
+.Fa name Ns Ic :rel_move_to .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :curve_to
-.Fa id x1 y1 x2 y2 x3 y3
-.Qc
+.Qq Fa name Ns Ic :curve_to Fa id x1 y1 x2 y2 x3 y3
 adds a cubic Bezier spline from the current point to
 .Pq Fa x3 , y3 ,
 using
@@ -584,57 +412,30 @@ and
 .Pq Fa x2 , y2
 as control points.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :fill
-.Fa id
-.Qc
+.Qq Fa name Ns Ic :fill Fa id
 fills the current path and clears it.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :fill_preserve
-.Fa id
-.Qc
+.Qq Fa name Ns Ic :fill_preserve Fa id
 fills the current path without clearing it.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :line_to
-.Fa id x y
-.Qc
+.Qq Fa name Ns Ic :line_to Fa id x y
 adds a line from the current point to
 .Pq Fa x , y .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :move_to
-.Fa id x y
-.Qc
+.Qq Fa name Ns Ic :move_to Fa id x y
 sets the current point to
 .Pq Fa x , y .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :rectangle
-.Fa id x y width height
-.Qc
+.Qq Fa name Ns Ic :rectangle Fa id x y width height
 adds a rectangle to the current path.  The top left corner is at
 .Pq Fa x , y .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :refresh
-.Qc
+.Qq Fa name Ns Ic :refresh
 redraws the
 .Ic GtkDrawingArea
 .Fa name .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :rel_curve_to
-.Fa id dx1 dy1 dx2 dy2 dx3 dy3
-.Qc
+.Qq Fa name Ns Ic :rel_curve_to Fa id dx1 dy1 dx2 dy2 dx3 dy3
 adds a cubic Bezier spline from the current point to
 .Pq Fa dx3 , dy3 ,
 using
@@ -644,121 +445,61 @@ and
 as control points.  All coordinates are offsets relative to the
 current point.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :rel_line_to
-.Fa id dx dy
-.Qc
+.Qq Fa name Ns Ic :rel_line_to Fa id dx dy
 adds a line from the current point to a point offset from there by
 .Pq Fa dx , dy .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :rel_move_to
-.Fa id dx dy
-.Qc
+.Qq Fa name Ns Ic :rel_move_to Fa id dx dy
 moves the current point by
 .Pq Fa dx , dy .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :remove
-.Fa id
-.Qc
+.Qq Fa name Ns Ic :remove Fa id
 removes the elements with
 .Fa id
 from the
-.Ic GtkDrawingArea
-.Fa name .
+.Ic GtkDrawingArea Fa name .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_dash
-.Fa id l
-.Qc
+.Qq Fa name Ns Ic :set_dash Fa id l
 sets the dash pattern to
 .Fa l
 on,
 .Fa l
 off.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_dash
-.Fa id l1on l1off l2on l2off ...
-.Qc
+.Qq Fa name Ns Ic :set_dash Fa id l1on l1off l2on l2off ...
 resets the dash pattern to a line with arbitrary on/off portions.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_dash
-.Fa id
-.Qc
+.Qq Fa name Ns Ic :set_dash Fa id
 resets the dash pattern to a solid line.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_font_size
-.Fa id size
-.Qc
+.Qq Fa name Ns Ic :set_font_size Fa id size
 sets the font size for subsequent calls of
-.Fa name Ns
-.Ic :show_text .
+.Fa name Ns Ic :show_text .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_line_cap
-.Fa id
-.Brq Ic butt | round | square
-.Qc
+.Qq Fa name Ns Ic :set_line_cap Fa id Brq Ic butt | round | square
 sets the line cap style.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_line_join
-.Fa id
-.Brq Ic miter | round | bevel
-.Qc
+.Qq Fa name Ns Ic :set_line_join Fa id Brq Ic miter | round | bevel
 sets the line junction style.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_line_width
-.Fa id width
-.Qc
+.Qq Fa name Ns Ic :set_line_width Fa id width
 sets the line width.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_source_rgba
-.Fa id color
-.Qc
+.Qq Fa name Ns Ic :set_source_rgba Fa id color
 sets the color.
 .Fa color
 is in the format used with
 .Sx GtkColorButton .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :show_text
-.Fa id text
-.Qc
+.Qq Fa name Ns Ic :show_text Fa id text
 writes
 .Fa text ,
 beginning at the current point.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :stroke
-.Fa id
-.Qc
+.Qq Fa name Ns Ic :stroke Fa id
 strokes the current path and clears it.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :stroke_preserve
-.Fa id
-.Qc
+.Qq Fa name Ns Ic :stroke_preserve Fa id
 strokes the current path without clearing it.
 .It Feedback
 none
@@ -766,47 +507,27 @@ none
 .Ss GtkEntry
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_text
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :set_text Fa string
 replaces the user-editable text with
 .Fa string .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_placeholder_text
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :set_placeholder_text Fa string
 sets the
 .Fa string
 that is displayed when the entry is empty and unfocused.
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic \&:text
-.Fa text
-.Qc ,
+.Qq Fa name Ns Ic \&:text Fa text ,
 once for each change of
 .Fa text .
 .El
 .Ss GtkExpander
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_label
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :set_label Fa string
 replaces the expander label text with
 .Fa string .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_expanded
-.Brq Ic 0 |  1
-.Qc
+.Qq Fa name Ns Ic :set_expanded Brq Ic 0 |  1
 hides
 .Pq Ic 0
 the child widget, or makes it visible
@@ -817,20 +538,12 @@ none
 .Ss GtkFileChooserButton
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_filename
-.Fa path
-.Qc
+.Qq Fa name Ns Ic :set_filename Fa path
 preselects
 .Fa path
 to the extent it exists.
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic \&:file
-.Fa pathname
-.Qc
+.Qq Fa name Ns Ic \&:file Fa pathname
 if the selection has changed.
 .El
 .Ss GtkFileChooserDialog
@@ -843,8 +556,7 @@ will be invoked by a
 or a
 .Sx GtkImageMenuItem
 that is named
-.Fa foo Ns
-.Ic _invoke
+.Fa foo Ns Ic _invoke .
 .Pp
 The
 .Ic GtkFileChooserDialog
@@ -852,10 +564,8 @@ should have an
 .Sq OK
 .Sx GtkButton
 named
-.Fa foo Ns
-.Ic _ok
-.Po
-.Ic main_ok
+.Fa foo Ns Ic _ok
+.Po Ic main_ok
 if the dialog is the sole window of the GUI and therefore named
 .Ic main
 .Pc .
@@ -866,10 +576,8 @@ may have a
 .Sq Cancel
 .Sx GtkButton
 named
-.Fa foo Ns
-.Ic _cancel
-.Po
-.Ic main_cancel
+.Fa foo Ns Ic _cancel
+.Po Ic main_cancel
 if the dialog is the sole window of the GUI and therefore named
 .Ic main
 .Pc .
@@ -880,77 +588,44 @@ may have an
 .Sq Apply
 .Sx GtkButton
 named
-.Fa foo Ns
-.Ic _apply
-.Po
-.Ic main_apply
+.Fa foo Ns Ic _apply
+.Po Ic main_apply
 if the dialog is the sole window of the GUI and therefore named
 .Ic main
 .Pc .
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_filename
-.Fa path
-.Qc
+.Qq Fa name Ns Ic :set_filename Fa path
 preselects
 .Fa path
 to the extent it exists.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_current_name
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :set_current_name Fa string
 makes
 .Fa string
 the suggested filename, which may not yet exist.
 .Fa string
 should either resemble an absolute path, or the
 .Fa directory
-must be set
-separately by
-.Fa name Ns
-.Ic :set_filename
-.Fa directory .
+must be set separately by
+.Fa name Ns Ic :set_filename Fa directory .
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic :file
-.Fa  pathname
-.Qc
+.Qq Fa name Ns Ic :file Fa  pathname
 and/or
-.Qo
-.Fa name Ns
-.Ic :folder
-.Fa  pathname
-.Qc
+.Qq Fa name Ns Ic :folder Fa  pathname
 .El
 .Ss GtkFontButton
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_font_name
-.Fa fontname
-.Qc
+.Qq Fa name Ns Ic :set_font_name Fa fontname
 preselects the font.
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic \&:font
-.Fa fontname
-.Qc
+.Qq Fa name Ns Ic \&:font Fa fontname
 .El
 .Ss GtkFrame
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_label
-.Fa text
-.Qc
+.Qq Fa name Ns Ic :set_label Fa text
 replaces the frame label text with
 .Fa string .
 .It Feedback
@@ -959,18 +634,10 @@ none
 .Ss GtkImage
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_from_icon_name
-.Fa icon-name
-.Qc
+.Qq Fa name Ns Ic :set_from_icon_name Fa icon-name
 replaces the image with one of the standard icons.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_from_file
-.Fa path
-.Qc
+.Qq Fa name Ns Ic :set_from_file Fa path
 replaces the image by the one found at
 .Fa path Ns .
 .It Feedback
@@ -979,11 +646,7 @@ none
 .Ss GtkLabel
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_text
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :set_text Fa string
 replaces the label text with
 .Fa string .
 .It Feedback
@@ -999,8 +662,7 @@ A
 or
 .Ic GtkImageMenuItem
 with the name
-.Fa foo Ns
-.Ic _invoke
+.Fa foo Ns Ic _invoke
 will invoke the
 .Sx GtkDialog
 or
@@ -1010,36 +672,22 @@ named
 if it exists.  If there isn't any dialog attached to the
 .Ic GtkMenuItem ,
 it reports
-.Qo
-.Fa name Ns
-.Ic \&:active
-.Fa label
-.Qc .
+.Qq Fa name Ns Ic \&:active Fa label .
 .El
 .Ss GtkNotebook
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_current_page
-.Fa numeric
-.Qc
+.Qq Fa name Ns Ic :set_current_page Fa numeric
 switches to page number
 .Fa numeric
-.Po
-starting from 0
-.Pc .
+.Pq starting from 0 .
 .It Feedback
 none
 .El
 .Ss GtkPrintUnixDialog
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :print
-.Fa file.ps
-.Qc
+.Qq Fa name Ns Ic :print Fa file.ps
 opens the print dialog.  Pressing the
 .Qq Print
 button sends
@@ -1051,22 +699,12 @@ none
 .Ss GtkProgressBar
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_fraction
-.Fa numeric
-.Qc
+.Qq Fa name Ns Ic :set_fraction Fa numeric
 moves the progress bar to
 .Fa numeric
-.Po
-between 0 and 1
-.Pc .
+.Pq between 0 and 1 .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_text
-.Bq Fa string
-.Qc
+.Qq Fa name Ns Ic :set_text Bq Fa string
 replaces the text of the progress bar with
 .Fa string .
 Default is the progress percentage.
@@ -1076,48 +714,27 @@ none
 .Ss GtkRadioButton
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_active 1
-.Qc
+.Qq Fa name Ns Ic :set_active 1
 switches the button on.  All other buttons of the same group will go off
 automatically.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_label
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :set_label Fa string
 replaces the button text with
 .Fa string .
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic \&:1
-.Qc
+.Qq Fa name Ns Ic \&:1
 if switched on, or
-.Qo
-.Fa name Ns
-.Ic \&:0
-.Qc
+.Qq Fa name Ns Ic \&:0
 otherwise.
 .El
 .Ss GtkScale
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_value
-.Fa numeric
-.Qc
+.Qq Fa name Ns Ic :set_value Fa numeric
 moves the slider to value
 .Fa numeric .
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic \&:value
-.Fa floating_point_text
-.Qc
+.Qq Fa name Ns Ic \&:value Fa floating_point_text
 .El
 .Ss GtkSocket
 .Ic GtkSocket
@@ -1138,25 +755,15 @@ manually into the GtkBuilder (.ui) file:
 .Ef
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :id
-.Qc
+.Qq Fa name Ns Ic :id
 requests a feedback message containing the socket
 .Fa xid .
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic :id
-.Fa xid
-.Qc
+.Qq Fa name Ns Ic :id Fa xid
 can be used by another process to XEmbed its widgets into the
 .Ic GtkSocket .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :plug-added
-.Qc ,
+.Qq Fa name Ns Ic :plug-added ,
 .Qo
 .Fa name Ns
 .Ic :plug-removed
@@ -1168,32 +775,18 @@ removed them from the
 .Ss GtkSpinButton
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_text
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :set_text Fa string
 sets the selected value to
 .Fa string .
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic \&:text
-.Fa text
-.Qc
+.Qq Fa name Ns Ic \&:text Fa text
 .El
 .Ss GtkSpinner
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :start
-.Qc
+.Qq Fa name Ns Ic :start
 and
-.Qo
-.Fa name Ns
-.Ic :stop
-.Qc
+.Qq Fa name Ns Ic :stop
 start and stop the spinner.
 .It Feedback
 none
@@ -1201,26 +794,16 @@ none
 .Ss GtkStatusbar
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :push
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :push Fa string
 displays
 .Fa string
 in the statusbar.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :pop
-.Qc
+.Qq Fa name Ns Ic :pop
 removes the last entry from the statusbar, revealing the penultimate
 entry.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :remove_all
-.Qc
+.Qq Fa name Ns Ic :remove_all
 empties the statusbar.
 .It Feedback
 none
@@ -1228,24 +811,15 @@ none
 .Ss GtkSwitch
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_active Brq Ic 0 | 1
-.Qc
+.Qq Fa name Ns Ic :set_active Brq Ic 0 | 1
 turns the switch off
 .Pq Ic 0
 or on
 .Pq Ic 1 .
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic \&:1
-.Qc
+.Qq Fa name Ns Ic \&:1
 if switched on, or
-.Qo
-.Fa name Ns
-.Ic \&:0
-.Qc
+.Qq Fa name Ns Ic \&:0
 otherwise.
 .El
 .Ss GtkTextView
@@ -1259,69 +833,42 @@ is
 a
 .Sx GtkButton
 named
-.Fa foo Ns
-.Ic _send_text
+.Fa foo Ns Ic _send_text
 will send the content of the
 .Ic GtkTextView ;
 a
 .Sx GtkButton
 named
-.Fa foo Ns
-.Ic _send_selection
+.Fa foo Ns Ic _send_selection
 will send the highlighted part the
 .Ic GtkTextView .
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_text
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :set_text Fa string
 replaces the user-editable text with
 .Fa string Ns .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :delete
-.Qc
+.Qq Fa name Ns Ic :delete
 deletes the text.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :insert_at_cursor
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :insert_at_cursor Fa string
 inserts
 .Fa string
 at cursor position.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :place_cursor Brq Fa position | Ic end
-.Qc
+.Qq Fa name Ns Ic :place_cursor Brq Fa position | Ic end
 places the text cursor at
 .Fa position
 or at the end of the text.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :place_cursor_at_line
-.Fa line
-.Qc
+.Qq Fa name Ns Ic :place_cursor_at_line Fa line
 places the text cursor at the beginning of
 .Fa line .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :scroll_to_cursor
-.Qc
+.Qq Fa name Ns Ic :scroll_to_cursor
 scrolls to the cursor position if necessary.
 .It Feedback
-.Qo
-.Fa button_name Ns
-.Ic :text
-.Fa text
-.Qc ,
+.Qq Fa button_name Ns Ic :text Fa text ,
 .Fa button_name
 being the name of the
 .Sx GtkButton .
@@ -1335,32 +882,19 @@ and backslashes are replaced by
 .Ss GtkToggleButton
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_active Brq Ic 0 | 1
-.Qc
+.Qq Fa name Ns Ic :set_active Brq Ic 0 | 1
 switches the button off
 .Pq Ic 0
 or on
 .Pq Ic 1 .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_label
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :set_label Fa string
 replaces the button text with
 .Fa string .
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic \&:1
-.Qc
+.Qq Fa name Ns Ic \&:1
 if switched on, or
-.Qo
-.Fa name Ns
-.Ic \&:0
-.Qc
+.Qq Fa name Ns Ic \&:0
 otherwise.
 .El
 .Ss GtkTreeView
@@ -1384,11 +918,7 @@ or
 .Qq 0:0:1 .
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set
-.Fa row column data
-.Qc
+.Qq Fa name Ns Ic :set Fa row column data
 replaces the content at
 .Pq Fa row , column
 with
@@ -1399,10 +929,7 @@ If necessary, new tree nodes are created to obtain the minimal tree
 structure needed to support
 .Fa row .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :insert_row Brq Fa row Bo Ic as_child Bc | Ic end
-.Qc
+.Qq Fa name Ns Ic :insert_row Brq Fa row Bo Ic as_child Bc | Ic end
 inserts a new, empty row; either as a sibling of
 .Fa row
 at position
@@ -1411,102 +938,56 @@ or as a child of
 .Fa row ,
 or at the end of the list, respectively.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :move_row
-.Fa origin Brq Fa destination | Ic end
-.Qc
+.Qq Fa name Ns Ic :move_row Fa origin Brq Fa destination | Ic end
 moves the row at
 .Fa origin
 within its current level to
 .Fa destination
 or to the end.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :remove_row
-.Fa row
-.Qc
+.Qq Fa name Ns Ic :remove_row Fa row
 removes the row at position
 .Fa row .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :clear
-.Qc
+.Qq Fa name Ns Ic :clear
 removes all rows.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :expand
-.Fa row
-.Qc
+.Qq Fa name Ns Ic :expand Fa row
 expands one level of the subtree below
 .Fa row .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :expand_all
-.Bq Fa row
-.Qc
+.Qq Fa name Ns Ic :expand_all Bq Fa row
 expands the subtree below
 .Fa row ,
 or the whole tree.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :collapse
-.Bq Fa row
-.Qc
+.Qq Fa name Ns Ic :collapse Bq Fa row
 collapses the subtree below
 .Fa row ,
 or the whole tree.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :set_cursor
-.Bq Fa row
-.Qc
+.Qq Fa name Ns Ic :set_cursor Bq Fa row
 sets the cursor to
 .Fa row ,
 or unsets it.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :scroll
-.Fa row column
-.Qc
+.Qq Fa name Ns Ic :scroll Fa row column
 scrolls the cell at
 .Pq Fa row , column
 into view.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :save
-.Fa file
-.Qc
+.Qq Fa name Ns Ic :save Fa file
 stores the content of the underlying model as a sequence of
 .Nm
 commands into
 .Fa file .
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic \&:clicked
-.Qc
+.Qq Fa name Ns Ic \&:clicked
 .Pp
-.Qo
-.Fa name Ns
-.Ic \&: Ns
-.Fa column_type row column value
-.Qc ,
+.Qq Fa name Ns Ic \&: Ns Fa column_type row column value ,
 one message per cell in the underlying model for each selected row; or
 .Pp
-.Qo
-.Fa name Ns
-.Ic \&: Ns
-.Fa column_type row column new_value
-.Qc ,
+.Qq Fa name Ns Ic \&: Ns Fa column_type row column new_value ,
 if the cell at
 .Pq Fa row , column
 has been edited.
@@ -1516,50 +997,29 @@ has been edited.
 .It Commands
 none
 .It Feedback
-.Qo
-.Fa name Ns
-.Ic \&:clicked
-.Qc
+.Qq Fa name Ns Ic \&:clicked
 .El
 .Ss GtkWindow
 .Bl -tag -width "commands "
 .It Commands
-.Qo
-.Fa name Ns
-.Ic :set_title
-.Fa string
-.Qc
+.Qq Fa name Ns Ic :set_title Fa string
 replaces the text in the title bar with
 .Fa string .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :resize
-.Bq Fa width height
-.Qc
+.Qq Fa name Ns Ic :resize Bq Fa width height
 changes the window size to
 .Fa width
 x
 .Fa height
 pixels if specified, or to the default size.
 .Pp
-.Qo
-.Fa name Ns
-.Ic :move
-.Fa x y
-.Qc
+.Qq Fa name Ns Ic :move Fa x y
 moves the window to position
 .Fa x , y .
 .Pp
-.Qo
-.Fa name Ns
-.Ic :fullscreen
-.Qc
+.Qq Fa name Ns Ic :fullscreen
 and
-.Qo
-.Fa name Ns
-.Ic :unfullscreen
-.Qc
+.Qq Fa name Ns Ic :unfullscreen
 switch fullscreen mode on and off.
 .It Feedback
 none
@@ -1569,16 +1029,13 @@ none
 Suppose the interface in
 .Pa ./pipeglade.ui
 has a
-.Sx GtkLabel
-.Li label1
+.Sx GtkLabel Li label1
 and a
-.Sx GtkButton
-.Li button1 .
+.Sx GtkButton Li button1 .
 After invoking
 .Dl pipeglade
 and clicking the
-.Sx GtkButton ,
-.Qq button1:clicked
+.Sx GtkButton , Qq button1:clicked
 will be reported on the terminal.  Typing
 .Dl label1:set_text Button Label
 will change the text shown on the label into
@@ -1603,8 +1060,7 @@ will close it after sending the selected filename to
 If the interface in
 .Pa ./simple_dialog.ui
 contains a
-.Sx GtkLabel
-.Li label1 ,
+.Sx GtkLabel Li label1 ,
 then
 .Dl pipeglade -u simple_dialog.ui <<< \e
 .Dl \ \ \ \ \&"label1:set_text NOW READ THIS!\&"
