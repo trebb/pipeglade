@@ -490,19 +490,6 @@ struct draw_op {
         void *op_args;
 };
 
-/*
- * The content of all GtkDrawingAreas
- */
-static struct drawing {
-        struct drawing *next;
-        struct drawing *prev;
-        GtkWidget *widget;
-        struct draw_op *draw_ops;
-} *drawings = NULL;
-
-/*
- * Sets of arguments for various drawing functions
- */
 struct rectangle_args {
         double x;
         double y;
@@ -906,13 +893,12 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
 }
 
 /*
- * Add another element to widget's list of drawing operations
+ * Add another element to widget's "draw_ops" list
  */
 static bool
-ins_draw_op(GtkWidget *widget, const char *action, const char *data)
+ins_draw_op(GObject *widget, const char *action, const char *data)
 {
-        struct draw_op *op, *last_op;
-        struct drawing *d;
+        struct draw_op *op, *draw_ops, *last_op;
 
         if ((op = malloc(sizeof(*op))) == NULL)
                 OOM_ABORT;
@@ -922,59 +908,38 @@ ins_draw_op(GtkWidget *widget, const char *action, const char *data)
                 free(op);
                 return false;
         }
-        for (d = drawings; d != NULL; d = d->next)
-                if (d->widget == widget)
-                        break;
-        if (d == NULL) {
-                if ((d = malloc(sizeof(*d))) == NULL)
-                        OOM_ABORT;
-                if (drawings == NULL) {
-                        drawings = d;
-                        insque(d, NULL);
-                } else
-                        insque(d, drawings);
-                d->widget = widget;
-                d->draw_ops = op;
-                insque(op, NULL);
-        } else if (d->draw_ops == NULL) {
-                d->draw_ops = op;
+        if ((draw_ops = g_object_get_data(widget, "draw_ops")) == NULL) {
+                g_object_set_data(widget, "draw_ops", op);
                 insque(op, NULL);
         } else {
-                for (last_op = d->draw_ops; last_op->next != NULL; last_op = last_op->next);
+                for (last_op = draw_ops; last_op->next != NULL; last_op = last_op->next);
                 insque(op, last_op);
         }
         return true;
 }
 
 /*
- * Remove all elements with the given id from widget's list of drawing
- * operations
+ * Remove all elements with the given id from widget's "draw_ops" list
  */
 static bool
-rem_draw_op(GtkWidget *widget, const char *data)
+rem_draw_op(GObject *widget, const char *data)
 {
         struct draw_op *op, *next_op;
-        struct drawing *d;
         unsigned int id;
 
         if (sscanf(data, "%u", &id) != 1)
                 return false;
-        for (d = drawings; d != NULL; d = d->next)
-                if (d->widget == widget)
-                        break;
-        if (d != NULL) {
-                op = d->draw_ops;
-                while (op != NULL) {
-                        next_op = op->next;
-                        if (op->id == id) {
-                                if (op->prev == NULL)
-                                        d->draw_ops = next_op;
-                                remque(op);
-                                free(op->op_args);
-                                free(op);
-                        }
-                        op = next_op;
+        op = g_object_get_data(widget, "draw_ops");
+        while (op != NULL) {
+                next_op = op->next;
+                if (op->id == id) {
+                        if (op->prev == NULL)
+                                g_object_set_data(widget, "draw_ops", next_op);
+                        remque(op);
+                        free(op->op_args);
+                        free(op);
                 }
+                op = next_op;
         }
         return true;
 }
@@ -986,13 +951,12 @@ static gboolean
 cb_draw(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
         struct draw_op *op;
-        struct drawing *p;
 
         (void)data;
-        for (p = drawings; p != NULL; p = p->next)
-                if (p->widget == widget)
-                        for (op = p->draw_ops; op != NULL; op = op->next)
-                                draw(cr, op->op, op->op_args);
+        for (op = g_object_get_data(G_OBJECT(widget), "draw_ops");
+             op != NULL;
+             op = op->next)
+                draw(cr, op->op, op->op_args);
         return FALSE;
 }
 
@@ -1117,17 +1081,15 @@ static void
 update_drawing_area(GObject *obj, const char *action,
                     const char *data, const char *whole_msg, GType type)
 {
-        GtkWidget *widget = GTK_WIDGET(obj);
-
         if (eql(action, "remove")) {
-                if (!rem_draw_op(widget, data))
+                if (!rem_draw_op(obj, data))
                         ign_cmd(type, whole_msg);
         } else if (eql(action, "refresh")) {
-                gint width = gtk_widget_get_allocated_width (widget);
-                gint height = gtk_widget_get_allocated_height (widget);
+                gint width = gtk_widget_get_allocated_width(GTK_WIDGET(obj));
+                gint height = gtk_widget_get_allocated_height(GTK_WIDGET(obj));
 
-                gtk_widget_queue_draw_area(widget, 0, 0, width, height);
-        } else if (ins_draw_op(widget, action, data));
+                gtk_widget_queue_draw_area(GTK_WIDGET(obj), 0, 0, width, height);
+        } else if (ins_draw_op(obj, action, data));
         else
                 ign_cmd(type, whole_msg);
 }
@@ -1504,7 +1466,6 @@ create_subtree(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter)
         } /* neither prev nor up mean we're at the root of an empty tree */
         gtk_tree_path_free(path_1);
 }
-
 
 static bool
 set_tree_view_cell(GtkTreeModel *model, GtkTreeIter *iter,
