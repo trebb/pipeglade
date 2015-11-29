@@ -57,12 +57,12 @@
         "[-G] "                                 \
         "[-V]\n"
 
-#define ABORT                                                   \
-        {                                                       \
-                fprintf(stderr,                                 \
-                        "In %s (%s:%d): ",                      \
-                        __func__, __FILE__, __LINE__);          \
-                abort();                                        \
+#define ABORT                                           \
+        {                                               \
+                fprintf(stderr,                         \
+                        "In %s (%s:%d): ",              \
+                        __func__, __FILE__, __LINE__);  \
+                abort();                                \
         }
 
 #define OOM_ABORT                                               \
@@ -153,25 +153,28 @@ send_msg_to(FILE* o, GtkBuildable *obj, const char *tag, va_list ap)
 }
 
 /*
- * Send GUI feedback to global stream "out" or "save", respectively.
- * The message format is "<origin>:<tag> <data ...>".  The variadic
- * arguments are strings; last argument must be NULL.
+ * Send GUI feedback to global stream "out".  The message format is
+ * "<origin>:<tag> <data ...>".  The variadic arguments are strings;
+ * last argument must be NULL.
  */
 static void
 send_msg(GtkBuildable *obj, const char *tag, ...)
 {
         va_list ap;
-
         va_start(ap, tag);
         send_msg_to(out, obj, tag, ap);
         va_end(ap);
 }
 
+/*
+ * Send message from GUI to global stream "save".  The message format
+ * is "<origin>:<tag> <data ...>".  The variadic arguments are strings;
+ * last argument must be NULL.
+ */
 static void
 save_msg(GtkBuildable *obj, const char *tag, ...)
 {
         va_list ap;
-
         va_start(ap, tag);
         send_msg_to(save, obj, tag, ap);
         va_end(ap);
@@ -183,10 +186,9 @@ save_msg(GtkBuildable *obj, const char *tag, ...)
  * last argument must be NULL.
  */
 static void
-treeview_save_msg(GtkBuildable *obj, const char *tag, ...)
+save_action_set_msg(GtkBuildable *obj, const char *tag, ...)
 {
         va_list ap;
-
         va_start(ap, tag);
         send_msg_to(save, obj, "set", ap);
         va_end(ap);
@@ -199,9 +201,9 @@ static void
 cb_send_file_chooser_dialog_selection(gpointer user_data)
 {
         send_msg(user_data, "file",
-                 gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(user_data)), NULL);
+                 gtk_file_chooser_get_filename(user_data), NULL);
         send_msg(user_data, "folder",
-                 gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(user_data)), NULL);
+                 gtk_file_chooser_get_current_folder(user_data), NULL);
 }
 
 /*
@@ -292,49 +294,48 @@ send_tree_cell_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
         g_value_unset(&value);
 }
 
-static void
-send_tree_cell_msg(GtkTreeModel *model, const char *path_s,
-                   GtkTreeIter *iter, int col, GtkBuildable *obj)
-{
-        send_tree_cell_msg_by(send_msg, model, path_s, iter, col, obj);
-}
-
 /*
  * Use msg_sender() to send one message per column for a single row.
  */
 static void
 send_tree_row_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
-                     GtkTreeModel *model, GtkTreePath *path,
+                     GtkTreeModel *model, char *path_s,
                      GtkTreeIter *iter, GtkBuildable *obj)
 {
-        char *path_s = gtk_tree_path_to_string(path);
         int col;
-
         for (col = 0; col < gtk_tree_model_get_n_columns(model); col++)
                 send_tree_cell_msg_by(msg_sender, model, path_s, iter, col, obj);
-        g_free(path_s);
 }
 
 /*
  * send_tree_row_msg serves as an argument for
  * gtk_tree_selection_selected_foreach()
-*/
-static void
+ */
+static gboolean
 send_tree_row_msg(GtkTreeModel *model,
                   GtkTreePath *path, GtkTreeIter *iter, GtkBuildable *obj)
 {
-        send_tree_row_msg_by(send_msg, model, path, iter, obj);
+        char *path_s = gtk_tree_path_to_string(path);
+
+        send_tree_row_msg_by(send_msg, model, path_s, iter, obj);
+        g_free(path_s);
+        return FALSE;
 }
 
 /*
  * save_tree_row_msg serves as an argument for
- * gtk_tree_model_foreach()
+ * gtk_tree_model_foreach().
+ * Send message from GUI to global stream "save".
  */
 static gboolean
 save_tree_row_msg(GtkTreeModel *model,
-                  GtkTreePath *path, GtkTreeIter *iter, gpointer obj)
+                  GtkTreePath *path, GtkTreeIter *iter, GtkBuildable *obj)
 {
-        send_tree_row_msg_by(treeview_save_msg, model, path, iter, GTK_BUILDABLE(obj));
+        char *path_s = gtk_tree_path_to_string(path);
+
+        (void)path;
+        send_tree_row_msg_by(save_action_set_msg, model, path_s, iter, obj);
+        g_free(path_s);
         return FALSE;
 }
 
@@ -344,43 +345,43 @@ save_tree_row_msg(GtkTreeModel *model,
  * by the user command ...:force.
  */
 static void
-cb(GtkBuildable *obj, gpointer user_data)
+cb(GtkBuildable *obj, const char *tag)
 {
         char str[BUFLEN];
         GdkRGBA color;
-        GtkTreeView *tree_view;
+        GtkTreeView *view;
         unsigned int year = 0, month = 0, day = 0;
 
         if (GTK_IS_ENTRY(obj))
-                send_msg(obj, user_data, gtk_entry_get_text(GTK_ENTRY(obj)), NULL);
+                send_msg(obj, tag, gtk_entry_get_text(GTK_ENTRY(obj)), NULL);
         else if (GTK_IS_MENU_ITEM(obj))
-                send_msg(obj, user_data, gtk_menu_item_get_label(GTK_MENU_ITEM(obj)), NULL);
+                send_msg(obj, tag, gtk_menu_item_get_label(GTK_MENU_ITEM(obj)), NULL);
         else if (GTK_IS_RANGE(obj)) {
                 snprintf(str, BUFLEN, "%f", gtk_range_get_value(GTK_RANGE(obj)));
-                send_msg(obj, user_data, str, NULL);
+                send_msg(obj, tag, str, NULL);
         } else if (GTK_IS_SWITCH(obj))
                 send_msg(obj, gtk_switch_get_active(GTK_SWITCH(obj)) ? "1" : "0", NULL);
         else if (GTK_IS_TOGGLE_BUTTON(obj))
                 send_msg(obj, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(obj)) ? "1" : "0", NULL);
         else if (GTK_IS_COLOR_BUTTON(obj)) {
                 gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(obj), &color);
-                send_msg(obj, user_data, gdk_rgba_to_string(&color), NULL);
+                send_msg(obj, tag, gdk_rgba_to_string(&color), NULL);
         } else if (GTK_IS_FONT_BUTTON(obj))
-                send_msg(obj, user_data, gtk_font_button_get_font_name(GTK_FONT_BUTTON(obj)), NULL);
+                send_msg(obj, tag, gtk_font_button_get_font_name(GTK_FONT_BUTTON(obj)), NULL);
         else if (GTK_IS_FILE_CHOOSER_BUTTON(obj))
-                send_msg(obj, user_data, gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(obj)), NULL);
+                send_msg(obj, tag, gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(obj)), NULL);
         else if (GTK_IS_BUTTON(obj) || GTK_IS_TREE_VIEW_COLUMN(obj) || GTK_IS_SOCKET(obj))
-                send_msg(obj, user_data, NULL);
+                send_msg(obj, tag, NULL);
         else if (GTK_IS_CALENDAR(obj)) {
                 gtk_calendar_get_date(GTK_CALENDAR(obj), &year, &month, &day);
                 snprintf(str, BUFLEN, "%04u-%02u-%02u", year, ++month, day);
-                send_msg(obj, user_data, str, NULL);
+                send_msg(obj, tag, str, NULL);
         } else if (GTK_IS_TREE_SELECTION(obj)) {
-                tree_view = gtk_tree_selection_get_tree_view(GTK_TREE_SELECTION(obj));
-                send_msg(GTK_BUILDABLE(tree_view), user_data, NULL);
+                view = gtk_tree_selection_get_tree_view(GTK_TREE_SELECTION(obj));
+                send_msg(GTK_BUILDABLE(view), tag, NULL);
                 gtk_tree_selection_selected_foreach(GTK_TREE_SELECTION(obj),
                                                     (GtkTreeSelectionForeachFunc)send_tree_row_msg,
-                                                    GTK_BUILDABLE(tree_view));
+                                                    view);
         } else
                 fprintf(stderr, "ignoring callback from %s\n", widget_name(obj));
 }
@@ -389,9 +390,9 @@ cb(GtkBuildable *obj, gpointer user_data)
  * Callback like cb(), but returning true.
  */
 static bool
-cb_true(GtkBuildable *obj, gpointer user_data)
+cb_true(GtkBuildable *obj, const char *tag)
 {
-        cb(obj, user_data);
+        cb(obj, tag);
         return true;
 }
 
@@ -1002,9 +1003,8 @@ static void
 update_widget_style(GObject *obj, const char *name,
                     const char *data, const char *whole_msg, GType type)
 {
-        GtkWidget *widget = GTK_WIDGET(obj);
         GtkStyleContext *context;
-        GtkCssProvider *style_provider;
+        GtkStyleProvider *style_provider;
         char *style_decl;
         const char *prefix = "* {", *suffix = "}";
         size_t sz;
@@ -1012,19 +1012,19 @@ update_widget_style(GObject *obj, const char *name,
         (void)name;
         (void)whole_msg;
         (void)type;
-        style_provider = g_object_get_data(G_OBJECT(obj), "style_provider");
+        style_provider = g_object_get_data(obj, "style_provider");
         sz = strlen(prefix) + strlen(suffix) + strlen(data) + 1;
-        context = gtk_widget_get_style_context(widget);
-        gtk_style_context_remove_provider(context, GTK_STYLE_PROVIDER(style_provider));
+        context = gtk_widget_get_style_context(GTK_WIDGET(obj));
+        gtk_style_context_remove_provider(context, style_provider);
         if ((style_decl = malloc(sz)) == NULL)
                 OOM_ABORT;
         strcpy(style_decl, prefix);
         strcat(style_decl, data);
         strcat(style_decl, suffix);
-        gtk_style_context_add_provider(context,
-                                       GTK_STYLE_PROVIDER(style_provider),
+        gtk_style_context_add_provider(context, style_provider,
                                        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-        gtk_css_provider_load_from_data(style_provider, style_decl, -1, NULL);
+        gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(style_provider),
+                                        style_decl, -1, NULL);
         free(style_decl);
 }
 
@@ -1036,10 +1036,8 @@ static void
 update_button(GObject *obj, const char *action,
               const char *data, const char *whole_msg, GType type)
 {
-        GtkButton *button = GTK_BUTTON(obj);
-
         if (eql(action, "set_label"))
-                gtk_button_set_label(button, data);
+                gtk_button_set_label(GTK_BUTTON(obj), data);
         else
                 ign_cmd(type, whole_msg);
 }
@@ -1074,12 +1072,11 @@ static void
 update_color_button(GObject *obj, const char *action,
                     const char *data, const char *whole_msg, GType type)
 {
-        GtkColorChooser *chooser = GTK_COLOR_CHOOSER(obj);
         GdkRGBA color;
 
         if (eql(action, "set_color")) {
                 gdk_rgba_parse(&color, data);
-                gtk_color_chooser_set_rgba(chooser, &color);
+                gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(obj), &color);
         } else
                 ign_cmd(type, whole_msg);
 }
@@ -1110,10 +1107,8 @@ static void
 update_frame(GObject *obj, const char *action,
              const char *data, const char *whole_msg, GType type)
 {
-        GtkFrame *frame = GTK_FRAME(obj);
-
         if (eql(action, "set_label"))
-                gtk_frame_set_label(frame, data);
+                gtk_frame_set_label(GTK_FRAME(obj), data);
         else
                 ign_cmd(type, whole_msg);
 }
@@ -1155,10 +1150,8 @@ static void
 update_label(GObject *obj, const char *action,
              const char *data, const char *whole_msg, GType type)
 {
-        GtkLabel *label = GTK_LABEL(obj);
-
         if (eql(action, "set_text"))
-                gtk_label_set_text(label, data);
+                gtk_label_set_text(GTK_LABEL(obj), data);
         else
                 ign_cmd(type, whole_msg);
 }
@@ -1181,10 +1174,8 @@ static void
 update_file_chooser_button(GObject *obj, const char *action,
                            const char *data, const char *whole_msg, GType type)
 {
-        GtkFileChooser *chooser = GTK_FILE_CHOOSER(obj);
-
         if (eql(action, "set_filename"))
-                gtk_file_chooser_set_filename(chooser, data);
+                gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(obj), data);
         else
                 ign_cmd(type, whole_msg);
 }
@@ -1274,10 +1265,8 @@ static void
 update_notebook(GObject *obj, const char *action,
                 const char *data, const char *whole_msg, GType type)
 {
-        GtkNotebook *notebook = GTK_NOTEBOOK(obj);
-
         if (eql(action, "set_current_page"))
-                gtk_notebook_set_current_page(notebook, strtol(data, NULL, 10));
+                gtk_notebook_set_current_page(GTK_NOTEBOOK(obj), strtol(data, NULL, 10));
         else
                 ign_cmd(type, whole_msg);
 }
@@ -1300,10 +1289,8 @@ static void
 update_scale(GObject *obj, const char *action,
              const char *data, const char *whole_msg, GType type)
 {
-        GtkRange *range = GTK_RANGE(obj);
-
         if (eql(action, "set_value"))
-                gtk_range_set_value(range, strtod(data, NULL));
+                gtk_range_set_value(GTK_RANGE(obj), strtod(data, NULL));
         else
                 ign_cmd(type, whole_msg);
 }
@@ -1343,10 +1330,8 @@ static void
 update_switch(GObject *obj, const char *action,
               const char *data, const char *whole_msg, GType type)
 {
-        GtkSwitch *switcher = GTK_SWITCH(obj);
-
         if (eql(action, "set_active"))
-                gtk_switch_set_active(switcher, strtol(data, NULL, 10));
+                gtk_switch_set_active(GTK_SWITCH(obj), strtol(data, NULL, 10));
         else
                 ign_cmd(type, whole_msg);
 }
@@ -1393,11 +1378,10 @@ static void
 update_toggle_button(GObject *obj, const char *action,
                      const char *data, const char *whole_msg, GType type)
 {
-        GtkToggleButton *toggle = GTK_TOGGLE_BUTTON(obj);
         if (eql(action, "set_label"))
-                gtk_button_set_label(GTK_BUTTON(toggle), data);
+                gtk_button_set_label(GTK_BUTTON(obj), data);
         else if (eql(action, "set_active"))
-                gtk_toggle_button_set_active(toggle, strtol(data, NULL, 10));
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), strtol(data, NULL, 10));
         else
                 ign_cmd(type, whole_msg);
 }
@@ -1416,7 +1400,7 @@ is_path_string(char *s)
 
 static void
 tree_model_insert_before(GtkTreeModel *model, GtkTreeIter *iter,
-                        GtkTreeIter *parent, GtkTreeIter *sibling)
+                         GtkTreeIter *parent, GtkTreeIter *sibling)
 {
         if (GTK_IS_TREE_STORE(model))
                 gtk_tree_store_insert_before(GTK_TREE_STORE(model),
@@ -1652,8 +1636,8 @@ update_tree_view(GObject *obj, const char *action,
                 gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(view));
                 tree_model_clear(model);
         } else if (eql(action, "save") && arg0 != NULL &&
-                 (save = fopen(arg0, "w")) != NULL) {
-                gtk_tree_model_foreach(model, save_tree_row_msg, view);
+                   (save = fopen(arg0, "w")) != NULL) {
+                gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)save_tree_row_msg, view);
                 fclose(save);
         } else
                 ign_cmd(type, whole_msg);
@@ -1706,23 +1690,21 @@ update_window(GObject *obj, const char *action,
 
 static void
 update_sensitivity(GObject *obj, const char *action,
-                 const char *data, const char *whole_msg, GType type)
+                   const char *data, const char *whole_msg, GType type)
 {
         (void)action;
         (void)whole_msg;
         (void)type;
-
         gtk_widget_set_sensitive(GTK_WIDGET(obj), strtol(data, NULL, 10));
 }
 
 static void
 update_visibility(GObject *obj, const char *action,
-                 const char *data, const char *whole_msg, GType type)
+                  const char *data, const char *whole_msg, GType type)
 {
         (void)action;
         (void)whole_msg;
         (void)type;
-
         gtk_widget_set_visible(GTK_WIDGET(obj), strtol(data, NULL, 10));
 }
 
@@ -1748,7 +1730,7 @@ fake_ui_activity(GObject *obj, const char *action,
 
 static void
 main_quit(GObject *obj, const char *action,
-                 const char *data, const char *whole_msg, GType type)
+          const char *data, const char *whole_msg, GType type)
 {
         (void)obj;
         (void)action;
@@ -1761,7 +1743,7 @@ main_quit(GObject *obj, const char *action,
 
 static void
 complain(GObject *obj, const char *action,
-                 const char *data, const char *whole_msg, GType type)
+         const char *data, const char *whole_msg, GType type)
 {
         (void)obj;
         (void)action;
@@ -2022,7 +2004,7 @@ obj_sans_suffix(const char *suffix, const char *name)
  */
 static void
 cb_tree_model_edit(GtkCellRenderer *renderer, const gchar *path_s,
-                  const gchar *new_text, gpointer model)
+                   const gchar *new_text, gpointer model)
 {
         GtkTreeIter iter;
         GtkTreeView *view;
@@ -2033,8 +2015,8 @@ cb_tree_model_edit(GtkCellRenderer *renderer, const gchar *path_s,
         col = g_object_get_data(G_OBJECT(renderer), "col_number");
         set_tree_view_cell(model, &iter, path_s, GPOINTER_TO_INT(col),
                            new_text);
-        send_tree_cell_msg(model, path_s, &iter, GPOINTER_TO_INT(col),
-                           GTK_BUILDABLE(view));
+        send_tree_cell_msg_by(send_msg, model, path_s, &iter, GPOINTER_TO_INT(col),
+                              GTK_BUILDABLE(view));
 }
 
 static void
@@ -2130,7 +2112,7 @@ tree_view_column_get_renderer_column(const char *ui_file, GtkTreeViewColumn *t_c
         }
         xmlXPathFreeObject(xpath_obj);
         xmlXPathFreeContext(xpath_ctx);
-                free(xpath);
+        free(xpath);
         xmlFreeDoc(doc);
         return r;
 }
@@ -2189,17 +2171,17 @@ connect_widget_signals(gpointer *obj, char *ui_file)
                 else if ((suffix = strstr(name, "_cancel")) != NULL &&
                          GTK_IS_DIALOG(obj2 = obj_sans_suffix(suffix, name)))
                         if (eql(widget_name(obj2), MAIN_WIN))
-                                g_signal_connect(obj, "clicked", G_CALLBACK(gtk_main_quit), NULL);
+                                g_signal_connect_swapped(obj, "clicked", G_CALLBACK(gtk_main_quit), NULL);
                         else
                                 g_signal_connect_swapped(obj, "clicked", G_CALLBACK(gtk_widget_hide), obj2);
                 else if ((suffix = strstr(name, "_ok")) != NULL &&
                          GTK_IS_DIALOG(obj2 = obj_sans_suffix(suffix, name))) {
                         if (GTK_IS_FILE_CHOOSER_DIALOG(obj2))
-                                g_signal_connect_swapped(obj, "clicked", G_CALLBACK(cb_send_file_chooser_dialog_selection), obj2);
+                                g_signal_connect_swapped(obj, "clicked", G_CALLBACK(cb_send_file_chooser_dialog_selection), GTK_FILE_CHOOSER(obj2));
                         else  /* generic button */
                                 g_signal_connect(obj, "clicked", G_CALLBACK(cb), "clicked");
                         if (eql(widget_name(obj2), MAIN_WIN))
-                                g_signal_connect(obj, "clicked", G_CALLBACK(gtk_main_quit), NULL);
+                                g_signal_connect_swapped(obj, "clicked", G_CALLBACK(gtk_main_quit), NULL);
                         else
                                 g_signal_connect_swapped(obj, "clicked", G_CALLBACK(gtk_widget_hide), obj2);
                 } else if ((suffix = strstr(name, "_apply")) != NULL &&
@@ -2215,7 +2197,7 @@ connect_widget_signals(gpointer *obj, char *ui_file)
                         g_signal_connect(obj, "activate", G_CALLBACK(cb), "active");
         else if (GTK_IS_WINDOW(obj))
                 if (eql(name, MAIN_WIN))
-                        g_signal_connect(obj, "delete-event", G_CALLBACK(gtk_main_quit), NULL);
+                        g_signal_connect_swapped(obj, "delete-event", G_CALLBACK(gtk_main_quit), NULL);
                 else
                         g_signal_connect(obj, "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
         else if (type == GTK_TYPE_FILE_CHOOSER_BUTTON)
