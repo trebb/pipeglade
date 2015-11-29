@@ -153,9 +153,9 @@ send_msg_to(FILE* o, GtkBuildable *obj, const char *tag, va_list ap)
 }
 
 /*
- * Send GUI feedback to global stream "out".  The message format is
- * "<origin>:<tag> <data ...>".  The variadic arguments are
- * strings; last argument must be NULL.
+ * Send GUI feedback to global stream "out" or "save", respectively.
+ * The message format is "<origin>:<tag> <data ...>".  The variadic
+ * arguments are strings; last argument must be NULL.
  */
 static void
 send_msg(GtkBuildable *obj, const char *tag, ...)
@@ -169,6 +169,21 @@ send_msg(GtkBuildable *obj, const char *tag, ...)
 
 static void
 save_msg(GtkBuildable *obj, const char *tag, ...)
+{
+        va_list ap;
+
+        va_start(ap, tag);
+        send_msg_to(save, obj, tag, ap);
+        va_end(ap);
+}
+
+/*
+ * Send message from GUI to global stream "save".  The message format
+ * is "<origin>:set <data ...>".  The variadic arguments are strings;
+ * last argument must be NULL.
+ */
+static void
+treeview_save_msg(GtkBuildable *obj, const char *tag, ...)
 {
         va_list ap;
 
@@ -199,7 +214,7 @@ cb_send_text(GtkBuildable *obj, gpointer user_data)
         GtkTextIter a, b;
 
         gtk_text_buffer_get_bounds(user_data, &a, &b);
-        send_msg(obj, "text", gtk_text_buffer_get_text(user_data, &a, &b, FALSE), NULL);
+        send_msg(obj, "text", gtk_text_buffer_get_text(user_data, &a, &b, TRUE), NULL);
 }
 
 /*
@@ -212,7 +227,7 @@ cb_send_text_selection(GtkBuildable *obj, gpointer user_data)
         GtkTextIter a, b;
 
         gtk_text_buffer_get_selection_bounds(user_data, &a, &b);
-        send_msg(obj, "text", gtk_text_buffer_get_text(user_data, &a, &b, FALSE), NULL);
+        send_msg(obj, "text", gtk_text_buffer_get_text(user_data, &a, &b, TRUE), NULL);
 }
 
 /*
@@ -319,7 +334,7 @@ static gboolean
 save_tree_row_msg(GtkTreeModel *model,
                   GtkTreePath *path, GtkTreeIter *iter, gpointer obj)
 {
-        send_tree_row_msg_by(save_msg, model, path, iter, GTK_BUILDABLE(obj));
+        send_tree_row_msg_by(treeview_save_msg, model, path, iter, GTK_BUILDABLE(obj));
         return FALSE;
 }
 
@@ -1355,14 +1370,22 @@ update_text_view(GObject *obj, const char *action,
                 if (eql(data, "end"))
                         gtk_text_buffer_get_end_iter(textbuf, &a);
                 else    /* numeric offset */
-                        gtk_text_buffer_get_iter_at_offset(textbuf, &a, strtol(data, NULL, 10));
+                        gtk_text_buffer_get_iter_at_offset(textbuf, &a,
+                                                           strtol(data, NULL, 10));
                 gtk_text_buffer_place_cursor(textbuf, &a);
         } else if (eql(action, "place_cursor_at_line")) {
                 gtk_text_buffer_get_iter_at_line(textbuf, &a, strtol(data, NULL, 10));
                 gtk_text_buffer_place_cursor(textbuf, &a);
         } else if (eql(action, "scroll_to_cursor"))
-                gtk_text_view_scroll_to_mark(view, gtk_text_buffer_get_insert(textbuf), 0., 0, 0., 0.);
-        else
+                gtk_text_view_scroll_to_mark(view, gtk_text_buffer_get_insert(textbuf),
+                                             0., 0, 0., 0.);
+        else if (eql(action, "save") && data != NULL &&
+                 (save = fopen(data, "w")) != NULL) {
+                gtk_text_buffer_get_bounds(textbuf, &a, &b);
+                save_msg(GTK_BUILDABLE(view), "insert_at_cursor",
+                         gtk_text_buffer_get_text(textbuf, &a, &b, TRUE), NULL);
+                fclose(save);
+        } else
                 ign_cmd(type, whole_msg);
 }
 

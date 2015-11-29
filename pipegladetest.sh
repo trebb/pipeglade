@@ -12,7 +12,7 @@ FIN=to-g.fifo
 FOUT=from-g.fifo
 FERR=err.fifo
 BAD_FIFO=bad_fifo
-DIR=test.dir
+DIR=test_dir
 FILE1=saved1.txt
 FILE2=saved2.txt
 FILE3=saved3.txt
@@ -206,6 +206,11 @@ check_error "notebook1:nnn" "ignoring GtkNotebook command \"notebook1:nnn\""
 check_error "expander1:nnn" "ignoring GtkExpander command \"expander1:nnn\""
 # GtkTextView
 check_error "textview1:nnn" "ignoring GtkTextView command \"textview1:nnn\""
+check_error "textview1:save" "ignoring GtkTextView command \"textview1:save\""
+mkdir $DIR; chmod a-w $DIR
+check_error "textview1:save $DIR/$FILE1" "ignoring GtkTextView command \"textview1:save $DIR/$FILE1\""
+check_error "textview1:save nonexistent/$FILE1" "ignoring GtkTextView command \"textview1:save nonexistent/$FILE1\""
+rm -rf $DIR
 # GtkButton
 check_error "button1:nnn" "ignoring GtkButton command \"button1:nnn\""
 # GtkSwitch
@@ -666,10 +671,48 @@ check 0 "notebook1:set_current_page 1"
 check 1 "textview1_send_text:force" "textview1_send_text:text some textnetcn"
 check 1 "textview1:place_cursor 5\n textview1:insert_at_cursor MORE \n textview1_send_text:force" "textview1_send_text:text some MORE textnetcn"
 check 1 "textview1:place_cursor_at_line 1\n textview1:insert_at_cursor ETC \n textview1_send_text:force" "textview1_send_text:text some MORE textnETC etcn"
+mkdir -p $DIR
+check 1 "textview1:save $DIR/$FILE1\n button1:force" "button1:clicked"
+i=0
+while (( i<2000 )); do
+    (( i+=1 ))
+    cat $DIR/$FILE1 >> $DIR/$FILE2
+done
+i=0
+while (( i<2000 )); do
+    (( i+=1 ))
+    echo "textview2:insert_at_cursor ##### THIS IS LINE $i.\\n" >> $DIR/$FILE3
+done
+check 0 "_:load $DIR/$FILE2"
+check 0 "textview1:save $DIR/$FILE1"
+check 0 "textview1:save $DIR/$FILE1"
+check 0 "textview1:delete"
+check 0 "textview2:delete"
+check 0 "_:load $DIR/$FILE3"
+check 0 "_:load $DIR/$FILE1"
+check 0 "textview2:save $DIR/$FILE3"
+check 1 "textview1:save $DIR/$FILE2\n button1:force" "button1:clicked"
+check_cmd "cmp $DIR/$FILE1 $DIR/$FILE2"
+echo "textview1:insert_at_cursor I'm a text containing backslashes:\\nONE\\\\\nTWO\\\\\\\\\\nTHREE\\\\\\\\\\\\\\nEnd" > $DIR/$FILE1
+check 0 "textview1:delete\n _:load $DIR/$FILE1"
+check 1 "textview1:save $DIR/$FILE1\n textview1:save $DIR/$FILE2\n textview1:delete\n _:load $DIR/$FILE1\n button1:force" "button1:clicked"
+rm $DIR/$FILE1
+check 1 "textview1:save $DIR/$FILE1\n button1:force" "button1:clicked"
+check_cmd "test 96 = `wc -c $DIR/$FILE1 | awk '{print $1}'`"
+check_cmd "cmp $DIR/$FILE1 $DIR/$FILE2"
 check 1 "textview1:delete\n textview1_send_text:force" "textview1_send_text:text"
 check 1 "statusbar1:push Highlight the lowest visible text line and press \"send_selection\"\n textview1:place_cursor_at_line 1 \ntextview1:insert_at_cursor A\\\\nB\\\\nC\\\\nD\\\\nE\\\\nF\\\\nG\\\\nH\\\\nI\\\\nJ\\\\nK\\\\nL\\\\nM\\\\nN\\\\nO\\\\nP\\\\nQ\\\\nR\\\\nS\\\\nT\\\\nU\\\\nV\\\\nW\\\\nX\\\\nY\\\\nZ\\\\na\\\\nb\\\\nc\\\\nd\\\\ne\\\\nf\\\\ng\\\\nh\\\\ni\\\\nj\\\\nk\\\\nl\\\\nm\\\\nn\\\\no\\\\np\\\\nq\\\\nr\\\\ns\\\\nt\\\\nu\\\\nv\\\\nw\\\\nx\\\\ny\\\\nz \n textview1:place_cursor_at_line 46 \n textview1:scroll_to_cursor" "textview1_send_selection:text u"
 check 1 "statusbar1:push Again, highlight the lowest visible text line and press \"send_selection\"\n textview1:place_cursor end\n textview1:scroll_to_cursor" "textview1_send_selection:text z"
 check 1 "statusbar1:push Highlight the highest visible text line and press \"send_selection\"\n textview1:place_cursor 0 \n textview1:scroll_to_cursor" "textview1_send_selection:text A"
+check 1 "treeview2:set 100:10:5 2 8888888\n treeview2:save $DIR/$FILE1\n textview2:save $DIR/$FILE2\n button1:force" "button1:clicked"
+cp $DIR/$FILE1 $DIR/$FILE4
+check_cmd "cmp $DIR/$FILE2 $DIR/$FILE3"
+check 1 "treeview2:clear\n textview2:delete\n _:load $DIR/$FILE1\n _:load $DIR/$FILE2\n button1:force" "button1:clicked"
+rm $DIR/$FILE1 $DIR/$FILE2
+check 1 "treeview2:save $DIR/$FILE1\n textview2:save $DIR/$FILE2\n button1:force" "button1:clicked"
+check_cmd "cmp $DIR/$FILE1 $DIR/$FILE4"
+check_cmd "cmp $DIR/$FILE2 $DIR/$FILE3"
+rm -rf $DIR
 check 1 "scale1:set_value 10\n scale1:force" "scale1:value 10.000000"
 check 5 "open_dialog:set_filename q.png\n file:force\n open_dialog_invoke:force\n open_dialog_apply:force\n open_dialog_ok:force" "file:active _File" "open_dialog:file $PWD/q.png" "open_dialog:folder $PWD" "open_dialog:file $PWD/q.png" "open_dialog:folder $PWD"
 check 1 "file:force\n open_dialog_invoke:force\n open_dialog_cancel:force" "file:active _File"

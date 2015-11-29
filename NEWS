@@ -2,8 +2,8 @@
 ------------------
   * Support GtkTreeStore.
   * Support editing in GtkTreeView.
-  * Data behind a GtkTreeView can be saved into files where they are
-  stored as a sequence of ordinary pipeglade commands.
+  * Data behind GtkTextView and GtkTreeView can be saved into files
+  where they are stored as a sequence of ordinary pipeglade commands.
   * Arbitrary commands can be read from files.
   * Setting fields of a non-existing GtkTreeStore/GtkListStore row
   automatically creates any nodes necessary in the supporting tree

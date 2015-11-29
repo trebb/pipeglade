@@ -845,7 +845,7 @@ will send the highlighted part the
 .Bl -tag -width "commands "
 .It Commands
 .Qq Fa name Ns Ic :set_text Fa string
-replaces the user-editable text with
+replaces the user-editable text with (potentially empty)
 .Fa string Ns .
 .Pp
 .Qq Fa name Ns Ic :delete
@@ -867,6 +867,13 @@ places the text cursor at the beginning of
 .Pp
 .Qq Fa name Ns Ic :scroll_to_cursor
 scrolls to the cursor position if necessary.
+.Pp
+.Qq Fa name Ns Ic :save Fa file
+stores in
+.Fa file
+a
+.Nm
+command containing the text.
 .It Feedback
 .Qq Fa button_name Ns Ic :text Fa text ,
 .Fa button_name
