@@ -133,7 +133,43 @@ Prints the
 version and exits.
 .El
 .Sh WIDGETS
-.Ss Any Widget (including widgets not mentioned in this document)
+The widgets able to communicate through
+.Nm
+are
+.Sx GtkButton ,
+.Sx GtkCalendar ,
+.Sx GtkCheckButton ,
+.Sx GtkColorButton ,
+.Sx GtkComboBoxText ,
+.Sx GtkDialog ,
+.Sx GtkDrawingArea ,
+.Sx GtkEntry ,
+.Sx GtkExpander ,
+.Sx GtkFileChooserButton ,
+.Sx GtkFileChooserDialog ,
+.Sx GtkFontButton ,
+.Sx GtkFrame ,
+.Sx GtkImage ,
+.Sx GtkLabel ,
+.Sx GtkMenuItem, GtkImageMenuItem ,
+.Sx GtkNotebook ,
+.Sx GtkPrintUnixDialog ,
+.Sx GtkProgressBar ,
+.Sx GtkRadioButton ,
+.Sx GtkScale ,
+.Sx GtkSocket ,
+.Sx GtkSpinButton ,
+.Sx GtkSpinner ,
+.Sx GtkStatusbar ,
+.Sx GtkSwitch ,
+.Sx GtkTextView ,
+.Sx GtkToggleButton ,
+.Sx GtkTreeView ,
+.Sx GtkTreeViewColumn ,
+and
+.Sx GtkWindow .
+
+.Ss Any Widget (including widgets not mentioned above)
 .Bl -tag -width "commands "
 .It Commands
 .Qq Fa name Ns Ic :set_sensitive Brq Ic 0 | 1
@@ -210,7 +246,11 @@ is required but ignored.
 commands may be nested but on attempts to read from the same file, the
 inner
 .Ic :load
-is ignored.  There is also a save command; see
+is ignored.  There is also a
+.Ic :save
+command; see
+.Sx GtkTextView
+and
 .Sx GtkTreeView .
 .Pp
 .Qq Fa name Ns Ic :main_quit
