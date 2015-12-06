@@ -1521,6 +1521,16 @@ set_tree_view_cell(GtkTreeModel *model, GtkTreeIter *iter,
 }
 
 static void
+tree_view_set_cursor(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col)
+{
+        /* GTK+ 3.14 requires this.  For 3.18, path = NULL */
+        /* is just fine and this function need not exist. */
+        if (path == NULL)
+                path = gtk_tree_path_new();
+        gtk_tree_view_set_cursor(view, path, col, false);
+}
+
+static void
 update_tree_view(GObject *obj, const char *action,
                  const char *data, const char *whole_msg, GType type)
 {
@@ -1576,9 +1586,9 @@ update_tree_view(GObject *obj, const char *action,
                 gtk_tree_view_collapse_all(view);
         else if (eql(action, "set_cursor") && iter0_valid) {
                 path = gtk_tree_path_new_from_string(arg0);
-                gtk_tree_view_set_cursor(view, path, NULL, false);
+                tree_view_set_cursor(view, path, NULL);
         } else if (eql(action, "set_cursor") && arg0 == NULL) {
-                gtk_tree_view_set_cursor(view, NULL, NULL, false);
+                tree_view_set_cursor(view, NULL, NULL);
                 gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(view));
         } else if (eql(action, "insert_row") && eql(arg0, "end"))
                 tree_model_insert_before(model, &iter1, NULL, NULL);
@@ -1593,7 +1603,7 @@ update_tree_view(GObject *obj, const char *action,
         else if (eql(action, "remove_row") && iter0_valid)
                 tree_model_remove(model, &iter0);
         else if (eql(action, "clear") && arg0 == NULL) {
-                gtk_tree_view_set_cursor(view, NULL, NULL, false);
+                tree_view_set_cursor(view, NULL, NULL);
                 gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(view));
                 tree_model_clear(model);
         } else if (eql(action, "save") && arg0 != NULL &&
