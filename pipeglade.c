@@ -1923,17 +1923,17 @@ fifo(const char *name, const char *mode)
         if (name != NULL && (stat(name, &sb), !S_ISFIFO(sb.st_mode)))
                 if (mkfifo(name, 0666) != 0)
                         bye(EXIT_FAILURE, stderr,
-                            "making fifo: %s\n", strerror(errno));
+                            "making fifo %s: %s\n", name, strerror(errno));
         switch (mode[0]) {
         case 'r':
                 bufmode = _IONBF;
                 if (name == NULL)
                         s = stdin;
                 else {
-                        fd = open(name, O_RDWR | O_NONBLOCK);
-                        if (fd < 0)
+                        if ((fd = open(name, O_RDWR | O_NONBLOCK)) < 0)
                                 bye(EXIT_FAILURE, stderr,
-                                    "opening fifo: %s\n", strerror(errno));
+                                    "opening fifo %s (%s): %s\n",
+                                    name, mode, strerror(errno));
                         s = fdopen(fd, "r");
                 }
                 break;
@@ -1949,7 +1949,8 @@ fifo(const char *name, const char *mode)
                 break;
         }
         if (s == NULL)
-                bye(EXIT_FAILURE, stderr, "opening fifo: %s\n", strerror(errno));
+                bye(EXIT_FAILURE, stderr, "opening fifo %s (%s): %s\n",
+                    name, mode, strerror(errno));
         else
                 setvbuf(s, NULL, bufmode, 0);
         return s;
@@ -2246,6 +2247,7 @@ main(int argc, char *argv[])
         out = NULL;
         save = NULL;
         newest_loading_file = 0;
+        gtk_init(&argc, &argv);
         while ((opt = getopt(argc, argv, "he:i:o:u:GV")) != -1) {
                 switch (opt) {
                 case 'e': xid_s = optarg; break;
@@ -2266,14 +2268,13 @@ main(int argc, char *argv[])
         if (argv[optind] != NULL)
                 bye(EXIT_FAILURE, stderr,
                     "illegal parameter '%s'\n" USAGE, argv[optind]);
+        in = fifo(in_fifo, "r");
+        out = fifo(out_fifo, "w");
         if (ui_file == NULL)
                 ui_file = "pipeglade.ui";
-        gtk_init(0, NULL);
         builder = gtk_builder_new();
         if (gtk_builder_add_from_file(builder, ui_file, &error) == 0)
                 bye(EXIT_FAILURE, stderr, "%s\n", error->message);
-        in = fifo(in_fifo, "r");
-        out = fifo(out_fifo, "w");
         pthread_create(&receiver, NULL, (void *(*)(void *))digest_msg, in);
         main_window = gtk_builder_get_object(builder, MAIN_WIN);
         if (!GTK_IS_WINDOW(main_window))
