@@ -8,6 +8,7 @@
 # Failure of a test can cause failure of one or more subsequent tests.
 
 export LC_ALL=C
+export NO_AT_BRIDGE=1
 FIN=to-g.fifo
 FOUT=from-g.fifo
 FERR=err.fifo
