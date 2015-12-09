@@ -20,7 +20,10 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-PREFIX ?= /usr/local
+prefix ?= /usr/local
+bindir ?= $(prefix)/bin
+mandir ?= $(prefix)/man
+man1dir ?= $(mandir)/man1
 CCFLAGS += -Wall -Wextra -pedantic -g
 # FreeBSD:
 # Suppressing warning: named variadic macros are a GNU extension
@@ -41,16 +44,13 @@ pipeglade: pipeglade.c Makefile
 	$(CC) $< -o $@ $(CCFLAGS)
 
 install: pipeglade pipeglade.1
-	mkdir -p $(PREFIX)/bin/
-	mkdir -p $(PREFIX)/man/man1/
-	cp -f pipeglade $(PREFIX)/bin/
-	chmod 755 $(PREFIX)/bin/pipeglade
-	gzip -c pipeglade.1 > $(PREFIX)/man/man1/pipeglade.1.gz
-	chmod 644 $(PREFIX)/man/man1/pipeglade.1.gz
+	install -d $(bindir) $(man1dir)
+	install pipeglade $(bindir)
+	install -m644 pipeglade.1 $(man1dir)
 
 uninstall:
-	rm -f $(PREFIX)/bin/pipeglade
-	rm -f $(PREFIX)/man/man1/pipeglade.1.gz
+	rm -f $(bindir)/pipeglade
+	rm -f $(man1dir)/pipeglade.1.gz
 
 clean:
 	rm -f pipeglade

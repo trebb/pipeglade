@@ -18,10 +18,10 @@ GTK+ v3.2 or newer is required.
 
 should build a usable binary.
 
-  make PREFIX=/some/dir/ install
+  make prefix=/some/dir install
 
 installs the pipeglade binary in /some/dir/bin/ and its manual page in
-/some/dir/man/man1/.  Default PREFIX is /usr/local/.
+/some/dir/man/man1/.  Default prefix is /usr/local/.
 
 To get rid of the installation, call
 
@@ -29,7 +29,7 @@ To get rid of the installation, call
 
 or
 
-  make PREFIX=/some/dir/ uninstall
+  make prefix=/some/dir uninstall
 
 respectively.
 
@@ -72,3 +72,4 @@ Debian wheezy, GTK+ 3.4.2
 Debian Jessie, GTK+ 3.14.5
 FreeBSD 10.1, GTK+ 3.14.5
 FreeBSD 10.2, GTK+ 3.16.6
+Arch Linux, GTK+ 3.18.5
