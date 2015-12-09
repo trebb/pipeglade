@@ -34,6 +34,7 @@
 .Op Fl i Ar in-fifo
 .Op Fl o Ar out-fifo
 .Op Fl u Ar builder-file
+.Op Fl -display Ar X-server
 .Sh DESCRIPTION
 .Nm
 is a helper program that displays graphical user
@@ -125,6 +126,10 @@ window must be named
 .Pp
 Default is
 .Pa ./pipeglade.ui .
+.It Fl -display Ar X-server
+Uses the display on
+.Ar X-server
+for user interaction.
 .It Fl G
 Prints the GTK+ version and exits.
 .It Fl V

@@ -115,7 +115,8 @@ touch $BAD_FIFO
 check_call "./pipeglade -i $BAD_FIFO" 1 "making fifo" ""
 check_call "./pipeglade -o $BAD_FIFO" 1 "making fifo" ""
 rm $BAD_FIFO
-check_call "./pipeglade -h" 0 "" "usage: pipeglade [-h] [-e xid] [-i in-fifo] [-o out-fifo] [-u glade-file.ui] [-G] [-V]"
+check_call "./pipeglade -h" 0 "" "usage: pipeglade [-h] [-e xid] [-i in-fifo] [-o out-fifo] [-u glade-file.ui]
+                 [-G] [-V] [--display X-server]"
 check_call "./pipeglade -G" 0 "" "GTK+ v"
 check_call "./pipeglade -V" 0 "" "."
 check_call "./pipeglade -X" 1 "option" ""
@@ -124,6 +125,7 @@ check_call "./pipeglade -u" 1 "argument" ""
 check_call "./pipeglade -i" 1 "argument" ""
 check_call "./pipeglade -o" 1 "argument" ""
 check_call "./pipeglade yyy" 1 "illegal parameter 'yyy'" ""
+check_call "./pipeglade --display nnn" 1 "nnn"
 mkfifo $FIN
 echo -e "statusbar1:pop\n _:main_quit" > $FIN &
 check_call "./pipeglade -i $FIN" 0 "" ""
@@ -512,6 +514,18 @@ check() {
         fi
     done
 }
+
+
+./pipeglade --display ${DISPLAY-:0} -i $FIN -o $FOUT &
+
+# wait for $FIN and $FOUT to appear
+while test ! \( -e $FIN -a -e $FOUT \); do :; done
+
+check 0 "# checking --display $DISPLAY\n _:main_quit"
+
+sleep .5
+check_rm $FIN
+check_rm $FOUT
 
 
 ./pipeglade -u simple_dialog.ui -i $FIN -o $FOUT &
