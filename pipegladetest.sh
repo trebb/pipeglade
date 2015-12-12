@@ -46,6 +46,11 @@ count_ok() {
 }
 
 check_rm() {
+    i=0
+    while test -e $1 && (( i<50 )); do
+        sleep .1
+        (( i+=1 ))
+    done;
     if test -e $1; then
         count_fail
         echo " $FAIL $1 should be deleted"
@@ -130,7 +135,6 @@ mkfifo $FIN
 echo -e "statusbar1:pop\n _:main_quit" > $FIN &
 check_call "./pipeglade -i $FIN" 0 "" ""
 
-sleep .5
 check_rm $FIN
 check_rm $FOUT
 
@@ -473,7 +477,6 @@ check_error "drawingarea1:set_font_size 1 nnn" "ignoring GtkDrawingArea command 
 
 echo "_:main_quit" >$FIN
 
-sleep .5
 check_rm $FIN
 rm $FERR
 
@@ -523,7 +526,6 @@ while test ! \( -e $FIN -a -e $FOUT \); do :; done
 
 check 0 "# checking --display $DISPLAY\n _:main_quit"
 
-sleep .5
 check_rm $FIN
 check_rm $FOUT
 
@@ -536,7 +538,6 @@ while test ! \( -e $FIN -a -e $FOUT \); do :; done
 check 1 "main_apply:force" "main_apply:clicked"
 check 0 "main_cancel:force"
 
-sleep .5
 check_rm $FIN
 check_rm $FOUT
 
@@ -549,7 +550,6 @@ while test ! \( -e $FIN -a -e $FOUT \); do :; done
 check 2 "main_apply:force" "main:file" "main:folder"
 check 0 "main_cancel:force"
 
-sleep .5
 check_rm $FIN
 check_rm $FOUT
 
@@ -561,7 +561,6 @@ while test ! \( -e $FIN -a -e $FOUT \); do :; done
 
 check 2 "main_ok:force" "main:file" "main:folder"
 
-sleep .5
 check_rm $FIN
 check_rm $FOUT
 
@@ -832,7 +831,6 @@ check 1 "statusbar1:push Press \"No\"\n statusbar1:push nonsense 1\n statusbar1:
 
 echo "_:main_quit" >$FIN
 
-sleep .5
 check_rm $FIN
 check_rm $FOUT
 
