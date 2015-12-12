@@ -1,3 +1,9 @@
+4.4.0 (2015-12-12)
+------------------
+  * Fix a subtle GTK-related bug where freshly created fifos vanished.
+  * Fix a bug involving GTK+ 3.14 and GtkTreeView.
+  * Add a --display option.
+
 4.3.0 (2015-11-30)
 ------------------
   * Support GtkTreeStore.

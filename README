@@ -12,16 +12,17 @@ Visit http://pipeglade.boundp.org
 INSTALLATION
 ============
 
-GTK+ v3.2 or newer is required.
+GTK+ v3.2 or newer and libxml2 are required.
 
   make
 
 should build a usable binary.
 
-  make prefix=/some/dir install
+  make prefix=/some/dir mandir=/another/dir install
 
 installs the pipeglade binary in /some/dir/bin/ and its manual page in
-/some/dir/man/man1/.  Default prefix is /usr/local/.
+/another/dir/man1/.  Default prefix is /usr/local/.  Default mandir is
+$(prefix)/man.
 
 To get rid of the installation, call
 
@@ -29,7 +30,7 @@ To get rid of the installation, call
 
 or
 
-  make prefix=/some/dir uninstall
+  make prefix=/some/dir mandir=/another/dir uninstall
 
 respectively.
 
