@@ -73,11 +73,9 @@
                 abort();                                        \
         }                                                       \
 
-static FILE *in;                /* commands */
 static FILE *out;               /* UI feedback messages */
 static FILE *save;              /* saving user data */
-static char *loading_files[BUFLEN]; /* Keep track of */
-static size_t newest_loading_file;  /* loading files */
+static GtkBuilder *builder;     /* to be read from .ui file */
 struct ui_data {
         void (*fn)(GObject *, const char *action,
                    const char *data, const char *msg, GType type);
@@ -89,7 +87,6 @@ struct ui_data {
         GType type;
         sem_t msg_digested;
 };
-static GtkBuilder *builder;     /* to be read from .ui file */
 
 /*
  * Print a formatted message to stream s and give up with status
@@ -1740,28 +1737,29 @@ free_at(void **mem)
 
 /*
  * Keep track of loading files to avoid recursive loading of the same
- * file
+ * file.  If filename = NULL, forget the most recently remembered file.
  */
 static bool
-push_loading_file(char *fn)
+remember_loading_file(char *filename)
 {
+        static char *filenames[BUFLEN];
+        static size_t latest = 0;
         size_t i;
 
-        for (i = 1; i <= newest_loading_file; i++)
-                if (eql(fn, loading_files[i]))
-                        return false;
-        if (newest_loading_file > BUFLEN -2)
+        if (filename == NULL) {  /* pop */
+                if (latest < 1)
+                        ABORT;
+                latest--;
                 return false;
-        loading_files[++newest_loading_file] = fn;
-        return true;
-}
-
-static void
-pop_loading_file()
-{
-        if (newest_loading_file < 1)
-                ABORT;
-        newest_loading_file--;
+        } else {                /* push */
+                for (i = 1; i <= latest; i++)
+                        if (eql(filename, filenames[i]))
+                                return false;
+                if (latest > BUFLEN -2)
+                        return false;
+                filenames[++latest] = filename;
+                return true;
+        }
 }
 
 /*
@@ -1825,10 +1823,10 @@ digest_msg(FILE *cmd)
                 ud.data = ud.msg_tokens + data_start;
                 if (eql(ud.action, "load") && strlen(ud.data) > 0 &&
                     (load = fopen(ud.data, "r")) != NULL &&
-                    push_loading_file(ud.data)) {
+                    remember_loading_file(ud.data)) {
                         digest_msg(load);
                         fclose(load);
-                        pop_loading_file();
+                        remember_loading_file(NULL);
                         goto cleanup;
                 }
                 if ((ud.obj = (gtk_builder_get_object(builder, name))) == NULL) {
@@ -2240,13 +2238,12 @@ main(int argc, char *argv[])
         pthread_t receiver;
         GError *error = NULL;
         GObject *main_window = NULL;
+        FILE *in = NULL;        /* command input */
 
         /* Disable runtime GLIB deprecation warnings: */
         setenv("G_ENABLE_DIAGNOSTIC", "0", 0);
-        in = NULL;
         out = NULL;
         save = NULL;
-        newest_loading_file = 0;
         gtk_init(&argc, &argv);
         while ((opt = getopt(argc, argv, "he:i:o:u:GV")) != -1) {
                 switch (opt) {
