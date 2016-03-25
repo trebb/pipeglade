@@ -1,3 +1,7 @@
+4.5.0 (unreleased)
+------------------
+  * Add GtkStatusbar commands that take a context id argument.
+
 4.4.0 (2015-12-12)
 ------------------
   * Fix a subtle GTK-related bug where freshly created fifos vanished.

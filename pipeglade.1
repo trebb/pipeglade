@@ -839,14 +839,19 @@ none
 .Ss GtkStatusbar
 .Bl -tag -width "commands "
 .It Commands
+.Qq Fa name Ns Ic :push_id Fa id string ,
 .Qq Fa name Ns Ic :push Fa string
-displays
+associate
 .Fa string
-in the statusbar.
+with context id
+.Fa id
+or 0, respectively, and display it in the statusbar.
 .Pp
+.Qq Fa name Ns Ic :pop_id Fa id ,
 .Qq Fa name Ns Ic :pop
-removes the last entry from the statusbar, revealing the penultimate
-entry.
+remove the latest entry associated with context id
+.Fa id
+or 0, respectively, from the statusbar.
 .Pp
 .Qq Fa name Ns Ic :remove_all
 empties the statusbar.

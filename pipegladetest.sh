@@ -134,6 +134,9 @@ check_call "./pipeglade --display nnn" 1 "nnn"
 mkfifo $FIN
 echo -e "statusbar1:pop\n _:main_quit" > $FIN &
 check_call "./pipeglade -i $FIN" 0 "" ""
+mkfifo $FIN
+echo -e "statusbar1:pop_id 111\n _:main_quit" > $FIN &
+check_call "./pipeglade -i $FIN" 0 "" ""
 
 check_rm $FIN
 check_rm $FOUT
@@ -249,6 +252,13 @@ check_error "progressbar1:nnn" "ignoring GtkProgressBar command \"progressbar1:n
 check_error "spinner1:nnn" "ignoring GtkSpinner command \"spinner1:nnn\""
 # GtkStatusbar
 check_error "statusbar1:nnn" "ignoring GtkStatusbar command \"statusbar1:nnn\""
+check_error "statusbar1:push_id" "ignoring GtkStatusbar command \"statusbar1:push_id\""
+check_error "statusbar1:push_id " "ignoring GtkStatusbar command \"statusbar1:push_id \""
+check_error "statusbar1:push_id abc" "ignoring GtkStatusbar command \"statusbar1:push_id abc\""
+check_error "statusbar1:pop_id" "ignoring GtkStatusbar command \"statusbar1:pop_id\""
+check_error "statusbar1:pop_id " "ignoring GtkStatusbar command \"statusbar1:pop_id \""
+check_error "statusbar1:pop_id abc" "ignoring GtkStatusbar command \"statusbar1:pop_id abc\""
+check_error "statusbar1:pop_id abc def" "ignoring GtkStatusbar command \"statusbar1:pop_id abc def\""
 # GtkComboBoxText
 check_error "comboboxtext1:nnn" "ignoring GtkComboBoxText command \"comboboxtext1:nnn\""
 check_error "comboboxtext1:force" "ignoring GtkComboBoxText command \"comboboxtext1:force\""
@@ -827,7 +837,7 @@ check 0 "window1:set_visible 0"
 
 check 1 "statusbar1:push Press \"OK\" if the progress bar shows 90%\n progressbar1:set_fraction .9\n progressbar1:set_text" "button1:clicked"
 check 1 "statusbar1:push Press \"OK\" if the progress bar text reads \"The End\"\n progressbar1:set_text The End" "button1:clicked"
-check 1 "statusbar1:push Press \"No\"\n statusbar1:push nonsense 1\n statusbar1:push nonsense 2\n statusbar1:push nonsense 3\n statusbar1:pop\n statusbar1:pop\n statusbar1:pop" "no_button:clicked"
+check 1 "statusbar1:push_id 100 Press \"No\"\n statusbar1:push_id 1 nonsense #1\n statusbar1:push_id 2 nonsense #2.1\n statusbar1:push_id 2 nonsense 2.2\n statusbar1:pop\n statusbar1:pop\n statusbar1:pop_id 1\n statusbar1:pop_id 1\n statusbar1:pop_id 2\n statusbar1:pop_id 2" "no_button:clicked"
 
 echo "_:main_quit" >$FIN
 
