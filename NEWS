@@ -1,4 +1,4 @@
-4.5.0 (unreleased)
+4.5.0 (2016-03-25)
 ------------------
   * Add GtkStatusbar commands that take a context id argument.
   * Add support for changing widget size.

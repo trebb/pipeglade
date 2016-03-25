@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2015 Bert Burgemeister <trebbu@googlemail.com>
+ * Copyright (c) 2014-2016 Bert Burgemeister <trebbu@googlemail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -43,7 +43,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "4.4.0"
+#define VERSION "4.5.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 #define MAIN_WIN "main"
