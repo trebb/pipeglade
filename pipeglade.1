@@ -417,6 +417,9 @@ Most drawing commands expect an
 .Fa id
 parameter (an arbitrary non-negative integer) which can be used to reference the
 command for later removal.
+.Pp
+All coordinates refer to a left-handed coordinate system with its
+origin in the upper-left corner.
 .Bl -tag -width "commands "
 .It Commands
 .Qq Fa name Ns Ic :arc Fa id x y radius angle1 angle2
@@ -837,6 +840,9 @@ start and stop the spinner.
 none
 .El
 .Ss GtkStatusbar
+The context
+.Fa id
+parameter is an arbitrary non-negative integer.
 .Bl -tag -width "commands "
 .It Commands
 .Qq Fa name Ns Ic :push_id Fa id string ,
