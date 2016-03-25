@@ -791,6 +791,28 @@ moves the slider to value
 .It Feedback
 .Qq Fa name Ns Ic \&:value Fa floating_point_text
 .El
+.Ss GtkScrolledWindow
+.Bl -tag -width "commands "
+.It Commands
+.Qq Fa name Ns Ic :hscroll Fa position ,
+.Qq Fa name Ns Ic :vscroll Fa position
+scroll
+.Fa position
+to the left or top edge of the
+.Ic GtkScrolledWindow ,
+respectively.
+.Pp
+.Qq Fa name Ns Ic :hscroll_to_range Fa position0 position1 ,
+.Qq Fa name Ns Ic :vscroll_to_range Fa position0 position1
+scroll, if necessary, the range between
+.Fa position0
+and
+.Fa position1
+into the
+.Ic GtkScrolledWindow .
+.It Feedback
+none
+.El
 .Ss GtkSocket
 .Ic GtkSocket
 may be unsupported by Glade, but its definition can be inserted

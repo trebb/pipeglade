@@ -1075,6 +1075,29 @@ update_frame(GObject *obj, const char *action,
 }
 
 static void
+update_scrolled_window(GObject *obj, const char *action,
+             const char *data, const char *whole_msg, GType type)
+{
+        GtkScrolledWindow *window = GTK_SCROLLED_WINDOW(obj);
+        GtkAdjustment *hadj = gtk_scrolled_window_get_hadjustment(window);
+        GtkAdjustment *vadj = gtk_scrolled_window_get_vadjustment(window);
+        double d0, d1;
+
+        if (eql(action, "hscroll") && sscanf(data, "%lf", &d0) == 1)
+                gtk_adjustment_set_value(hadj, d0);
+        else if (eql(action, "vscroll") && sscanf(data, "%lf", &d0) == 1)
+                gtk_adjustment_set_value(vadj, d0);
+        else if (eql(action, "hscroll_to_range") &&
+                 sscanf(data, "%lf %lf", &d0, &d1) == 2)
+                gtk_adjustment_clamp_page(hadj, d0, d1);
+        else if (eql(action, "vscroll_to_range") &&
+                 sscanf(data, "%lf %lf", &d0, &d1) == 2)
+                gtk_adjustment_clamp_page(vadj, d0, d1);
+        else
+                ign_cmd(type, whole_msg);
+}
+
+static void
 update_drawing_area(GObject *obj, const char *action,
                     const char *data, const char *whole_msg, GType type)
 {
@@ -1885,6 +1908,8 @@ digest_msg(FILE *cmd)
                         ud.fn = update_expander;
                 else if (ud.type == GTK_TYPE_FRAME)
                         ud.fn = update_frame;
+                else if (ud.type == GTK_TYPE_SCROLLED_WINDOW)
+                        ud.fn = update_scrolled_window;
                 else if (ud.type == GTK_TYPE_BUTTON)
                         ud.fn = update_button;
                 else if (ud.type == GTK_TYPE_FILE_CHOOSER_DIALOG)

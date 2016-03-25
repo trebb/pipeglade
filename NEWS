@@ -2,6 +2,7 @@
 ------------------
   * Add GtkStatusbar commands that take a context id argument.
   * Add support for changing widget size.
+  * Add support for GtkScrolledWindow.
 
 4.4.0 (2015-12-12)
 ------------------
