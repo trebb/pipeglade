@@ -819,8 +819,9 @@ check 0 "drawingarea2:set_line_join 3 miter\n drawingarea2:set_line_cap 3 square
 check 0 "drawingarea2:remove 2\n drawingarea2:refresh"
 check 0 "drawingarea2:remove 3\n drawingarea2:refresh"
 
-check 1 "statusbar1:push Press \"OK\" if there is a spinning spinner\n spinner1:start" "button1:clicked"
+check 1 "statusbar1:push Press the biggest button if there is a spinning spinner\n spinner1:start\n no_button:set_size_request 400 400" "no_button:clicked"
 check 1 "statusbar1:push Press \"OK\" if the spinner has stopped\n spinner1:stop" "button1:clicked"
+check 1 "statusbar1:push Press \"OK\" if the \"No\" button is back to normal size\n no_button:set_size_request" "button1:clicked"
 
 check 1 "statusbar1:push Press \"OK\" if we are fullscreen now\n main:fullscreen" "button1:clicked"
 check 1 "statusbar1:push Press \"OK\" if we are back to default size\n main:unfullscreen" "button1:clicked"

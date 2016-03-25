@@ -1686,6 +1686,21 @@ update_visibility(GObject *obj, const char *action,
 }
 
 static void
+update_size_request(GObject *obj, const char *action,
+                    const char *data, const char *whole_msg, GType type)
+{
+        int x, y;
+
+        (void)action;
+        (void)whole_msg;
+        (void)type;
+        if (sscanf(data, "%d %d", &x, &y) == 2)
+                gtk_widget_set_size_request(GTK_WIDGET(obj), x, y);
+        else
+                gtk_widget_set_size_request(GTK_WIDGET(obj), -1, -1);
+}
+
+static void
 fake_ui_activity(GObject *obj, const char *action,
                  const char *data, const char *whole_msg, GType type)
 {
@@ -1849,6 +1864,8 @@ digest_msg(FILE *cmd)
                         ud.fn = update_sensitivity;
                 else if (eql(ud.action, "set_visible"))
                         ud.fn = update_visibility;
+                else if (eql(ud.action, "set_size_request"))
+                        ud.fn = update_size_request;
                 else if (eql(ud.action, "style")) {
                         ud.action = name;
                         ud.fn = update_widget_style;
