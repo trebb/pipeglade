@@ -1,3 +1,7 @@
+4.5.1 (unreleased)
+------------------
+  * Make sure fifos are set to mode 0600 before being used.
+
 4.5.0 (2016-03-25)
 ------------------
   * Add GtkStatusbar commands that take a context id argument.

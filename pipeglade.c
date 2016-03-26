@@ -1969,10 +1969,17 @@ fifo(const char *name, const char *mode)
         FILE *s = NULL;
         int bufmode;
 
-        if (name != NULL && (stat(name, &sb), !S_ISFIFO(sb.st_mode)))
-                if (mkfifo(name, 0666) != 0)
+        if (name != NULL) {
+                stat(name, &sb);
+                if (S_ISFIFO(sb.st_mode)) {
+                        if (chmod(name, 0600) != 0)
+                                bye(EXIT_FAILURE, stderr,
+                                    "using pre-existing fifo %s: %s\n",
+                                    name, strerror(errno));
+                } else if (mkfifo(name, 0600) != 0)
                         bye(EXIT_FAILURE, stderr,
                             "making fifo %s: %s\n", name, strerror(errno));
+        }
         switch (mode[0]) {
         case 'r':
                 bufmode = _IONBF;
