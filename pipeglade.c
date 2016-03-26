@@ -1724,6 +1724,16 @@ update_size_request(GObject *obj, const char *action,
 }
 
 static void
+update_tooltip_text(GObject *obj, const char *action,
+                    const char *data, const char *whole_msg, GType type)
+{
+        (void)action;
+        (void)whole_msg;
+        (void)type;
+        gtk_widget_set_tooltip_text(GTK_WIDGET(obj), data);
+}
+
+static void
 fake_ui_activity(GObject *obj, const char *action,
                  const char *data, const char *whole_msg, GType type)
 {
@@ -1889,6 +1899,8 @@ digest_msg(FILE *cmd)
                         ud.fn = update_visibility;
                 else if (eql(ud.action, "set_size_request"))
                         ud.fn = update_size_request;
+                else if (eql(ud.action, "set_tooltip_text"))
+                        ud.fn = update_tooltip_text;
                 else if (eql(ud.action, "style")) {
                         ud.action = name;
                         ud.fn = update_widget_style;

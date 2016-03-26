@@ -182,6 +182,14 @@ while test ! \( -e $FIN \); do :; done
 # Non-existent name
 check_error "nnn" "ignoring command \"nnn\""
 check_error "nnn:set_text FFFF" "ignoring command \"nnn:set_text FFFF\""
+check_error "nnn:set_tooltip_text FFFF" "ignoring command \"nnn:set_tooltip_text FFFF\""
+check_error "nnn:set_sensible 0" "ignoring command \"nnn:set_sensible 0\""
+check_error "nnn:set_sensible 1" "ignoring command \"nnn:set_sensible 1\""
+check_error "nnn:set_visible 0" "ignoring command \"nnn:set_visible 0\""
+check_error "nnn:set_visible 1" "ignoring command \"nnn:set_visible 1\""
+check_error "nnn:set_size_request 100 100" "ignoring command \"nnn:set_size_request 100 100\""
+check_error "nnn:style font:Bold 11" "ignoring command \"nnn:style font:Bold 11\""
+check_error "nnn:force" "ignoring command \"nnn:force\""
 # Widget that shouldn't fire callbacks
 check_error "label1:force" "ignoring GtkLabel command \"label1:force\""
 # load file
@@ -815,7 +823,8 @@ check 1 "statusbar1:push Click \"Select\" (5)\n colorbutton1:set_color rgba(0,25
 check 0 "statusbar1:push Click \"Cancel\"\n printdialog:print nonexistent.ps"
 check 1 "statusbar1:push Press \"OK\" if both 1752-03-13 and 1752-03-14 are marked on the calendar\n calendar1:mark_day 13\n calendar1:mark_day 14" "button1:clicked"
 check 1 "statusbar1:push Press \"OK\" if 1752-03-13 and 1752-03-14 are no longer marked on the calendar\n calendar1:clear_marks" "button1:clicked"
-check 3 "statusbar1:push Double-click on 1752-03-13 in the calendar" "calendar1:clicked 1752-03-13" "calendar1:clicked 1752-03-13" "calendar1:doubleclicked 1752-03-13"
+check 3 "statusbar1:push Hover over the calendar and do what the tooltip says\n calendar1:set_tooltip_text Double-click on 1752-03-13" "calendar1:clicked 1752-03-13" "calendar1:clicked 1752-03-13" "calendar1:doubleclicked 1752-03-13"
+check 0 "calendar1:set_tooltip_text"
 check 1 "calendar1:force" "calendar1:clicked 1752-03-13"
 
 check 0 "drawingarea1:rectangle 1 0 0 150 150\n drawingarea1:fill 1\n drawingarea1:refresh"
