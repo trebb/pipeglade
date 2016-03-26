@@ -604,6 +604,13 @@ check_cmd "test $(stat -f %Op $FOUT) -eq 10600"
 echo -e "_:main_quit" > $FIN
 check_rm $FIN
 check_rm $FOUT
+./pipeglade -i $FIN -o $FOUT &
+sleep .5
+check_cmd "test $(stat -f %Op $FIN) -eq 10600"
+check_cmd "test $(stat -f %Op $FOUT) -eq 10600"
+echo -e "_:main_quit" > $FIN
+check_rm $FIN
+check_rm $FOUT
 
 
 ./pipeglade -i $FIN -o $FOUT &
