@@ -542,7 +542,7 @@ check() {
     while (( i<$N )); do
         read r <$FOUT
         if test "$r" != ""; then
-            if test "$r" = "$3"; then
+            if grep "$3" <<< $r; then
                 count_ok
                 echo " $OK  ($i)  $r"
             else
