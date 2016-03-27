@@ -1,7 +1,10 @@
-4.6.0 (unreleased)
+4.6.0 (2016-03-27)
 ------------------
   * Make sure fifos are set to mode 0600 before being used.
   * Add support for creating tooltips.
+  * Add support for GtkEventBox which reports keyboard and pointer
+    device activity.
+  * Add support for widgets grabbing focus.
 
 4.5.0 (2016-03-25)
 ------------------

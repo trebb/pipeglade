@@ -19,7 +19,7 @@
 .\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 .\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.Dd March 25, 2016
+.Dd March 27, 2016
 .Dt PIPEGLADE 1 CON
 .Os BSD
 .Sh NAME
@@ -149,6 +149,7 @@ are
 .Sx GtkDialog ,
 .Sx GtkDrawingArea ,
 .Sx GtkEntry ,
+.Sx GtkEventBox ,
 .Sx GtkExpander ,
 .Sx GtkFileChooserButton ,
 .Sx GtkFileChooserDialog ,
@@ -162,6 +163,7 @@ are
 .Sx GtkProgressBar ,
 .Sx GtkRadioButton ,
 .Sx GtkScale ,
+.Sx GtkScrolledWindow
 .Sx GtkSocket ,
 .Sx GtkSpinButton ,
 .Sx GtkSpinner ,
@@ -173,7 +175,6 @@ are
 .Sx GtkTreeViewColumn ,
 and
 .Sx GtkWindow .
-
 .Ss Any Widget (including widgets not mentioned above)
 .Bl -tag -width "commands "
 .It Commands
@@ -183,11 +184,14 @@ makes the widget grayed out
 or responsive
 .Pq Ic 1 .
 .Pp
-.Qq Fa name Ns Ic :set_visible Brq Ic 0 |  1
+.Qq Fa name Ns Ic :set_visible Brq Ic 0 | 1
 hides
 .Pq Ic 0
 the widget, or makes it visible
 .Pq Ic 1 .
+.Pp
+.Qq Fa name Ns Ic :grab_focus
+causes the widget to have the keyboard focus.
 .Pp
 .Qq Fa name Ns Ic :set_size_request Bq Fa width height
 sets the widget's minimum size to
@@ -236,6 +240,7 @@ The command is ignored by
 (address its child
 .Sx GtkEntry
 instead),
+.Sx GtkEventBox ,
 .Sx GtkTreeView ,
 and
 .Sx GtkTreeViewColumn ;
@@ -579,6 +584,29 @@ that is displayed when the entry is empty and unfocused.
 .Qq Fa name Ns Ic \&:text Fa text ,
 once for each change of
 .Fa text .
+.El
+.Ss GtkEventBox
+.Fa x , y
+are mouse pointer coordinates relative to the
+.Ic GtkEventBox .
+.Bl -tag -width "commands "
+.It Commands
+none
+.It Feedback
+.Qq Fa name Ns Ic \&:button_press Fa b x y ,
+.Qq Fa name Ns Ic \&:button_release Fa b x y
+where
+.Fa b
+is the mouse button (normally 1, 2 or 3 for the left, middle, and
+right button).
+.Pp
+.Qq Fa name Ns Ic \&:motion Fa x y
+is reported repeatedly while the mouse is being moved with a button
+pressed.
+.Pp
+.Qq Fa name Ns Ic \&:key_press Fa key ,
+.Fa key
+being the key's name (e.g. Contol_L, Tab, a).
 .El
 .Ss GtkExpander
 .Bl -tag -width "commands "
@@ -1183,7 +1211,7 @@ exits 0 on success, and >0 if an error occurs.
 .Sh SEE ALSO
 .Xr glade 1 ,
 .Xr dialog 1 ,
-.Xr gmessage 1 ,
+.Xr gxmessage 1 ,
 .Xr kdialog 1 ,
 .Xr whiptail 1 ,
 .Xr xmessage 1 ,

@@ -43,7 +43,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "4.5.0"
+#define VERSION "4.6.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 #define MAIN_WIN "main"
@@ -227,6 +227,42 @@ cb_send_text_selection(GtkBuildable *obj, gpointer user_data)
 
         gtk_text_buffer_get_selection_bounds(user_data, &a, &b);
         send_msg(obj, "text", gtk_text_buffer_get_text(user_data, &a, &b, TRUE), NULL);
+}
+
+/*
+ * Callbacks that send messages about pointer device activity in a
+ * GtkEventBox.
+ */
+static bool
+cb_event_box_button(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
+{
+        char data[BUFLEN];
+
+        snprintf(data, BUFLEN, "%d %lf %lf",
+                 e->button.button, e->button.x, e->button.y);
+        send_msg(obj, user_data, data, NULL);
+        return true;
+}
+
+static bool
+cb_event_box_motion(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
+{
+        char data[BUFLEN];
+
+        snprintf(data, BUFLEN, "%lf %lf", e->button.x, e->button.y);
+        send_msg(obj, user_data, data, NULL);
+        return true;
+}
+
+/*
+ * Callback that sends in a message the name of the key pressed when
+ * a GtkEventBox is focused.
+ */
+static bool
+cb_event_box_key(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
+{
+        send_msg(obj, user_data, gdk_keyval_name(e->key.keyval), NULL);
+        return true;
 }
 
 /*
@@ -1709,6 +1745,18 @@ update_visibility(GObject *obj, const char *action,
 }
 
 static void
+update_focus(GObject *obj, const char *action,
+             const char *data, const char *whole_msg, GType type)
+{
+        (void)action;
+        (void)data;
+        if (gtk_widget_get_can_focus(GTK_WIDGET(obj)))
+                gtk_widget_grab_focus(GTK_WIDGET(obj));
+        else
+                ign_cmd(type, whole_msg);
+}
+
+static void
 update_size_request(GObject *obj, const char *action,
                     const char *data, const char *whole_msg, GType type)
 {
@@ -1901,6 +1949,8 @@ digest_msg(FILE *cmd)
                         ud.fn = update_size_request;
                 else if (eql(ud.action, "set_tooltip_text"))
                         ud.fn = update_tooltip_text;
+                else if (eql(ud.action, "grab_focus"))
+                        ud.fn = update_focus;
                 else if (eql(ud.action, "style")) {
                         ud.action = name;
                         ud.fn = update_widget_style;
@@ -2264,6 +2314,13 @@ connect_widget_signals(gpointer *obj, char *ui_file)
                 g_signal_connect(obj, "plug-removed", G_CALLBACK(cb_true), "plug-removed");
         } else if (type == GTK_TYPE_DRAWING_AREA)
                 g_signal_connect(obj, "draw", G_CALLBACK(cb_draw), NULL);
+        else if (type == GTK_TYPE_EVENT_BOX) {
+                gtk_widget_set_can_focus(GTK_WIDGET(obj), true);
+                g_signal_connect(obj, "button-press-event", G_CALLBACK(cb_event_box_button), "button_press");
+                g_signal_connect(obj, "button-release-event", G_CALLBACK(cb_event_box_button), "button_release");
+                g_signal_connect(obj, "motion-notify-event", G_CALLBACK(cb_event_box_motion), "motion");
+                g_signal_connect(obj, "key-press-event", G_CALLBACK(cb_event_box_key), "key_press");
+        }
 }
 
 /*

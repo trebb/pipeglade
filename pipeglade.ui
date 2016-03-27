@@ -1184,9 +1184,15 @@ selection</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkDrawingArea" id="drawingarea2">
+                  <object class="GtkEventBox" id="eventbox1">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkDrawingArea" id="drawingarea2">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">True</property>

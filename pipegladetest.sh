@@ -187,11 +187,14 @@ check_error "nnn:set_sensible 0" "ignoring command \"nnn:set_sensible 0\""
 check_error "nnn:set_sensible 1" "ignoring command \"nnn:set_sensible 1\""
 check_error "nnn:set_visible 0" "ignoring command \"nnn:set_visible 0\""
 check_error "nnn:set_visible 1" "ignoring command \"nnn:set_visible 1\""
+check_error "nnn:grab_focus" "ignoring command \"nnn:grab_focus\""
 check_error "nnn:set_size_request 100 100" "ignoring command \"nnn:set_size_request 100 100\""
 check_error "nnn:style font:Bold 11" "ignoring command \"nnn:style font:Bold 11\""
 check_error "nnn:force" "ignoring command \"nnn:force\""
 # Widget that shouldn't fire callbacks
 check_error "label1:force" "ignoring GtkLabel command \"label1:force\""
+# Widget that can't grab focus
+check_error "label1:grab_focus" "ignoring GtkLabel command \"label1:grab_focus\""
 # load file
 check_error "_:load" "ignoring command \"_:load\""
 check_error "_:load  " "ignoring command \"_:load  \""
@@ -393,6 +396,8 @@ check_error "scrolledwindow3:vscroll_to_range nnn" "ignoring GtkScrolledWindow c
 check_error "scrolledwindow3:vscroll_to_range 10" "ignoring GtkScrolledWindow command \"scrolledwindow3:vscroll_to_range 10\""
 check_error "scrolledwindow3:vscroll_to_range 10 nnn" "ignoring GtkScrolledWindow command \"scrolledwindow3:vscroll_to_range 10 nnn\""
 check_error "scrolledwindow3:vscroll_to_range nnn 10" "ignoring GtkScrolledWindow command \"scrolledwindow3:vscroll_to_range nnn 10\""
+# GtkEventBox
+check_error "eventbox1:nnn" "ignoring GtkEventBox command \"eventbox1:nnn\""
 # GtkDrawingArea
 check_error "drawingarea1:nnn" "ignoring GtkDrawingArea command \"drawingarea1:nnn\""
 check_error "drawingarea1:rectangle" "ignoring GtkDrawingArea command \"drawingarea1:rectangle\""
@@ -865,6 +870,11 @@ check 0 "drawingarea2:set_line_join 3 bevel\n drawingarea2:set_line_cap 3 butt\n
 check 0 "drawingarea2:set_line_join 3 miter\n drawingarea2:set_line_cap 3 square\n drawingarea2:move_to 1 160 120\n drawingarea2:rel_line_to 1 20 0\n drawingarea2:rel_line_to 1 0 20\n drawingarea2:stroke 1\n drawingarea2:refresh"
 check 0 "drawingarea2:remove 2\n drawingarea2:refresh"
 check 0 "drawingarea2:remove 3\n drawingarea2:refresh"
+check 2 "statusbar1:push Hit Backspace, Enter\n eventbox1:grab_focus" "eventbox1:key_press BackSpace" "eventbox1:key_press Return"
+check 6 "statusbar1:push Inside the DrawingArea, left-click, middle-click, right-click (Don't move the mouse while clicking)" "eventbox1:button_press 1" "eventbox1:button_release 1" "eventbox1:button_press 2" "eventbox1:button_release 2" "eventbox1:button_press 3" "eventbox1:button_release 3"
+check 3 "statusbar1:push Inside the DrawingArea and all within one second, hold the left button down, move around a bit, and release it again" "eventbox1:button_press 1" "eventbox1:motion" "eventbox1:motion"
+sleep 1.5
+check 1 "statusbar1:push Hit Space\n button1:grab_focus" "button1:clicked"
 
 check 1 "statusbar1:push Press the biggest button if there is a spinning spinner\n spinner1:start\n no_button:set_size_request 400 400" "no_button:clicked"
 check 1 "statusbar1:push Press \"OK\" if the spinner has stopped\n spinner1:stop" "button1:clicked"
