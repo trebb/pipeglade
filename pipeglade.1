@@ -39,7 +39,7 @@
 .Nm
 is a helper program that displays graphical user
 interfaces for other programs.  It renders the GUI definition
-found in a GtkBuilder XML file (created using the
+found in a GtkBuilder XML file (typically created using the
 .Xr glade 1
 interface designer), and communicates with the main program solely
 through plain text messages via pipes or fifos.  It provides access to
@@ -138,7 +138,7 @@ Prints the
 version and exits.
 .El
 .Sh WIDGETS
-The widgets able to communicate through
+The widget classes able to communicate through
 .Nm
 are
 .Sx GtkButton ,
@@ -175,6 +175,20 @@ are
 .Sx GtkTreeViewColumn ,
 and
 .Sx GtkWindow .
+.Pp
+.Nm
+references a widget by the
+.Fa name
+it is given in Glade. In the .ui file, this
+.Fa name
+is represented by the
+.Li id
+attribute of the referenced object; therefore, a
+.Ic GtkWindow
+named
+.Li foo
+would appear in the .ui file as
+.Li <object class="GtkWindow" id="foo"> .
 .Ss Any Widget (including widgets not mentioned above)
 .Bl -tag -width "commands "
 .It Commands
@@ -191,7 +205,7 @@ the widget, or makes it visible
 .Pq Ic 1 .
 .Pp
 .Qq Fa name Ns Ic :grab_focus
-causes the widget to have the keyboard focus.
+puts the keyboard focus onto the widget, if possible.
 .Pp
 .Qq Fa name Ns Ic :set_size_request Bq Fa width height
 sets the widget's minimum size to
@@ -423,6 +437,15 @@ named
 if the dialog is the sole window of the GUI and therefore named
 .Ic main
 .Pc .
+.Pp
+If the
+.Ic GtkDialog
+has an
+.Sq Ok
+.Sx GtkButton
+named
+.Fa foo Ns Ic _ok ,
+it will take care of hiding the dialog window.
 .Bl -tag -width "commands "
 .It Commands
 none
@@ -597,8 +620,8 @@ none
 .Qq Fa name Ns Ic \&:button_release Fa b x y
 where
 .Fa b
-is the mouse button (normally 1, 2 or 3 for the left, middle, and
-right button).
+is the mouse button (normally 1, 2, or 3 for the left, middle, and
+right button; others may exist).
 .Pp
 .Qq Fa name Ns Ic \&:motion Fa x y
 is reported repeatedly while the mouse is being moved with a button
@@ -606,7 +629,8 @@ pressed.
 .Pp
 .Qq Fa name Ns Ic \&:key_press Fa key ,
 .Fa key
-being the key's name (e.g. Contol_L, Tab, a).
+being the key's name
+.Pq e.g. Li Control_L , Tab , a .
 .El
 .Ss GtkExpander
 .Bl -tag -width "commands "
@@ -765,10 +789,9 @@ it reports
 .Ss GtkNotebook
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_current_page Fa numeric
-switches to page number
-.Fa numeric
-.Pq starting from 0 .
+.Qq Fa name Ns Ic :set_current_page Fa n
+switches to zero-based page number
+.Fa n .
 .It Feedback
 none
 .El
@@ -787,9 +810,9 @@ none
 .Ss GtkProgressBar
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_fraction Fa numeric
+.Qq Fa name Ns Ic :set_fraction Fa x
 moves the progress bar to
-.Fa numeric
+.Fa x
 .Pq between 0 and 1 .
 .Pp
 .Qq Fa name Ns Ic :set_text Bq Fa string
@@ -818,16 +841,17 @@ otherwise.
 .Ss GtkScale
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_value Fa numeric
+.Qq Fa name Ns Ic :set_value Fa x
 moves the slider to value
-.Fa numeric .
+.Fa x .
 .It Feedback
 .Qq Fa name Ns Ic \&:value Fa floating_point_text
 .El
 .Ss GtkScrolledWindow
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :hscroll Fa position ,
+.Qq Fa name Ns Ic :hscroll Fa position
+and
 .Qq Fa name Ns Ic :vscroll Fa position
 scroll
 .Fa position
@@ -835,14 +859,17 @@ to the left or top edge of the
 .Ic GtkScrolledWindow ,
 respectively.
 .Pp
-.Qq Fa name Ns Ic :hscroll_to_range Fa position0 position1 ,
-.Qq Fa name Ns Ic :vscroll_to_range Fa position0 position1
-scroll, if necessary, the range between
-.Fa position0
+.Qq Fa name Ns Ic :hscroll_to_range Fa pos_0 pos_1
 and
-.Fa position1
+.Qq Fa name Ns Ic :vscroll_to_range Fa pos_0 pos_1
+scroll, if necessary, the range between
+.Fa pos_0
+and
+.Fa pos_1
 into the
 .Ic GtkScrolledWindow .
+If the range is greater than the window, the initial part of the range
+will be visible.
 .It Feedback
 none
 .El
@@ -1220,4 +1247,5 @@ exits 0 on success, and >0 if an error occurs.
 .Nm
 was written by
 .An Bert Burgemeister Aq trebbu@googlemail.com .
-.\" .Sh BUGS
+.Sh BUGS
+Please report them to the author.
