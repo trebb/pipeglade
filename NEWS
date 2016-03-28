@@ -1,3 +1,7 @@
+4.6.1 (unreleased)
+------------------
+  * Avoid silly precision on mouse coordinates emitted from GtkEventBox.
+
 4.6.0 (2016-03-27)
 ------------------
   * Make sure fifos are set to mode 0600 before being used.

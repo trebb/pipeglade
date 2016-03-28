@@ -238,7 +238,7 @@ cb_event_box_button(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
 {
         char data[BUFLEN];
 
-        snprintf(data, BUFLEN, "%d %lf %lf",
+        snprintf(data, BUFLEN, "%d %.1lf %.1lf",
                  e->button.button, e->button.x, e->button.y);
         send_msg(obj, user_data, data, NULL);
         return true;
@@ -249,7 +249,7 @@ cb_event_box_motion(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
 {
         char data[BUFLEN];
 
-        snprintf(data, BUFLEN, "%lf %lf", e->button.x, e->button.y);
+        snprintf(data, BUFLEN, "%.1lf %.1lf", e->button.x, e->button.y);
         send_msg(obj, user_data, data, NULL);
         return true;
 }
