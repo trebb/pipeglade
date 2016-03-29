@@ -1339,7 +1339,7 @@ update_statusbar(GObject *obj, const char *action,
         if (eql(action, "push"))
                 gtk_statusbar_push(statusbar, 0, data);
         else if (eql(action, "push_id") &&
-                 sscanf(data, "%u%zn", &id, &id_len) == 1)
+                 sscanf(data, "%u%zun", &id, &id_len) == 1)
                 gtk_statusbar_push(statusbar, id, data + id_len +
                                    (size_t) (id_len < strlen(data) ? 1 : 0));
         else if (eql(action, "pop"))
