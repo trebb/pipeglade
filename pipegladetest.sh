@@ -900,7 +900,7 @@ check 0 "window1:set_visible 0"
 
 check 1 "statusbar1:push Press \"OK\" if the progress bar shows 90%\n progressbar1:set_fraction .9\n progressbar1:set_text" "button1:clicked"
 check 1 "statusbar1:push Press \"OK\" if the progress bar text reads \"The End\"\n progressbar1:set_text The End" "button1:clicked"
-check 1 "statusbar1:push_id 100 Press \"No\"\n statusbar1:push_id 1 nonsense #1\n statusbar1:push_id 2 nonsense #2.1\n statusbar1:push_id 2 nonsense 2.2\n statusbar1:pop\n statusbar1:pop\n statusbar1:pop_id 1\n statusbar1:pop_id 1\n statusbar1:pop_id 2\n statusbar1:pop_id 2" "no_button:clicked"
+check 1 "statusbar1:push_id 100 Press \"No\"\n statusbar1:push_id 1001 nonsense #1\n statusbar1:push_id 1002 nonsense #2.1\n statusbar1:push_id 1002 nonsense 2.2\n statusbar1:pop\n statusbar1:pop\n statusbar1:pop_id 1\n statusbar1:pop_id 1001\n statusbar1:pop_id 1002\n statusbar1:pop_id 1002" "no_button:clicked"
 
 echo "_:main_quit" >$FIN
 
