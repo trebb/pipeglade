@@ -22,6 +22,13 @@ FILE5=saved5.txt
 FILE6=saved6.txt
 rm -rf $FIN $FOUT $FERR $BAD_FIFO $FILE1 $FILE2 $FILE3 $FILE4 $FILE5 $FILE6 $DIR
 
+if stat -f "%0p"; then
+    STAT_CMD='stat -f "%0p"'
+else
+    # probably GNU stat
+    STAT_CMD='stat -c "%0p"'
+fi
+
 # colored messages: bright green
 OK=$'\E[32;1mOK\E[0m'
 # bright red
@@ -263,13 +270,6 @@ check_error "progressbar1:nnn" "ignoring GtkProgressBar command \"progressbar1:n
 check_error "spinner1:nnn" "ignoring GtkSpinner command \"spinner1:nnn\""
 # GtkStatusbar
 check_error "statusbar1:nnn" "ignoring GtkStatusbar command \"statusbar1:nnn\""
-check_error "statusbar1:push_id" "ignoring GtkStatusbar command \"statusbar1:push_id\""
-check_error "statusbar1:push_id " "ignoring GtkStatusbar command \"statusbar1:push_id \""
-check_error "statusbar1:push_id abc" "ignoring GtkStatusbar command \"statusbar1:push_id abc\""
-check_error "statusbar1:pop_id" "ignoring GtkStatusbar command \"statusbar1:pop_id\""
-check_error "statusbar1:pop_id " "ignoring GtkStatusbar command \"statusbar1:pop_id \""
-check_error "statusbar1:pop_id abc" "ignoring GtkStatusbar command \"statusbar1:pop_id abc\""
-check_error "statusbar1:pop_id abc def" "ignoring GtkStatusbar command \"statusbar1:pop_id abc def\""
 # GtkComboBoxText
 check_error "comboboxtext1:nnn" "ignoring GtkComboBoxText command \"comboboxtext1:nnn\""
 check_error "comboboxtext1:force" "ignoring GtkComboBoxText command \"comboboxtext1:force\""
@@ -612,15 +612,15 @@ mkfifo -m 777 $FIN
 mkfifo -m 777 $FOUT
 ./pipeglade -i $FIN -o $FOUT &
 sleep .5
-check_cmd "test $(stat -f %Op $FIN) -eq 10600"
-check_cmd "test $(stat -f %Op $FOUT) -eq 10600"
+check_cmd "test $($STAT_CMD $FIN) -eq 10600"
+check_cmd "test $($STAT_CMD $FOUT) -eq 10600"
 echo -e "_:main_quit" > $FIN
 check_rm $FIN
 check_rm $FOUT
 ./pipeglade -i $FIN -o $FOUT &
 sleep .5
-check_cmd "test $(stat -f %Op $FIN) -eq 10600"
-check_cmd "test $(stat -f %Op $FOUT) -eq 10600"
+check_cmd "test $($STAT_CMD $FIN) -eq 10600"
+check_cmd "test $($STAT_CMD $FOUT) -eq 10600"
 echo -e "_:main_quit" > $FIN
 check_rm $FIN
 check_rm $FOUT
@@ -901,7 +901,7 @@ check 0 "dialog1:set_visible 0"
 
 check 1 "statusbar1:push Press \"OK\" if the progress bar shows 90%\n progressbar1:set_fraction .9\n progressbar1:set_text" "button1:clicked"
 check 1 "statusbar1:push Press \"OK\" if the progress bar text reads \"The End\"\n progressbar1:set_text The End" "button1:clicked"
-check 1 "statusbar1:push_id 100 Press \"No\"\n statusbar1:push_id 1001 nonsense #1\n statusbar1:push_id 1002 nonsense #2.1\n statusbar1:push_id 1002 nonsense 2.2\n statusbar1:pop\n statusbar1:pop\n statusbar1:pop_id 1\n statusbar1:pop_id 1001\n statusbar1:pop_id 1002\n statusbar1:pop_id 1002" "no_button:clicked"
+check 1 "statusbar1:push_id Id100 Press \"No\"\n statusbar1:push_id ABC nonsense #1\n statusbar1:push_id DEF nonsense #2.1\n statusbar1:push_id DEF nonsense 2.2\n statusbar1:pop\n statusbar1:pop\n statusbar1:pop_id 1\n statusbar1:pop_id ABC\n statusbar1:pop_id DEF\n statusbar1:pop_id DEF\n statusbar1:push_id GHI nonsense 3.1\n statusbar1:push_id GHI nonsense 3.2\n statusbar1:remove_all GHI" "no_button:clicked"
 
 echo "_:main_quit" >$FIN
 

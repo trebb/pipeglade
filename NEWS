@@ -3,6 +3,9 @@
   * Avoid silly precision on mouse coordinates emitted from GtkEventBox.
   * GtkDialog and GtkFileChooserDialog now respond to the commands
   that work for GtkWindow.
+  * Add missing GtkStatusbar command remove_all_id.
+  * GtkStatusbar commands take non-whitespace strings as context id,
+  not just integers.
 
 4.6.0 (2016-03-27)
 ------------------

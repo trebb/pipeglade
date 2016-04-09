@@ -1054,7 +1054,7 @@ update_class_window(GObject *obj, const char *action,
                         ign_cmd(type, whole_msg);
         } else
                 result = false;
-        return result;        
+        return result;
 }
 
 /*
@@ -1366,25 +1366,41 @@ update_statusbar(GObject *obj, const char *action,
                  const char *data, const char *whole_msg, GType type)
 {
         GtkStatusbar *statusbar = GTK_STATUSBAR(obj);
-        unsigned int id;
-        int id_len;
+        char *ctx_msg, *msg;
+        size_t ctx_len;
 
+        if ((ctx_msg = malloc(strlen(data) + 1)) == NULL)
+                OOM_ABORT;
+        strcpy(ctx_msg, data);
+        ctx_len = strcspn(ctx_msg, WHITESPACE);
+        if (ctx_len > 0) {
+                ctx_msg[ctx_len] = '\0';
+                msg = ctx_msg + ctx_len + 1;
+        } else
+                msg = ctx_msg + strlen(ctx_msg);
         if (eql(action, "push"))
-                gtk_statusbar_push(statusbar, 0, data);
-        else if (eql(action, "push_id") &&
-                 sscanf(data, "%u%n", &id, &id_len) == 1)
-                gtk_statusbar_push(statusbar, id,
-                                   data + id_len +
-                                   ((size_t) id_len < strlen(data) ? 1 : 0));
+                gtk_statusbar_push(statusbar,
+                                   gtk_statusbar_get_context_id(statusbar, "0"),
+                                    data);
+        else if (eql(action, "push_id"))
+                gtk_statusbar_push(statusbar,
+                                   gtk_statusbar_get_context_id(statusbar, ctx_msg),
+                                   msg);
         else if (eql(action, "pop"))
-                gtk_statusbar_pop(statusbar, 0);
-        else if (eql(action, "pop_id") &&
-                 sscanf(data, "%u", &id) == 1)
-                gtk_statusbar_pop(statusbar, id);
+                gtk_statusbar_pop(statusbar,
+                                  gtk_statusbar_get_context_id(statusbar, "0"));
+        else if (eql(action, "pop_id"))
+                gtk_statusbar_pop(statusbar,
+                                  gtk_statusbar_get_context_id(statusbar, ctx_msg));
         else if (eql(action, "remove_all"))
-                gtk_statusbar_remove_all(statusbar, 0);
+                gtk_statusbar_remove_all(statusbar,
+                                         gtk_statusbar_get_context_id(statusbar, "0"));
+        else if (eql(action, "remove_all_id"))
+                gtk_statusbar_remove_all(statusbar,
+                                         gtk_statusbar_get_context_id(statusbar, ctx_msg));
         else
                 ign_cmd(type, whole_msg);
+        free(ctx_msg);
 }
 
 static void

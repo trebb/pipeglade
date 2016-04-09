@@ -969,7 +969,7 @@ none
 .Ss GtkStatusbar
 The context
 .Fa id
-parameter is an arbitrary non-negative integer.
+parameter is an arbitrary non-whitespace string.
 .Bl -tag -width "commands "
 .It Commands
 .Qq Fa name Ns Ic :push_id Fa id string ,
@@ -978,16 +978,25 @@ associate
 .Fa string
 with context id
 .Fa id
-or 0, respectively, and display it in the statusbar.
+or
+.Qq 0 ,
+respectively, and display it in the statusbar.
 .Pp
 .Qq Fa name Ns Ic :pop_id Fa id ,
 .Qq Fa name Ns Ic :pop
 remove the latest entry associated with context id
 .Fa id
-or 0, respectively, from the statusbar.
+or
+.Qq 0 ,
+respectively, from the statusbar.
 .Pp
+.Qq Fa name Ns Ic :remove_all_id Fa id ,
 .Qq Fa name Ns Ic :remove_all
-empties the statusbar.
+remove the entries associated with context id
+.Fa id
+or
+.Qq 0 ,
+respectively, from the statusbar.
 .It Feedback
 none
 .El
