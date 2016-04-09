@@ -448,7 +448,25 @@ named
 it will take care of hiding the dialog window.
 .Bl -tag -width "commands "
 .It Commands
-none
+.Qq Fa name Ns Ic :set_title Fa string
+replaces the text in the title bar with
+.Fa string .
+.Pp
+.Qq Fa name Ns Ic :resize Bq Fa width height
+changes the size of the dialog window to
+.Fa width
+x
+.Fa height
+pixels if specified, or to the default size.
+.Pp
+.Qq Fa name Ns Ic :move Fa x y
+moves the dialog window to position
+.Fa x , y .
+.Pp
+.Qq Fa name Ns Ic :fullscreen
+and
+.Qq Fa name Ns Ic :unfullscreen
+switch fullscreen mode on and off.
 .It Feedback
 none
 .El
@@ -721,6 +739,26 @@ should either resemble an absolute path, or the
 .Fa directory
 must be set separately by
 .Fa name Ns Ic :set_filename Fa directory .
+.Pp
+.Qq Fa name Ns Ic :set_title Fa string
+replaces the text in the title bar with
+.Fa string .
+.Pp
+.Qq Fa name Ns Ic :resize Bq Fa width height
+changes the size of the dialog window to
+.Fa width
+x
+.Fa height
+pixels if specified, or to the default size.
+.Pp
+.Qq Fa name Ns Ic :move Fa x y
+moves the dialog window to position
+.Fa x , y .
+.Pp
+.Qq Fa name Ns Ic :fullscreen
+and
+.Qq Fa name Ns Ic :unfullscreen
+switch fullscreen mode on and off.
 .It Feedback
 .Qq Fa name Ns Ic :file Fa  pathname
 and/or

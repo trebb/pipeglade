@@ -895,8 +895,9 @@ check 1 "statusbar1:push Press \"OK\" if there is now a \"Disconnect\" button\n 
 check 1 "statusbar1:push Press \"Disconnect\"\n button2:set_sensitive 1" "button2:clicked"
 check 1 "statusbar1:push Press \"OK\" if the window title is now \"ALMOST DONE\"\n main:set_title ALMOST DONE" "button1:clicked"
 
-check 1 "statusbar1:push Press \"BIG BUTTON\" inside the window titled \"PRESS ME\"\n window1:set_title PRESS ME\n window1:set_visible 1" "button3:clicked"
-check 0 "window1:set_visible 0"
+check 1 "statusbar1:push Press \"BIG BUTTON\" inside the window titled \"PRESS ME\"\n dialog1:set_title PRESS ME\n dialog1:set_visible 1\n dialog1:resize 800 800\n dialog1:move 400 200" "button3:clicked"
+check 1 "button3:set_label PRESS THIS GIANT BUTTON NOW\n dialog1:fullscreen" "button3:clicked"
+check 0 "dialog1:set_visible 0"
 
 check 1 "statusbar1:push Press \"OK\" if the progress bar shows 90%\n progressbar1:set_fraction .9\n progressbar1:set_text" "button1:clicked"
 check 1 "statusbar1:push Press \"OK\" if the progress bar text reads \"The End\"\n progressbar1:set_text The End" "button1:clicked"

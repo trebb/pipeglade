@@ -1,6 +1,8 @@
-4.6.1 (unreleased)
+4.7.0 (unreleased)
 ------------------
   * Avoid silly precision on mouse coordinates emitted from GtkEventBox.
+  * GtkDialog and GtkFileChooserDialog now respond to the commands
+  that work for GtkWindow.
 
 4.6.0 (2016-03-27)
 ------------------

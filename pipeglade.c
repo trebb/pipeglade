@@ -1026,6 +1026,38 @@ update_widget_style(GObject *obj, const char *name,
 }
 
 /*
+ * Common actions for various kinds of window.  Return false if
+ * command is ignored
+ */
+static bool
+update_class_window(GObject *obj, const char *action,
+                    const char *data, const char *whole_msg, GType type)
+{
+        GtkWindow *window = GTK_WINDOW(obj);
+        int x, y;
+        bool result = true;
+
+        if (eql(action, "set_title"))
+                gtk_window_set_title(window, data);
+        else if (eql(action, "fullscreen"))
+                gtk_window_fullscreen(window);
+        else if (eql(action, "unfullscreen"))
+                gtk_window_unfullscreen(window);
+        else if (eql(action, "resize")) {
+                if (sscanf(data, "%d %d", &x, &y) != 2)
+                        gtk_window_get_default_size(window, &x, &y);
+                gtk_window_resize(window, x, y);
+        } else if (eql(action, "move")) {
+                if (sscanf(data, "%d %d", &x, &y) == 2)
+                        gtk_window_move(window, x, y);
+                else
+                        ign_cmd(type, whole_msg);
+        } else
+                result = false;
+        return result;        
+}
+
+/*
  * Update various kinds of widgets according to the respective action
  * parameter
  */
@@ -1208,6 +1240,7 @@ update_file_chooser_dialog(GObject *obj, const char *action,
                 gtk_file_chooser_set_filename(chooser, data);
         else if (eql(action, "set_current_name"))
                 gtk_file_chooser_set_current_name(chooser, data);
+        else if (update_class_window(obj, action, data, whole_msg, type));
         else
                 ign_cmd(type, whole_msg);
 }
@@ -1703,25 +1736,7 @@ static void
 update_window(GObject *obj, const char *action,
               const char *data, const char *whole_msg, GType type)
 {
-        GtkWindow *window = GTK_WINDOW(obj);
-        int x, y;
-
-        if (eql(action, "set_title"))
-                gtk_window_set_title(window, data);
-        else if (eql(action, "fullscreen"))
-                gtk_window_fullscreen(window);
-        else if (eql(action, "unfullscreen"))
-                gtk_window_unfullscreen(window);
-        else if (eql(action, "resize")) {
-                if (sscanf(data, "%d %d", &x, &y) != 2)
-                        gtk_window_get_default_size(window, &x, &y);
-                gtk_window_resize(window, x, y);
-        } else if (eql(action, "move")) {
-                if (sscanf(data, "%d %d", &x, &y) == 2)
-                        gtk_window_move(window, x, y);
-                else
-                        ign_cmd(type, whole_msg);
-        } else
+        if (!update_class_window(obj, action, data, whole_msg, type))
                 ign_cmd(type, whole_msg);
 }
 
@@ -2005,7 +2020,7 @@ digest_msg(FILE *cmd)
                         ud.fn = update_calendar;
                 else if (ud.type == GTK_TYPE_SOCKET)
                         ud.fn = update_socket;
-                else if (ud.type == GTK_TYPE_WINDOW)
+                else if (ud.type == GTK_TYPE_WINDOW || ud.type == GTK_TYPE_DIALOG)
                         ud.fn = update_window;
                 else
                         ud.fn = complain;
