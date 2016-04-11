@@ -19,7 +19,7 @@
 .\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 .\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.Dd March 27, 2016
+.Dd April 11, 2016
 .Dt PIPEGLADE 1 CON
 .Os BSD
 .Sh NAME
@@ -126,6 +126,21 @@ window must be named
 .Pp
 Default is
 .Pa ./pipeglade.ui .
+.It Fl l Ar log-file
+For each command, append to
+.Ar log-file
+a line of
+.Qq Fa time activity
+where
+.Fa time
+is the amount of processor time spent during execution of
+.Fa activity ,
+in milliseconds.  A
+.Ar log-file
+name of
+.Qq Li -
+means
+.Va stderr .
 .It Fl -display Ar X-server
 Uses the display on
 .Ar X-server

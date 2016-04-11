@@ -12,6 +12,7 @@ export NO_AT_BRIDGE=1
 FIN=to-g.fifo
 FOUT=from-g.fifo
 FERR=err.fifo
+LOG=test.log
 BAD_FIFO=bad_fifo
 DIR=test_dir
 FILE1=saved1.txt
@@ -68,7 +69,7 @@ check_rm() {
 }
 
 check_cmd() {
-    if $1; then
+    if eval $1; then
         count_ok
         echo " $OK   $1"
     else
@@ -128,7 +129,7 @@ check_call "./pipeglade -i $BAD_FIFO" 1 "making fifo" ""
 check_call "./pipeglade -o $BAD_FIFO" 1 "making fifo" ""
 rm $BAD_FIFO
 check_call "./pipeglade -h" 0 "" "usage: pipeglade [-h] [-e xid] [-i in-fifo] [-o out-fifo] [-u glade-file.ui]
-                 [-G] [-V] [--display X-server]"
+                 [-l log-file] [-G] [-V] [--display X-server]"
 check_call "./pipeglade -G" 0 "" "GTK+ v"
 check_call "./pipeglade -V" 0 "" "."
 check_call "./pipeglade -X" 1 "option" ""
@@ -136,6 +137,7 @@ check_call "./pipeglade -e" 1 "argument" ""
 check_call "./pipeglade -u" 1 "argument" ""
 check_call "./pipeglade -i" 1 "argument" ""
 check_call "./pipeglade -o" 1 "argument" ""
+check_call "./pipeglade -l" 1 "argument" ""
 check_call "./pipeglade yyy" 1 "illegal parameter 'yyy'" ""
 check_call "./pipeglade --display nnn" 1 "nnn"
 mkfifo $FIN
@@ -170,7 +172,7 @@ check_error() {
             break;
         fi
     done
-    if test "$2" = "$r"; then
+    if grep "$2" <<< $r; then
         count_ok
         echo " $OK $r"
     else
@@ -521,6 +523,20 @@ check_error "drawingarea1:set_font_size 1 nnn" "ignoring GtkDrawingArea command 
 echo "_:main_quit" >$FIN
 
 check_rm $FIN
+
+
+## Logging to stderr
+read r 2< $FERR &
+./pipeglade -i $FIN 2> $FERR -l - &
+
+# wait for $FIN to appear
+while test ! \( -e $FIN \); do :; done
+
+check_error "# Comment" "========== (New Pipeglade session) =========="
+check_error "" "=== (Idle) ==="
+check_error "_:main_quit" " # Comment"
+
+check_rm $FIN
 rm $FERR
 
 
@@ -626,7 +642,8 @@ check_rm $FIN
 check_rm $FOUT
 
 
-./pipeglade -i $FIN -o $FOUT &
+echo "Initial line to check if -l option appends" >$LOG
+./pipeglade -i $FIN -o $FOUT -l $LOG &
 
 # wait for $FIN and $FOUT to appear
 while test ! \( -e $FIN -a -e $FOUT \); do :; done
@@ -895,19 +912,26 @@ check 1 "statusbar1:push Press \"OK\" if there is now a \"Disconnect\" button\n 
 check 1 "statusbar1:push Press \"Disconnect\"\n button2:set_sensitive 1" "button2:clicked"
 check 1 "statusbar1:push Press \"OK\" if the window title is now \"ALMOST DONE\"\n main:set_title ALMOST DONE" "button1:clicked"
 
-check 1 "statusbar1:push Press \"BIG BUTTON\" inside the window titled \"PRESS ME\"\n dialog1:set_title PRESS ME\n dialog1:set_visible 1\n dialog1:resize 800 800\n dialog1:move 400 200" "button3:clicked"
+check 1 "statusbar1:push Press \"BIG BUTTON\" inside the window titled \"PRESS ME\"\n dialog1:set_title PRESS ME\n dialog1:set_visible 1\n dialog1:resize 800 800\n dialog1:move 50 50" "button3:clicked"
 check 1 "button3:set_label PRESS THIS GIANT BUTTON NOW\n dialog1:fullscreen" "button3:clicked"
 check 0 "dialog1:set_visible 0"
 
 check 1 "statusbar1:push Press \"OK\" if the progress bar shows 90%\n progressbar1:set_fraction .9\n progressbar1:set_text" "button1:clicked"
 check 1 "statusbar1:push Press \"OK\" if the progress bar text reads \"The End\"\n progressbar1:set_text The End" "button1:clicked"
-check 1 "statusbar1:push_id Id100 Press \"No\"\n statusbar1:push_id ABC nonsense #1\n statusbar1:push_id DEF nonsense #2.1\n statusbar1:push_id DEF nonsense 2.2\n statusbar1:pop\n statusbar1:pop\n statusbar1:pop_id 1\n statusbar1:pop_id ABC\n statusbar1:pop_id DEF\n statusbar1:pop_id DEF\n statusbar1:push_id GHI nonsense 3.1\n statusbar1:push_id GHI nonsense 3.2\n statusbar1:remove_all GHI" "no_button:clicked"
+check 1 "statusbar1:push_id Id100 Press \"No\"\n statusbar1:push_id ABC nonsense #1\n statusbar1:push_id DEF nonsense #2.1\n statusbar1:push_id DEF nonsense 2.2\n statusbar1:pop\n statusbar1:pop\n statusbar1:pop_id 1\n statusbar1:pop_id ABC\n statusbar1:pop_id DEF\n statusbar1:pop_id DEF\n statusbar1:push_id GHI nonsense 3.1\n statusbar1:push_id GHI nonsense 3.2\n statusbar1:remove_all_id GHI" "no_button:clicked"
 
 echo "_:main_quit" >$FIN
 
 check_rm $FIN
 check_rm $FOUT
 
+
+check_cmd "true"
+check_cmd "head -n 2 $LOG | tail -n 1 | grep '========== (New Pipeglade session) =========='"
+check_cmd "tail -n 4 $LOG | head -n 1 | grep '=== (Idle) ==='"
+check_cmd "tail -n 3 $LOG | head -n 1 | grep 'statusbar1:remove_all_id GHI'"
+check_cmd "tail -n 2 $LOG | head -n 1 | grep '=== (Idle) ==='"
+check_cmd "tail -n 1 $LOG | grep '_:main_quit'"
 
 
 echo "PASSED: $OKS/$TESTS; FAILED: $FAILS/$TESTS"

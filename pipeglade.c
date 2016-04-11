@@ -43,7 +43,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "4.6.0"
+#define VERSION "4.7.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 #define MAIN_WIN "main"
@@ -53,7 +53,8 @@
                          "[-i in-fifo] "                \
                          "[-o out-fifo] "               \
                          "[-u glade-file.ui]\n"         \
-        "                 [-G] "                        \
+        "                 [-l log-file] "               \
+                         "[-G] "                        \
                          "[-V] "                        \
                          "[--display X-server]\n"
 
@@ -75,6 +76,7 @@
 
 static FILE *out;               /* UI feedback messages */
 static FILE *save;              /* saving user data */
+static FILE *log_out;           /* logging output */
 static GtkBuilder *builder;     /* to be read from .ui file */
 struct ui_data {
         void (*fn)(GObject *, const char *action,
@@ -1913,6 +1915,45 @@ update_ui_in(struct ui_data *ud)
 }
 
 /*
+ * Milliseconds of processor time used since start
+ */
+static long double
+ms_since(clock_t start)
+{
+        return (long double) 1e3 * (clock() - start) / CLOCKS_PER_SEC;
+}
+
+/*
+ * Write log file.
+ */
+static void
+log_msg(char *msg)
+{
+        static clock_t start;
+        static char *old_msg;
+
+        if (log_out == NULL)    /* no logging */
+                return;
+        if (msg == NULL && old_msg == NULL)
+                fprintf(log_out,
+                        "========== (New Pipeglade session) ==========\n");
+        else if (msg == NULL && old_msg != NULL) { /* command done; start idle */
+                fprintf(log_out,
+                        "%10.3Lf %s\n", ms_since(start), old_msg);
+                free(old_msg);
+                old_msg = NULL;
+        } else if (msg != NULL && old_msg == NULL) { /* idle done; start command */
+                fprintf(log_out,
+                        "%10.3Lf === (Idle) ===\n", ms_since(start));
+                if ((old_msg = malloc(strlen(msg) + 1)) == NULL)
+                        OOM_ABORT;
+                strcpy(old_msg, msg);
+        } else
+                ABORT;
+        start = clock();
+}
+
+/*
  * Read lines from stream cmd and perform appropriate actions on the
  * GUI
  */
@@ -1922,7 +1963,9 @@ digest_msg(FILE *cmd)
         struct ui_data ud;
         FILE *load;             /* restoring user data */
         char *name;
+        static int recursion = -1; /* > 0 means this is a recursive call */
 
+        recursion++;
         sem_init(&ud.msg_digested, 0, 0);
         for (;;) {
                 char first_char = '\0';
@@ -1938,7 +1981,11 @@ digest_msg(FILE *cmd)
                         OOM_ABORT;
                 pthread_cleanup_push((void(*)(void *))free_at, &ud.msg);
                 pthread_testcancel();
+                if (recursion == 0)
+                        log_msg(NULL);
                 read_buf(cmd, &ud.msg, &msg_size);
+                if (recursion == 0)
+                        log_msg(ud.msg);
                 data_start = strlen(ud.msg);
                 if ((ud.msg_tokens = malloc(strlen(ud.msg) + 1)) == NULL)
                         OOM_ABORT;
@@ -2048,6 +2095,7 @@ digest_msg(FILE *cmd)
                 pthread_cleanup_pop(1); /* free ud.msg_tokens */
                 pthread_cleanup_pop(1); /* free ud.msg */
         }
+        recursion--;
         return NULL;
 }
 
@@ -2103,6 +2151,26 @@ fifo(const char *name, const char *mode)
                     name, mode, strerror(errno));
         else
                 setvbuf(s, NULL, bufmode, 0);
+        return s;
+}
+
+/*
+ * Create a log file if necessary, and open it.  A name of "-"
+ * requests use of stderr.
+ */
+static FILE *
+log_file(const char *name)
+{
+        FILE *s = NULL;
+
+        if (name) {
+                if (eql(name, "-"))
+                        s = stderr;
+                else if ((s = fopen(name, "a")) == NULL)
+                        bye(EXIT_FAILURE, stderr,
+                            "opening log file %s: %s\n",
+                            name, strerror(errno));
+        }
         return s;
 }
 
@@ -2391,6 +2459,7 @@ main(int argc, char *argv[])
 {
         char opt;
         char *in_fifo = NULL, *out_fifo = NULL, *ui_file = NULL;
+        char *log_name = NULL;
         char *xid_s = NULL, xid_s2[BUFLEN];
         Window xid;
         GtkWidget *plug, *body;
@@ -2403,11 +2472,13 @@ main(int argc, char *argv[])
         setenv("G_ENABLE_DIAGNOSTIC", "0", 0);
         out = NULL;
         save = NULL;
+        log_out = NULL;
         gtk_init(&argc, &argv);
-        while ((opt = getopt(argc, argv, "he:i:o:u:GV")) != -1) {
+        while ((opt = getopt(argc, argv, "he:i:l:o:u:GV")) != -1) {
                 switch (opt) {
                 case 'e': xid_s = optarg; break;
                 case 'i': in_fifo = optarg; break;
+                case 'l': log_name = optarg; break;
                 case 'o': out_fifo = optarg; break;
                 case 'u': ui_file = optarg; break;
                 case 'G': bye(EXIT_SUCCESS, stdout, "GTK+ v%d.%d.%d (running v%d.%d.%d)\n",
@@ -2431,6 +2502,7 @@ main(int argc, char *argv[])
         builder = gtk_builder_new();
         if (gtk_builder_add_from_file(builder, ui_file, &error) == 0)
                 bye(EXIT_FAILURE, stderr, "%s\n", error->message);
+        log_out = log_file(log_name);
         pthread_create(&receiver, NULL, (void *(*)(void *))digest_msg, in);
         main_window = gtk_builder_get_object(builder, MAIN_WIN);
         if (!GTK_IS_WINDOW(main_window))
