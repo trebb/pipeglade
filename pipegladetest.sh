@@ -27,7 +27,7 @@ if stat -f "%0p"; then
     STAT_CMD='stat -f "%0p"'
 else
     # probably GNU stat
-    STAT_CMD='stat -c "%0p"'
+    STAT_CMD='stat -c "%a"'
 fi
 
 # colored messages: bright green
@@ -69,7 +69,7 @@ check_rm() {
 }
 
 check_cmd() {
-    if eval $1; then
+    if eval "$1"; then
         count_ok
         echo " $OK   $1"
     else
@@ -206,7 +206,7 @@ check_error "label1:force" "ignoring GtkLabel command \"label1:force\""
 check_error "label1:grab_focus" "ignoring GtkLabel command \"label1:grab_focus\""
 # load file
 check_error "_:load" "ignoring command \"_:load\""
-check_error "_:load  " "ignoring command \"_:load  \""
+check_error "_:load " "ignoring command \"_:load \""
 check_error "_:load nonexistent.txt" "ignoring command \"_:load nonexistent.txt\""
 mkdir -p $DIR
 cat >$DIR/$FILE1 <<< "blah"
@@ -628,15 +628,15 @@ mkfifo -m 777 $FIN
 mkfifo -m 777 $FOUT
 ./pipeglade -i $FIN -o $FOUT &
 sleep .5
-check_cmd "test $($STAT_CMD $FIN) -eq 10600"
-check_cmd "test $($STAT_CMD $FOUT) -eq 10600"
+check_cmd "$STAT_CMD $FIN | grep '600$'"
+check_cmd "$STAT_CMD $FOUT | grep '600$'"
 echo -e "_:main_quit" > $FIN
 check_rm $FIN
 check_rm $FOUT
 ./pipeglade -i $FIN -o $FOUT &
 sleep .5
-check_cmd "test $($STAT_CMD $FIN) -eq 10600"
-check_cmd "test $($STAT_CMD $FOUT) -eq 10600"
+check_cmd "$STAT_CMD $FIN | grep '600$'"
+check_cmd "$STAT_CMD $FOUT | grep '600$'"
 echo -e "_:main_quit" > $FIN
 check_rm $FIN
 check_rm $FOUT
