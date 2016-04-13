@@ -31,7 +31,6 @@
 #include <locale.h>
 #include <math.h>
 #include <pthread.h>
-#include <search.h>
 #include <semaphore.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -928,7 +927,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
 }
 
 /*
- * Add another element to widget's "draw_ops" list
+ * Append another element to widget's "draw_ops" list
  */
 static bool
 ins_draw_op(GObject *widget, const char *action, const char *data)
@@ -938,17 +937,17 @@ ins_draw_op(GObject *widget, const char *action, const char *data)
         if ((op = malloc(sizeof(*op))) == NULL)
                 OOM_ABORT;
         op->op_args = NULL;
+        op->next = NULL;
         if (!set_draw_op(op, action, data)) {
                 free(op->op_args);
                 free(op);
                 return false;
         }
-        if ((draw_ops = g_object_get_data(widget, "draw_ops")) == NULL) {
+        if ((draw_ops = g_object_get_data(widget, "draw_ops")) == NULL)
                 g_object_set_data(widget, "draw_ops", op);
-                insque(op, NULL);
-        } else {
+        else {
                 for (last_op = draw_ops; last_op->next != NULL; last_op = last_op->next);
-                insque(op, last_op);
+                last_op->next = op;
         }
         return true;
 }
@@ -959,7 +958,7 @@ ins_draw_op(GObject *widget, const char *action, const char *data)
 static bool
 rem_draw_op(GObject *widget, const char *data)
 {
-        struct draw_op *op, *next_op;
+        struct draw_op *op, *next_op, *prev_op = NULL;
         unsigned int id;
 
         if (sscanf(data, "%u", &id) != 1)
@@ -968,12 +967,14 @@ rem_draw_op(GObject *widget, const char *data)
         while (op != NULL) {
                 next_op = op->next;
                 if (op->id == id) {
-                        if (op->prev == NULL)
-                                g_object_set_data(widget, "draw_ops", next_op);
-                        remque(op);
+                        if (prev_op == NULL) /* list head */
+                                g_object_set_data(widget, "draw_ops", op->next);
+                        else
+                                prev_op->next = op->next;
                         free(op->op_args);
                         free(op);
-                }
+                } else
+                        prev_op = op;
                 op = next_op;
         }
         return true;
