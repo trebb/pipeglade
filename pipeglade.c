@@ -367,7 +367,7 @@ save_tree_row_msg(GtkTreeModel *model,
 {
         char *path_s = gtk_tree_path_to_string(path);
 
-        (void)path;
+        (void) path;
         send_tree_row_msg_by(save_action_set_msg, model, path_s, iter, obj);
         g_free(path_s);
         return FALSE;
@@ -414,7 +414,7 @@ cb(GtkBuildable *obj, const char *tag)
                 view = gtk_tree_selection_get_tree_view(GTK_TREE_SELECTION(obj));
                 send_msg(GTK_BUILDABLE(view), tag, NULL);
                 gtk_tree_selection_selected_foreach(GTK_TREE_SELECTION(obj),
-                                                    (GtkTreeSelectionForeachFunc)send_tree_row_msg,
+                                                    (GtkTreeSelectionForeachFunc) send_tree_row_msg,
                                                     view);
         } else
                 fprintf(stderr, "ignoring callback from %s\n", widget_name(obj));
@@ -988,7 +988,7 @@ cb_draw(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
         struct draw_op *op;
 
-        (void)data;
+        (void) data;
         for (op = g_object_get_data(G_OBJECT(widget), "draw_ops");
              op != NULL;
              op = op->next)
@@ -1009,9 +1009,9 @@ update_widget_style(GObject *obj, const char *name,
         const char *prefix = "* {", *suffix = "}";
         size_t sz;
 
-        (void)name;
-        (void)whole_msg;
-        (void)type;
+        (void) name;
+        (void) whole_msg;
+        (void) type;
         style_provider = g_object_get_data(obj, "style_provider");
         sz = strlen(prefix) + strlen(suffix) + strlen(data) + 1;
         context = gtk_widget_get_style_context(GTK_WIDGET(obj));
@@ -1355,7 +1355,7 @@ update_spinner(GObject *obj, const char *action,
 {
         GtkSpinner *spinner = GTK_SPINNER(obj);
 
-        (void)data;
+        (void) data;
         if (eql(action, "start"))
                 gtk_spinner_start(spinner);
         else if (eql(action, "stop"))
@@ -1726,7 +1726,7 @@ update_tree_view(GObject *obj, const char *action,
                 tree_model_clear(model);
         } else if (eql(action, "save") && arg0 != NULL &&
                    (save = fopen(arg0, "w")) != NULL) {
-                gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)save_tree_row_msg, view);
+                gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc) save_tree_row_msg, view);
                 fclose(save);
         } else
                 ign_cmd(type, whole_msg);
@@ -1742,7 +1742,7 @@ update_socket(GObject *obj, const char *action,
         Window id;
         char str[BUFLEN];
 
-        (void)data;
+        (void) data;
         if (eql(action, "id")) {
                 id = gtk_socket_get_id(socket);
                 snprintf(str, BUFLEN, "%lu", id);
@@ -1763,9 +1763,9 @@ static void
 update_sensitivity(GObject *obj, const char *action,
                    const char *data, const char *whole_msg, GType type)
 {
-        (void)action;
-        (void)whole_msg;
-        (void)type;
+        (void) action;
+        (void) whole_msg;
+        (void) type;
         gtk_widget_set_sensitive(GTK_WIDGET(obj), strtol(data, NULL, 10));
 }
 
@@ -1773,9 +1773,9 @@ static void
 update_visibility(GObject *obj, const char *action,
                   const char *data, const char *whole_msg, GType type)
 {
-        (void)action;
-        (void)whole_msg;
-        (void)type;
+        (void) action;
+        (void) whole_msg;
+        (void) type;
         gtk_widget_set_visible(GTK_WIDGET(obj), strtol(data, NULL, 10));
 }
 
@@ -1783,8 +1783,8 @@ static void
 update_focus(GObject *obj, const char *action,
              const char *data, const char *whole_msg, GType type)
 {
-        (void)action;
-        (void)data;
+        (void) action;
+        (void) data;
         if (gtk_widget_get_can_focus(GTK_WIDGET(obj)))
                 gtk_widget_grab_focus(GTK_WIDGET(obj));
         else
@@ -1797,9 +1797,9 @@ update_size_request(GObject *obj, const char *action,
 {
         int x, y;
 
-        (void)action;
-        (void)whole_msg;
-        (void)type;
+        (void) action;
+        (void) whole_msg;
+        (void) type;
         if (sscanf(data, "%d %d", &x, &y) == 2)
                 gtk_widget_set_size_request(GTK_WIDGET(obj), x, y);
         else
@@ -1810,9 +1810,9 @@ static void
 update_tooltip_text(GObject *obj, const char *action,
                     const char *data, const char *whole_msg, GType type)
 {
-        (void)action;
-        (void)whole_msg;
-        (void)type;
+        (void) action;
+        (void) whole_msg;
+        (void) type;
         gtk_widget_set_tooltip_text(GTK_WIDGET(obj), data);
 }
 
@@ -1820,8 +1820,8 @@ static void
 fake_ui_activity(GObject *obj, const char *action,
                  const char *data, const char *whole_msg, GType type)
 {
-        (void)action;
-        (void)data;
+        (void) action;
+        (void) data;
         if (!GTK_IS_WIDGET(obj))
                 ign_cmd(type, whole_msg);
         else if (GTK_IS_ENTRY(obj) || GTK_IS_SPIN_BUTTON(obj))
@@ -1840,11 +1840,11 @@ static void
 main_quit(GObject *obj, const char *action,
           const char *data, const char *whole_msg, GType type)
 {
-        (void)obj;
-        (void)action;
-        (void)data;
-        (void)whole_msg;
-        (void)type;
+        (void) obj;
+        (void) action;
+        (void) data;
+        (void) whole_msg;
+        (void) type;
 
         gtk_main_quit();
 }
@@ -1853,9 +1853,9 @@ static void
 complain(GObject *obj, const char *action,
          const char *data, const char *whole_msg, GType type)
 {
-        (void)obj;
-        (void)action;
-        (void)data;
+        (void) obj;
+        (void) action;
+        (void) data;
 
         ign_cmd(type, whole_msg);
 }
@@ -2433,7 +2433,7 @@ add_widget_style_provider(gpointer *obj, void *data)
         GtkStyleContext *context;
         GtkCssProvider *style_provider;
 
-        (void)data;
+        (void) data;
         if (!GTK_IS_WIDGET(obj))
                 return;
         style_provider = gtk_css_provider_new();
