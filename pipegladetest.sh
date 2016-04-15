@@ -643,7 +643,7 @@ check_rm $FIN
 check_rm $FOUT
 
 
-echo "Initial line to check if -l option appends" >$LOG
+echo "####	# Initial line to check if -l option appends" >$LOG
 ./pipeglade -i $FIN -o $FOUT -l $LOG &
 
 # wait for $FIN and $FOUT to appear
@@ -927,11 +927,10 @@ check_rm $FIN
 check_rm $FOUT
 
 
-check_cmd "true"
-check_cmd "head -n 2 $LOG | tail -n 1 | grep '========== (New Pipeglade session) =========='"
-check_cmd "tail -n 4 $LOG | head -n 1 | grep '=== (Idle) ==='"
+check_cmd "head -n 2 $LOG | tail -n 1 | grep '##### (New Pipeglade session) #####'"
+check_cmd "tail -n 4 $LOG | head -n 1 | grep '### (Idle) ###'"
 check_cmd "tail -n 3 $LOG | head -n 1 | grep 'statusbar1:remove_all_id GHI'"
-check_cmd "tail -n 2 $LOG | head -n 1 | grep '=== (Idle) ==='"
+check_cmd "tail -n 2 $LOG | head -n 1 | grep '### (Idle) ###'"
 check_cmd "tail -n 1 $LOG | grep '_:main_quit'"
 
 

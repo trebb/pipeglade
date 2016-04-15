@@ -1916,12 +1916,12 @@ update_ui_in(struct ui_data *ud)
 }
 
 /*
- * Milliseconds of processor time used since start
+ * Microseconds of processor time used since start
  */
 static long double
-ms_since(clock_t start)
+us_since(clock_t start)
 {
-        return (long double) 1e3 * (clock() - start) / CLOCKS_PER_SEC;
+        return 1e6L * (clock() - start) / CLOCKS_PER_SEC;
 }
 
 /*
@@ -1937,15 +1937,15 @@ log_msg(char *msg)
                 return;
         if (msg == NULL && old_msg == NULL)
                 fprintf(log_out,
-                        "========== (New Pipeglade session) ==========\n");
+                        "##########\t##### (New Pipeglade session) #####\n");
         else if (msg == NULL && old_msg != NULL) { /* command done; start idle */
                 fprintf(log_out,
-                        "%10.3Lf %s\n", ms_since(start), old_msg);
+                        "%10.Lf\t%s\n", us_since(start), old_msg);
                 free(old_msg);
                 old_msg = NULL;
         } else if (msg != NULL && old_msg == NULL) { /* idle done; start command */
                 fprintf(log_out,
-                        "%10.3Lf === (Idle) ===\n", ms_since(start));
+                        "%10.Lf\t### (Idle) ###\n", us_since(start));
                 if ((old_msg = malloc(strlen(msg) + 1)) == NULL)
                         OOM_ABORT;
                 strcpy(old_msg, msg);
