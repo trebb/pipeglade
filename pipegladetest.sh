@@ -130,7 +130,8 @@ check_call "./pipeglade -o $BAD_FIFO" 1 "making fifo" ""
 rm $BAD_FIFO
 check_call "./pipeglade -h" 0 "" "usage: pipeglade [-h] [-e xid] [-i in-fifo] [-o out-fifo] [-u glade-file.ui]
                  [-l log-file] [-G] [-V] [--display X-server]"
-check_call "./pipeglade -G" 0 "" "GTK+ v"
+check_call "./pipeglade -G" 0 "" "GTK+  v"
+check_call "./pipeglade -G" 0 "" "cairo v"
 check_call "./pipeglade -V" 0 "" "."
 check_call "./pipeglade -X" 1 "option" ""
 check_call "./pipeglade -e" 1 "argument" ""

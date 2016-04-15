@@ -2482,10 +2482,13 @@ main(int argc, char *argv[])
                 case 'l': log_name = optarg; break;
                 case 'o': out_fifo = optarg; break;
                 case 'u': ui_file = optarg; break;
-                case 'G': bye(EXIT_SUCCESS, stdout, "GTK+ v%d.%d.%d (running v%d.%d.%d)\n",
+                case 'G': bye(EXIT_SUCCESS, stdout,
+                              "GTK+  v%d.%d.%d (running v%d.%d.%d)\n"
+                              "cairo v%s (running v%s)\n",
                               GTK_MAJOR_VERSION, GTK_MINOR_VERSION, GTK_MICRO_VERSION,
                               gtk_get_major_version(), gtk_get_minor_version(),
-                              gtk_get_micro_version());
+                              gtk_get_micro_version(),
+                              CAIRO_VERSION_STRING, cairo_version_string());
                         break;
                 case 'V': bye(EXIT_SUCCESS, stdout, "%s\n", VERSION); break;
                 case 'h': bye(EXIT_SUCCESS, stdout, USAGE); break;
