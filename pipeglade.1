@@ -135,7 +135,11 @@ where
 .Fa time
 is the amount of processor time spent during execution of
 .Fa activity ,
-in microseconds.  A
+in microseconds.
+.Fa time
+and
+.Fa activity
+are separated by a tab character. A
 .Ar log-file
 name of
 .Qq Li -
@@ -146,7 +150,8 @@ Uses the display on
 .Ar X-server
 for user interaction.
 .It Fl G
-Exits after printing the library versions of GTK+ and cairo.
+Prints the versions of the underlying GTK+ and cairo libraries and
+exits.
 .It Fl V
 Prints the
 .Nm
