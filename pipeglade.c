@@ -47,15 +47,15 @@
 #define WHITESPACE " \t\n"
 #define MAIN_WIN "main"
 #define USAGE                                           \
-        "usage: pipeglade [-h] "                        \
-                         "[-e xid] "                    \
-                         "[-i in-fifo] "                \
-                         "[-o out-fifo] "               \
-                         "[-u glade-file.ui]\n"         \
-        "                 [-l log-file] "               \
-                         "[-G] "                        \
-                         "[-V] "                        \
-                         "[--display X-server]\n"
+        "usage: pipeglade [[-i in-fifo] "               \
+                          "[-o out-fifo] "              \
+                          "[-u glade-file.ui] "         \
+                          "[-e xid]\n"                  \
+        "                  [-l log-file] "              \
+                          "[--display X-server]]  |  "  \
+                         "[-h | "                       \
+                          "-G | "                       \
+                          "-V]\n"
 
 #define ABORT                                           \
         {                                               \
@@ -71,7 +71,7 @@
                         "Out of memory in %s (%s:%d): ",        \
                         __func__, __FILE__, __LINE__);          \
                 abort();                                        \
-        }                                                       \
+        }
 
 static FILE *out;               /* UI feedback messages */
 static FILE *save;              /* saving user data */
