@@ -19,74 +19,76 @@
 .\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 .\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.Dd April 11, 2016
-.Dt PIPEGLADE 1 CON
+.Dd April 17, 2016
+.Dt PIPEGLADE 1 PRM
 .Os BSD
 .Sh NAME
 .Nm pipeglade
-.Nd Pipe-Driven GTK+ Interface
+.Nd pipe-driven GTK+ interface
 .Sh SYNOPSIS
 .Nm
-.Op Fl h
-.Op Fl G
-.Op Fl V
-.Nm
+.Oo
 .Op Fl i Ar in-fifo
 .Op Fl o Ar out-fifo
 .Op Fl u Ar builder-file
+.Op Fl e Ar parent-xid
+.Op Fl l Ar log-file
 .Op Fl -display Ar X-server
+.Oc |
+.Op Fl h | G | V
 .Sh DESCRIPTION
 .Nm
 is a helper program that displays graphical user
-interfaces for other programs.  It renders the GUI definition
-found in a GtkBuilder XML file (typically created using the
+interfaces for other programs.
+It renders the GUI definition found in a GtkBuilder XML file
+(typically created using the
 .Xr glade 1
 interface designer), and communicates with the main program solely
-through plain text messages via pipes or fifos.  It provides access to
-a subset of features of a subset of widgets of GTK+ 3.  Simple
-one-shot dialogs as well as more complex, long-running programs can be
-built using
+through plain text messages via pipes or fifos.
+It provides access to a subset of features of a subset of widgets of
+GTK+ 3.
+Simple one-shot dialogs as well as more complex, long-running programs
+can be built using
 .Nm ;
 see
 .Sx EXAMPLES .
 .Sh OPTIONS
 .Bl -tag -width Ds
-.It Fl h
-Prints a help message and exits.
-.It Fl e Ar parent-xid
-Embeds the main window into the XEmbed socket
-.Ar parent-xid
-of another process.
 .It Fl i Ar in-fifo
 Creates a named pipe
 .Ar in-fifo
 if necessary, and uses it for command input.
 .Pp
-A command is a line of text.  Its format is
-.Qq Fa name Ns Ic \&: Ns Fa action Bq Fa data
+A command is a line of text.
+Its format is
+.Qq Ar name Ns Cm \&: Ns Ar action Bq Ar data
 where
-.Fa name
+.Ar name
 is the name of the receiving widget;
-.Fa data
+.Ar data
 is separated from the rest of the command by a single whitespace
-character.  Commands whose first non-whitespace character is
-.Ic #
+character.
+Commands whose first non-whitespace character is
+.Cm #
 are considered comments and ignored silently, as are empty input lines.
 Any occurences of the two-character sequences
-.Ic \en
+.Cm \en
 and
-.Ic \er
+.Cm \er
 will be converted into newline or carriage return, respectively.
 Every other character following a backslash will be left unchanged,
-but the backslash will be removed.  Invalid commands are reported on
+but the backslash will be removed.
+Invalid commands are reported on
 .Va stderr
-and are otherwise ignored.  See
+and are otherwise ignored.
+See
 .Sx WIDGETS
 for applicable commands.
 .Pp
 It is an error if
 .Ar in-fifo
-exists but is not a named pipe.  The named pipe
+exists but is not a named pipe.
+The named pipe
 .Ar in-fifo
 is deleted upon successful program termination.
 .Pp
@@ -99,16 +101,18 @@ if necessary, and uses it for output of feedback messages from the
 graphical user interface.
 .Pp
 A feedback message is a line of text; its format is
-.Qq Fa name Ns Ic \&: Ns Fa info Bq Fa data
+.Qq Ar name Ns Cm \&: Ns Ar info Bq Ar data
 where
-.Fa name
-is the name of the sending widget.  See
+.Ar name
+is the name of the sending widget.
+See
 .Sx WIDGETS
 for possible feedback messages.
 .Pp
 It is an error if
 .Ar out-fifo
-exists but is not a named pipe.  The named pipe
+exists but is not a named pipe.
+The named pipe
 .Ar out-fifo
 is deleted upon successful program termination.
 .Pp
@@ -119,36 +123,43 @@ Displays the graphical user interface
 .Ar builder-file
 which should be created using the
 .Xr glade 1
-user interface designer and saved in GtkBuilder (.ui) format.  Widget
-names should be alphanumeric, including underscores, and the main
-window must be named
-.Ic main .
+user interface designer and saved in GtkBuilder (.ui) format.
+Widget names should be alphanumeric, including underscores, and the
+main window must be named
+.Cm main .
 .Pp
 Default is
 .Pa ./pipeglade.ui .
+.It Fl e Ar parent-xid
+Embeds the main window into the XEmbed socket
+.Ar parent-xid
+of another process.
 .It Fl l Ar log-file
 For each command, append to
 .Ar log-file
 a line of
-.Qq Fa time activity
+.Qq Ar time activity
 where
-.Fa time
+.Ar time
 is the amount of processor time spent during execution of
-.Fa activity ,
+.Ar activity ,
 in microseconds.
-.Fa time
+.Ar time
 and
-.Fa activity
-are separated by a tab character. A
+.Ar activity
+are separated by a tab character.
+A
 .Ar log-file
 name of
-.Qq Li -
+.Ql -
 means
 .Va stderr .
 .It Fl -display Ar X-server
 Uses the display on
 .Ar X-server
 for user interaction.
+.It Fl h
+Prints a help message and exits.
 .It Fl G
 Prints the versions of the underlying GTK+ and cairo libraries and
 exits.
@@ -198,73 +209,78 @@ and
 .Pp
 .Nm
 references a widget by the
-.Fa name
-it is given in Glade. In the .ui file, this
-.Fa name
+.Ar name
+it is given in Glade.
+In the
+.Pa .ui
+file, this
+.Ar name
 is represented by the
-.Li id
+.Ql id
 attribute of the referenced object; therefore, a
-.Ic GtkWindow
+.Cm GtkWindow
 named
 .Li foo
-would appear in the .ui file as
-.Li <object class="GtkWindow" id="foo"> .
+would appear in the
+.Pa .ui
+file as
+.Dl <object class="GtkWindow" id="foo"> .
 .Ss Any Widget (including widgets not mentioned above)
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_sensitive Brq Ic 0 | 1
+.Qq Ar name Ns Cm :set_sensitive Brq Cm 0 | 1
 makes the widget grayed out
-.Pq Ic 0
+.Pq Cm 0
 or responsive
-.Pq Ic 1 .
+.Pq Cm 1 .
 .Pp
-.Qq Fa name Ns Ic :set_visible Brq Ic 0 | 1
+.Qq Ar name Ns Cm :set_visible Brq Cm 0 | 1
 hides
-.Pq Ic 0
+.Pq Cm 0
 the widget, or makes it visible
-.Pq Ic 1 .
+.Pq Cm 1 .
 .Pp
-.Qq Fa name Ns Ic :grab_focus
+.Qq Ar name Ns Cm :grab_focus
 puts the keyboard focus onto the widget, if possible.
 .Pp
-.Qq Fa name Ns Ic :set_size_request Bq Fa width height
+.Qq Ar name Ns Cm :set_size_request Bq Ar width height
 sets the widget's minimum size to
-.Fa width
+.Ar width
 x
-.Fa height .
+.Ar height .
 Default is the widget's natural size.
 .Pp
 .Qo
-.Fa name Ns Ic :style
-.Bo Fa prop Ic : Ns Fa val Ns Bo Ic ; Fa prop Ic : Ns Fa val ... Bc Bc
+.Ar name Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
 .Qc
 sets properties
-.Fa prop
+.Ar prop
 of the widget style to
-.Fa val .
+.Ar val .
 Properties not explicitly specified are reset to their default values.
 Examples:
 .Bl -dash -offset indent -compact
 .It
-.Qq Li label1:style font:Bold 11; background-color:green
+.Ql label1:style font:Bold 11; background-color:green
 .It
-.Qq Li label1:style font-style:italic; font-weight:bold; color:blue
+.Ql label1:style font-style:italic; font-weight:bold; color:blue
 .It
-.Qq Li frame1:style border-color:red yellow; border-width:5px
+.Ql frame1:style border-color:red yellow; border-width:5px
 .It
-.Qq Li frame1:style border-radius:10px; transition:10s
+.Ql frame1:style border-radius:10px; transition:10s
 .El
 For a description of possible color notations see
 .Sx GtkColorButton .
 .Pp
-.Qq Fa name Ns Ic :set_tooltip_text Bq Fa text
+.Qq Ar name Ns Cm :set_tooltip_text Bq Ar text
 sets the widget's tooltip
-.Fa text .
+.Ar text .
 Default is disabling the tooltip.
 .Pp
-.Qq Fa name Ns Ic :force
+.Qq Ar name Ns Cm :force
 simulates a click on the
-.Fa name Ns
+.Ar name Ns
 d widget, triggering a response as described with the widgets below.
 Exceptions:
 .Bl -dash -offset indent -compact
@@ -290,44 +306,46 @@ and
 just open their respective dialogs.
 .El
 .Pp
-.Qq Fa name Ns Ic :load Fa file
+.Qq Ar name Ns Cm :load Ar file
 reads arbitrary
 .Nm
 commands from
-.Fa file .
+.Ar file .
 A non-empty
-.Fa name
+.Ar name
 is required but ignored.
-.Ic :load
+.Cm :load
 commands may be nested but on attempts to read from the same file, the
 inner
-.Ic :load
-is ignored.  There is also a
-.Ic :save
+.Cm :load
+is ignored.
+There is also a
+.Cm :save
 command; see
 .Sx GtkTextView
 and
 .Sx GtkTreeView .
 .Pp
-.Qq Fa name Ns Ic :main_quit
-kills the user interface.  A non-empty
-.Fa name
+.Qq Ar name Ns Cm :main_quit
+kills the user interface.
+A non-empty
+.Ar name
 is required but ignored.
 .El
 .Ss GtkButton
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_label Fa string
+.Qq Ar name Ns Cm :set_label Ar string
 replaces the button text with
-.Fa string .
+.Ar string .
 .It Feedback
-.Qq Fa name Ns Ic \&:clicked
+.Qq Ar name Ns Cm \&:clicked
 .Pp
-.Ic GtkButton Ns
+.Cm GtkButton Ns
 s with names ending in
-.Ic _ok , _apply , _cancel , _send_text ,
+.Cm _ok , _apply , _cancel , _send_text ,
 and
-.Ic _send_selection
+.Cm _send_selection
 may work differently; see
 .Sx GtkDialog , GtkFileChooserDialog ,
 and
@@ -337,295 +355,298 @@ for details.
 .Ss GtkCalendar
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :select_date Fa yyyy Ns Ic - Ns Fa mm Ns Ic - Ns Fa dd
+.Qq Ar name Ns Cm :select_date Ar yyyy Ns Cm - Ns Ar mm Ns Cm - Ns Ar dd
 selects the date on the calendar.
 .Pp
-.Qq Fa name Ns Ic :mark_day Fa day
+.Qq Ar name Ns Cm :mark_day Ar day
 marks
-.Fa day Pq 1-31
+.Ar day Pq 1-31
 on the calendar.
 .Pp
-.Qq Fa name Ns Ic :clear_marks
+.Qq Ar name Ns Cm :clear_marks
 unmarks all days on the calendar.
 .It Feedback
-.Qq Fa name Ns Ic \&:clicked Fa yyyy Ns Ic - Ns Fa mm Ns Ic - Ns Fa dd
+.Qq Ar name Ns Cm \&:clicked Ar yyyy Ns Cm - Ns Ar mm Ns Cm - Ns Ar dd
 .Pp
-.Qq Fa name Ns Ic \&:doubleclicked Fa yyyy Ns Ic - Ns Fa mm Ns Ic - Ns Fa dd
+.Qq Ar name Ns Cm \&:doubleclicked Ar yyyy Ns Cm - Ns Ar mm Ns Cm - Ns Ar dd
 .El
 .Ss GtkCheckButton
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_active Brq Ic 0 | 1
+.Qq Ar name Ns Cm :set_active Brq Cm 0 | 1
 switches the check mark off
-.Pq Ic 0
+.Pq Cm 0
 or on
-.Pq Ic 1 .
+.Pq Cm 1 .
 .Pp
-.Qq Fa name Ns Ic :set_label Fa string
+.Qq Ar name Ns Cm :set_label Ar string
 replaces the button text with
-.Fa string .
+.Ar string .
 .It Feedback
-.Qq Fa name Ns Ic \&:1
+.Qq Ar name Ns Cm \&:1
 if switched on, or
-.Qq Fa name Ns Ic \&:0
+.Qq Ar name Ns Cm \&:0
 otherwise.
 .El
 .Ss GtkColorButton
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_color Fa color
+.Qq Ar name Ns Cm :set_color Ar color
 preselects the color.
-.Fa color
+.Ar color
 can be
 .Bl -dash -offset indent -compact
 .It
 a standard X11 color name, like
-.Qq Li Dark Sea Green ,
+.Ql Dark Sea Green ,
 .It
 a hexadecimal value in the form
-.Ic # Ns Fa rgb , Ic # Ns Fa rrggbb , Ic # Ns Fa rrrgggbbb ,
+.Cm # Ns Ar rgb , Cm # Ns Ar rrggbb , Cm # Ns Ar rrrgggbbb ,
 or
-.Ic # Ns Fa rrrrggggbbbb ,
+.Cm # Ns Ar rrrrggggbbbb ,
 .It
 an RGB color in the form
-.Ic rgb( Ns Fa red Ns Ic \&, Ns Fa green Ns Ic \&, Ns Fa blue Ns Ic \&) ,
+.Cm rgb( Ns Ar red Ns Cm \&, Ns Ar green Ns Cm \&, Ns Ar blue Ns Cm \&) ,
 or
 .It
 an RGBA color in the form
-.Ic rgba( Ns Fa red Ns Ic \&, Ns Fa green Ns Ic \&, Ns
-.Fa blue Ns Ic \&, Ns Fa alpha Ns Ic \&) .
+.Cm rgba( Ns Ar red Ns Cm \&, Ns Ar green Ns Cm \&, Ns
+.Ar blue Ns Cm \&, Ns Ar alpha Ns Cm \&) .
 .El
 .It Feedback
-.Qq Fa name Ns Ic \&:color Ic rgb( Ns Fa red Ns Ic \&, Ns Fa green Ns Ic \&, Ns Fa blue Ns Ic \&)
+.Qq Ar name Ns Cm \&:color Cm rgb( Ns Ar red Ns Cm \&, Ns Ar green Ns Cm \&, Ns Ar blue Ns Cm \&)
 or
-.Qq Fa name Ns Ic \&:color Ic rgba( Ns Fa red Ns Ic \&, Ns Fa green Ns Ic \&, Ns Fa blue Ns Ic \&, Ns Fa alpha Ns Ic \&) .
-.Fa red , green ,
+.Qq Ar name Ns Cm \&:color Cm rgba( Ns Ar red Ns Cm \&, Ns Ar green Ns Cm \&, Ns Ar blue Ns Cm \&, Ns Ar alpha Ns Cm \&) .
+.Ar red , green ,
 and
-.Fa blue
+.Ar blue
 lie between 0 and 255, and
-.Fa alpha
+.Ar alpha
 between 0 and 1.
 .El
 .Ss GtkComboBoxText
 The
-.Ic GtkComboBoxText
+.Cm GtkComboBoxText
 should contain a
-.Ic GtkEntry .
+.Cm GtkEntry .
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :prepend_text Fa string
+.Qq Ar name Ns Cm :prepend_text Ar string
 and
-.Qq Fa name Ns Ic :append_text Fa string
+.Qq Ar name Ns Cm :append_text Ar string
 prepend/append a new selectable item marked
-.Fa string .
+.Ar string .
 .Pp
-.Qq Fa name Ns Ic :insert_text Fa position string
+.Qq Ar name Ns Cm :insert_text Ar position string
 inserts item
-.Fa string
+.Ar string
 at
-.Fa position .
+.Ar position .
 .Pp
-.Qq Fa name Ns Ic :remove Fa position
+.Qq Ar name Ns Cm :remove Ar position
 removes the item at
-.Fa position .
+.Ar position .
 .It Feedback
-.Qq Fa entry_name Ns Ic \&:text Fa text ,
-.Fa entry_name
+.Qq Ar entry_name Ns Cm \&:text Ar text ,
+.Ar entry_name
 being the name of the child
-.Ic GtkEntry .
+.Cm GtkEntry .
 .El
 .Ss GtkDialog
 A
-.Ic GtkDialog
+.Cm GtkDialog
 that is named
-.Fa foo
+.Ar foo
 will be invoked by a
 .Sx GtkMenuItem
 or a
 .Sx GtkImageMenuItem
 that is named
-.Fa foo Ns Ic _invoke .
+.Ar foo Ns Cm _invoke .
 .Pp
 The
-.Ic GtkDialog
+.Cm GtkDialog
 should have a
 .Sq Cancel
 .Sx GtkButton
 named
-.Fa foo Ns Ic _cancel
-.Po Ic main_cancel
+.Ar foo Ns Cm _cancel
+.Po Cm main_cancel
 if the dialog is the sole window of the GUI and therefore named
-.Ic main
+.Cm main
 .Pc .
 .Pp
 If the
-.Ic GtkDialog
+.Cm GtkDialog
 has an
 .Sq Ok
 .Sx GtkButton
 named
-.Fa foo Ns Ic _ok ,
+.Ar foo Ns Cm _ok ,
 it will take care of hiding the dialog window.
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_title Fa string
+.Qq Ar name Ns Cm :set_title Ar string
 replaces the text in the title bar with
-.Fa string .
+.Ar string .
 .Pp
-.Qq Fa name Ns Ic :resize Bq Fa width height
+.Qq Ar name Ns Cm :resize Bq Ar width height
 changes the size of the dialog window to
-.Fa width
+.Ar width
 x
-.Fa height
+.Ar height
 pixels if specified, or to the default size.
 .Pp
-.Qq Fa name Ns Ic :move Fa x y
+.Qq Ar name Ns Cm :move Ar x y
 moves the dialog window to position
-.Fa x , y .
+.Ar x , y .
 .Pp
-.Qq Fa name Ns Ic :fullscreen
+.Qq Ar name Ns Cm :fullscreen
 and
-.Qq Fa name Ns Ic :unfullscreen
+.Qq Ar name Ns Cm :unfullscreen
 switch fullscreen mode on and off.
 .It Feedback
 none
 .El
 .Ss GtkDrawingArea
 Most drawing commands expect an
-.Fa id
-parameter (an arbitrary non-negative integer) which can be used to reference the
-command for later removal.
+.Ar id
+parameter (an arbitrary non-negative integer) which can be used to
+reference the command for later removal.
 .Pp
 All coordinates refer to a left-handed coordinate system with its
 origin in the upper-left corner.
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :arc Fa id x y radius angle1 angle2
-adds a circular arc to the current path.  The arc is centered at
-.Pq Fa x , y
+.Qq Ar name Ns Cm :arc Ar id x y radius angle1 angle2
+adds a circular arc to the current path.
+The arc is centered at
+.Pq Ar x , y
 and proceeds clockwise from
-.Fa angle1
+.Ar angle1
 to
-.Fa angle2
+.Ar angle2
 .Po
 in degrees
 .Pc .
 .Pp
-.Qq Fa name Ns Ic :arc_negative Fa id x y radius angle1 angle2
-adds a circular arc to the current path.  The arc is centered at
-.Pq Fa x , y
+.Qq Ar name Ns Cm :arc_negative Ar id x y radius angle1 angle2
+adds a circular arc to the current path.
+The arc is centered at
+.Pq Ar x , y
 and proceeds counterclockwise from
-.Fa angle1
+.Ar angle1
 to
-.Fa angle2
+.Ar angle2
 .Po
 in degrees
 .Pc .
 .Pp
-.Qq Fa name Ns Ic :close_path Fa id
+.Qq Ar name Ns Cm :close_path Ar id
 adds a line segment from the current point to the point most recently
 passed to
-.Fa name Ns Ic :move_to
+.Ar name Ns Cm :move_to
 or
-.Fa name Ns Ic :rel_move_to .
+.Ar name Ns Cm :rel_move_to .
 .Pp
-.Qq Fa name Ns Ic :curve_to Fa id x1 y1 x2 y2 x3 y3
+.Qq Ar name Ns Cm :curve_to Ar id x1 y1 x2 y2 x3 y3
 adds a cubic Bezier spline from the current point to
-.Pq Fa x3 , y3 ,
+.Pq Ar x3 , y3 ,
 using
-.Pq Fa x1 , y1
+.Pq Ar x1 , y1
 and
-.Pq Fa x2 , y2
+.Pq Ar x2 , y2
 as control points.
 .Pp
-.Qq Fa name Ns Ic :fill Fa id
+.Qq Ar name Ns Cm :fill Ar id
 fills the current path and clears it.
 .Pp
-.Qq Fa name Ns Ic :fill_preserve Fa id
+.Qq Ar name Ns Cm :fill_preserve Ar id
 fills the current path without clearing it.
 .Pp
-.Qq Fa name Ns Ic :line_to Fa id x y
+.Qq Ar name Ns Cm :line_to Ar id x y
 adds a line from the current point to
-.Pq Fa x , y .
+.Pq Ar x , y .
 .Pp
-.Qq Fa name Ns Ic :move_to Fa id x y
+.Qq Ar name Ns Cm :move_to Ar id x y
 sets the current point to
-.Pq Fa x , y .
+.Pq Ar x , y .
 .Pp
-.Qq Fa name Ns Ic :rectangle Fa id x y width height
-adds a rectangle to the current path.  The top left corner is at
-.Pq Fa x , y .
+.Qq Ar name Ns Cm :rectangle Ar id x y width height
+adds a rectangle to the current path.
+The top left corner is at
+.Pq Ar x , y .
 .Pp
-.Qq Fa name Ns Ic :refresh
+.Qq Ar name Ns Cm :refresh
 redraws the
-.Ic GtkDrawingArea
-.Fa name .
+.Cm GtkDrawingArea
+.Ar name .
 .Pp
-.Qq Fa name Ns Ic :rel_curve_to Fa id dx1 dy1 dx2 dy2 dx3 dy3
+.Qq Ar name Ns Cm :rel_curve_to Ar id dx1 dy1 dx2 dy2 dx3 dy3
 adds a cubic Bezier spline from the current point to
-.Pq Fa dx3 , dy3 ,
+.Pq Ar dx3 , dy3 ,
 using
-.Pq Fa dx1 , dy1
+.Pq Ar dx1 , dy1
 and
-.Pq Fa dx2 , dy2
-as control points.  All coordinates are offsets relative to the
-current point.
+.Pq Ar dx2 , dy2
+as control points.
+All coordinates are offsets relative to the current point.
 .Pp
-.Qq Fa name Ns Ic :rel_line_to Fa id dx dy
+.Qq Ar name Ns Cm :rel_line_to Ar id dx dy
 adds a line from the current point to a point offset from there by
-.Pq Fa dx , dy .
+.Pq Ar dx , dy .
 .Pp
-.Qq Fa name Ns Ic :rel_move_to Fa id dx dy
+.Qq Ar name Ns Cm :rel_move_to Ar id dx dy
 moves the current point by
-.Pq Fa dx , dy .
+.Pq Ar dx , dy .
 .Pp
-.Qq Fa name Ns Ic :remove Fa id
+.Qq Ar name Ns Cm :remove Ar id
 removes the elements with
-.Fa id
+.Ar id
 from the
-.Ic GtkDrawingArea Fa name .
+.Cm GtkDrawingArea Ar name .
 .Pp
-.Qq Fa name Ns Ic :set_dash Fa id l
+.Qq Ar name Ns Cm :set_dash Ar id l
 sets the dash pattern to
-.Fa l
+.Ar l
 on,
-.Fa l
+.Ar l
 off.
 .Pp
-.Qq Fa name Ns Ic :set_dash Fa id l1on l1off l2on l2off ...
+.Qq Ar name Ns Cm :set_dash Ar id l1on l1off l2on l2off ...
 resets the dash pattern to a line with arbitrary on/off portions.
 .Pp
-.Qq Fa name Ns Ic :set_dash Fa id
+.Qq Ar name Ns Cm :set_dash Ar id
 resets the dash pattern to a solid line.
 .Pp
-.Qq Fa name Ns Ic :set_font_size Fa id size
+.Qq Ar name Ns Cm :set_font_size Ar id size
 sets the font size for subsequent calls of
-.Fa name Ns Ic :show_text .
+.Ar name Ns Cm :show_text .
 .Pp
-.Qq Fa name Ns Ic :set_line_cap Fa id Brq Ic butt | round | square
+.Qq Ar name Ns Cm :set_line_cap Ar id Brq Cm butt | round | square
 sets the line cap style.
 .Pp
-.Qq Fa name Ns Ic :set_line_join Fa id Brq Ic miter | round | bevel
+.Qq Ar name Ns Cm :set_line_join Ar id Brq Cm miter | round | bevel
 sets the line junction style.
 .Pp
-.Qq Fa name Ns Ic :set_line_width Fa id width
+.Qq Ar name Ns Cm :set_line_width Ar id width
 sets the line width.
 .Pp
-.Qq Fa name Ns Ic :set_source_rgba Fa id color
+.Qq Ar name Ns Cm :set_source_rgba Ar id color
 sets the color.
-.Fa color
+.Ar color
 is in the format used with
 .Sx GtkColorButton .
 .Pp
-.Qq Fa name Ns Ic :show_text Fa id text
+.Qq Ar name Ns Cm :show_text Ar id text
 writes
-.Fa text ,
+.Ar text ,
 beginning at the current point.
 .Pp
-.Qq Fa name Ns Ic :stroke Fa id
+.Qq Ar name Ns Cm :stroke Ar id
 strokes the current path and clears it.
 .Pp
-.Qq Fa name Ns Ic :stroke_preserve Fa id
+.Qq Ar name Ns Cm :stroke_preserve Ar id
 strokes the current path without clearing it.
 .It Feedback
 none
@@ -633,192 +654,196 @@ none
 .Ss GtkEntry
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_text Fa string
+.Qq Ar name Ns Cm :set_text Ar string
 replaces the user-editable text with
-.Fa string .
+.Ar string .
 .Pp
-.Qq Fa name Ns Ic :set_placeholder_text Fa string
+.Qq Ar name Ns Cm :set_placeholder_text Ar string
 sets the
-.Fa string
+.Ar string
 that is displayed when the entry is empty and unfocused.
 .It Feedback
-.Qq Fa name Ns Ic \&:text Fa text ,
+.Qq Ar name Ns Cm \&:text Ar text ,
 once for each change of
-.Fa text .
+.Ar text .
 .El
 .Ss GtkEventBox
-.Fa x , y
+.Ar x , y
 are mouse pointer coordinates relative to the
-.Ic GtkEventBox .
+.Cm GtkEventBox .
 .Bl -tag -width "commands "
 .It Commands
 none
 .It Feedback
-.Qq Fa name Ns Ic \&:button_press Fa b x y ,
-.Qq Fa name Ns Ic \&:button_release Fa b x y
+.Qq Ar name Ns Cm \&:button_press Ar b x y ,
+.Qq Ar name Ns Cm \&:button_release Ar b x y
 where
-.Fa b
+.Ar b
 is the mouse button (normally 1, 2, or 3 for the left, middle, and
 right button; others may exist).
 .Pp
-.Qq Fa name Ns Ic \&:motion Fa x y
+.Qq Ar name Ns Cm \&:motion Ar x y
 is reported repeatedly while the mouse is being moved with a button
 pressed.
 .Pp
-.Qq Fa name Ns Ic \&:key_press Fa key ,
-.Fa key
+.Qq Ar name Ns Cm \&:key_press Ar key ,
+.Ar key
 being the key's name
-.Pq e.g. Li Control_L , Tab , a .
+.Po e.g.
+.Ql Control_L ,
+.Ql Tab ,
+.Ql a
+.Pc .
 .El
 .Ss GtkExpander
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_label Fa string
+.Qq Ar name Ns Cm :set_label Ar string
 replaces the expander label text with
-.Fa string .
+.Ar string .
 .Pp
-.Qq Fa name Ns Ic :set_expanded Brq Ic 0 |  1
+.Qq Ar name Ns Cm :set_expanded Brq Cm 0 |  1
 hides
-.Pq Ic 0
+.Pq Cm 0
 the child widget, or makes it visible
-.Pq Ic 1 .
+.Pq Cm 1 .
 .It Feedback
 none
 .El
 .Ss GtkFileChooserButton
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_filename Fa path
+.Qq Ar name Ns Cm :set_filename Ar path
 preselects
-.Fa path
+.Ar path
 to the extent it exists.
 .It Feedback
-.Qq Fa name Ns Ic \&:file Fa pathname
+.Qq Ar name Ns Cm \&:file Ar pathname
 if the selection has changed.
 .El
 .Ss GtkFileChooserDialog
 A
-.Ic GtkFileChooserDialog
+.Cm GtkFileChooserDialog
 that is named
-.Fa foo
+.Ar foo
 will be invoked by a
 .Sx GtkMenuItem
 or a
 .Sx GtkImageMenuItem
 that is named
-.Fa foo Ns Ic _invoke .
+.Ar foo Ns Cm _invoke .
 .Pp
 The
-.Ic GtkFileChooserDialog
+.Cm GtkFileChooserDialog
 should have an
 .Sq OK
 .Sx GtkButton
 named
-.Fa foo Ns Ic _ok
-.Po Ic main_ok
+.Ar foo Ns Cm _ok
+.Po Cm main_ok
 if the dialog is the sole window of the GUI and therefore named
-.Ic main
+.Cm main
 .Pc .
 .Pp
 The
-.Ic GtkFileChooserDialog
+.Cm GtkFileChooserDialog
 may have a
 .Sq Cancel
 .Sx GtkButton
 named
-.Fa foo Ns Ic _cancel
-.Po Ic main_cancel
+.Ar foo Ns Cm _cancel
+.Po Cm main_cancel
 if the dialog is the sole window of the GUI and therefore named
-.Ic main
+.Cm main
 .Pc .
 .Pp
 The
-.Ic GtkFileChooserDialog
+.Cm GtkFileChooserDialog
 may have an
 .Sq Apply
 .Sx GtkButton
 named
-.Fa foo Ns Ic _apply
-.Po Ic main_apply
+.Ar foo Ns Cm _apply
+.Po Cm main_apply
 if the dialog is the sole window of the GUI and therefore named
-.Ic main
+.Cm main
 .Pc .
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_filename Fa path
+.Qq Ar name Ns Cm :set_filename Ar path
 preselects
-.Fa path
+.Ar path
 to the extent it exists.
 .Pp
-.Qq Fa name Ns Ic :set_current_name Fa string
+.Qq Ar name Ns Cm :set_current_name Ar string
 makes
-.Fa string
+.Ar string
 the suggested filename, which may not yet exist.
-.Fa string
+.Ar string
 should either resemble an absolute path, or the
-.Fa directory
+.Ar directory
 must be set separately by
-.Fa name Ns Ic :set_filename Fa directory .
+.Ar name Ns Cm :set_filename Ar directory .
 .Pp
-.Qq Fa name Ns Ic :set_title Fa string
+.Qq Ar name Ns Cm :set_title Ar string
 replaces the text in the title bar with
-.Fa string .
+.Ar string .
 .Pp
-.Qq Fa name Ns Ic :resize Bq Fa width height
+.Qq Ar name Ns Cm :resize Bq Ar width height
 changes the size of the dialog window to
-.Fa width
+.Ar width
 x
-.Fa height
+.Ar height
 pixels if specified, or to the default size.
 .Pp
-.Qq Fa name Ns Ic :move Fa x y
+.Qq Ar name Ns Cm :move Ar x y
 moves the dialog window to position
-.Fa x , y .
+.Ar x , y .
 .Pp
-.Qq Fa name Ns Ic :fullscreen
+.Qq Ar name Ns Cm :fullscreen
 and
-.Qq Fa name Ns Ic :unfullscreen
+.Qq Ar name Ns Cm :unfullscreen
 switch fullscreen mode on and off.
 .It Feedback
-.Qq Fa name Ns Ic :file Fa  pathname
+.Qq Ar name Ns Cm :file Ar pathname
 and/or
-.Qq Fa name Ns Ic :folder Fa  pathname
+.Qq Ar name Ns Cm :folder Ar pathname
 .El
 .Ss GtkFontButton
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_font_name Fa fontname
+.Qq Ar name Ns Cm :set_font_name Ar fontname
 preselects the font.
 .It Feedback
-.Qq Fa name Ns Ic \&:font Fa fontname
+.Qq Ar name Ns Cm \&:font Ar fontname
 .El
 .Ss GtkFrame
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_label Fa text
+.Qq Ar name Ns Cm :set_label Ar text
 replaces the frame label text with
-.Fa string .
+.Ar string .
 .It Feedback
 none
 .El
 .Ss GtkImage
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_from_icon_name Fa icon-name
+.Qq Ar name Ns Cm :set_from_icon_name Ar icon-name
 replaces the image with one of the standard icons.
 .Pp
-.Qq Fa name Ns Ic :set_from_file Fa path
+.Qq Ar name Ns Cm :set_from_file Ar path
 replaces the image by the one found at
-.Fa path Ns .
+.Ar path Ns .
 .It Feedback
 none
 .El
 .Ss GtkLabel
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_text Fa string
+.Qq Ar name Ns Cm :set_text Ar string
 replaces the label text with
-.Fa string .
+.Ar string .
 .It Feedback
 none
 .El
@@ -828,39 +853,41 @@ none
 none
 .It Feedback
 A
-.Ic GtkMenuItem
+.Cm GtkMenuItem
 or
-.Ic GtkImageMenuItem
+.Cm GtkImageMenuItem
 with the name
-.Fa foo Ns Ic _invoke
+.Ar foo Ns Cm _invoke
 will invoke the
 .Sx GtkDialog
 or
 .Sx GtkFileChooserDialog
 named
-.Fa foo
-if it exists.  If there isn't any dialog attached to the
-.Ic GtkMenuItem ,
+.Ar foo
+if it exists.
+If there isn't any dialog attached to the
+.Cm GtkMenuItem ,
 it reports
-.Qq Fa name Ns Ic \&:active Fa label .
+.Qq Ar name Ns Cm \&:active Ar label .
 .El
 .Ss GtkNotebook
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_current_page Fa n
+.Qq Ar name Ns Cm :set_current_page Ar n
 switches to zero-based page number
-.Fa n .
+.Ar n .
 .It Feedback
 none
 .El
 .Ss GtkPrintUnixDialog
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :print Fa file.ps
-opens the print dialog.  Pressing the
+.Qq Ar name Ns Cm :print Ar file.ps
+opens the print dialog.
+Pressing the
 .Qq Print
 button sends
-.Fa file.ps
+.Ar file.ps
 to the printer the user selected in the dialog.
 .It Feedback
 none
@@ -868,14 +895,14 @@ none
 .Ss GtkProgressBar
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_fraction Fa x
+.Qq Ar name Ns Cm :set_fraction Ar x
 moves the progress bar to
-.Fa x
+.Ar x
 .Pq between 0 and 1 .
 .Pp
-.Qq Fa name Ns Ic :set_text Bq Fa string
+.Qq Ar name Ns Cm :set_text Bq Ar string
 replaces the text of the progress bar with
-.Fa string .
+.Ar string .
 Default is the progress percentage.
 .It Feedback
 none
@@ -883,137 +910,139 @@ none
 .Ss GtkRadioButton
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_active 1
-switches the button on.  All other buttons of the same group will go off
-automatically.
+.Qq Ar name Ns Cm :set_active 1
+switches the button on.
+All other buttons of the same group will go off automatically.
 .Pp
-.Qq Fa name Ns Ic :set_label Fa string
+.Qq Ar name Ns Cm :set_label Ar string
 replaces the button text with
-.Fa string .
+.Ar string .
 .It Feedback
-.Qq Fa name Ns Ic \&:1
+.Qq Ar name Ns Cm \&:1
 if switched on, or
-.Qq Fa name Ns Ic \&:0
+.Qq Ar name Ns Cm \&:0
 otherwise.
 .El
 .Ss GtkScale
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_value Fa x
+.Qq Ar name Ns Cm :set_value Ar x
 moves the slider to value
-.Fa x .
+.Ar x .
 .It Feedback
-.Qq Fa name Ns Ic \&:value Fa floating_point_text
+.Qq Ar name Ns Cm \&:value Ar floating_point_text
 .El
 .Ss GtkScrolledWindow
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :hscroll Fa position
+.Qq Ar name Ns Cm :hscroll Ar position
 and
-.Qq Fa name Ns Ic :vscroll Fa position
+.Qq Ar name Ns Cm :vscroll Ar position
 scroll
-.Fa position
+.Ar position
 to the left or top edge of the
-.Ic GtkScrolledWindow ,
+.Cm GtkScrolledWindow ,
 respectively.
 .Pp
-.Qq Fa name Ns Ic :hscroll_to_range Fa pos_0 pos_1
+.Qq Ar name Ns Cm :hscroll_to_range Ar pos_0 pos_1
 and
-.Qq Fa name Ns Ic :vscroll_to_range Fa pos_0 pos_1
+.Qq Ar name Ns Cm :vscroll_to_range Ar pos_0 pos_1
 scroll, if necessary, the range between
-.Fa pos_0
+.Ar pos_0
 and
-.Fa pos_1
+.Ar pos_1
 into the
-.Ic GtkScrolledWindow .
+.Cm GtkScrolledWindow .
 If the range is greater than the window, the initial part of the range
 will be visible.
 .It Feedback
 none
 .El
 .Ss GtkSocket
-.Ic GtkSocket
+.Cm GtkSocket
 may be unsupported by Glade, but its definition can be inserted
-manually into the GtkBuilder (.ui) file:
-.Bf -literal
- \ \ <child>
- \ \ \ \ <object class="GtkSocket" id="socket1">
- \ \ \ \ \ \ <property name="visible">True</property>
- \ \ \ \ \ \ <property name="can_focus">True</property>
- \ \ \ \ </object>
- \ \ \ \ <packing>
- \ \ \ \ \ \ <property name="expand">True</property>
- \ \ \ \ \ \ <property name="fill">True</property>
- \ \ \ \ \ \ <property name="position">1</property>
- \ \ \ \ </packing>
- \ \ </child>
-.Ef
+manually into the GtkBuilder
+.Pq Pa .ui
+file:
+.Bd -literal -offset indent
+<child>
+  <object class="GtkSocket" id="socket1">
+    <property name="visible">True</property>
+    <property name="can_focus">True</property>
+  </object>
+  <packing>
+    <property name="expand">True</property>
+    <property name="fill">True</property>
+    <property name="position">1</property>
+  </packing>
+</child>
+.Ed
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :id
+.Qq Ar name Ns Cm :id
 requests a feedback message containing the socket
-.Fa xid .
+.Ar xid .
 .It Feedback
-.Qq Fa name Ns Ic :id Fa xid
+.Qq Ar name Ns Cm :id Ar xid
 can be used by another process to XEmbed its widgets into the
-.Ic GtkSocket .
+.Cm GtkSocket .
 .Pp
-.Qq Fa name Ns Ic :plug-added ,
+.Qq Ar name Ns Cm :plug-added ,
 .Qo
-.Fa name Ns
-.Ic :plug-removed
+.Ar name Ns
+.Cm :plug-removed
 .Qc .
 Notification that the other process has inserted its widgets into or
 removed them from the
-.Ic GtkSocket .
+.Cm GtkSocket .
 .El
 .Ss GtkSpinButton
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_text Fa string
+.Qq Ar name Ns Cm :set_text Ar string
 sets the selected value to
-.Fa string .
+.Ar string .
 .It Feedback
-.Qq Fa name Ns Ic \&:text Fa text
+.Qq Ar name Ns Cm \&:text Ar text
 .El
 .Ss GtkSpinner
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :start
+.Qq Ar name Ns Cm :start
 and
-.Qq Fa name Ns Ic :stop
+.Qq Ar name Ns Cm :stop
 start and stop the spinner.
 .It Feedback
 none
 .El
 .Ss GtkStatusbar
 The context
-.Fa id
+.Ar id
 parameter is an arbitrary non-whitespace string.
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :push_id Fa id string ,
-.Qq Fa name Ns Ic :push Fa string
+.Qq Ar name Ns Cm :push_id Ar id string ,
+.Qq Ar name Ns Cm :push Ar string
 associate
-.Fa string
+.Ar string
 with context id
-.Fa id
+.Ar id
 or
 .Qq 0 ,
 respectively, and display it in the statusbar.
 .Pp
-.Qq Fa name Ns Ic :pop_id Fa id ,
-.Qq Fa name Ns Ic :pop
+.Qq Ar name Ns Cm :pop_id Ar id ,
+.Qq Ar name Ns Cm :pop
 remove the latest entry associated with context id
-.Fa id
+.Ar id
 or
 .Qq 0 ,
 respectively, from the statusbar.
 .Pp
-.Qq Fa name Ns Ic :remove_all_id Fa id ,
-.Qq Fa name Ns Ic :remove_all
+.Qq Ar name Ns Cm :remove_all_id Ar id ,
+.Qq Ar name Ns Cm :remove_all
 remove the entries associated with context id
-.Fa id
+.Ar id
 or
 .Qq 0 ,
 respectively, from the statusbar.
@@ -1023,15 +1052,15 @@ none
 .Ss GtkSwitch
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_active Brq Ic 0 | 1
+.Qq Ar name Ns Cm :set_active Brq Cm 0 | 1
 turns the switch off
-.Pq Ic 0
+.Pq Cm 0
 or on
-.Pq Ic 1 .
+.Pq Cm 1 .
 .It Feedback
-.Qq Fa name Ns Ic \&:1
+.Qq Ar name Ns Cm \&:1
 if switched on, or
-.Qq Fa name Ns Ic \&:0
+.Qq Ar name Ns Cm \&:0
 otherwise.
 .El
 .Ss GtkTextView
@@ -1039,176 +1068,176 @@ There should be a dedicated
 .Sx GtkButton
 for sending (parts of) the text.
 If the name of the
-.Ic GtkTextView
+.Cm GtkTextView
 is
-.Fa foo ,
+.Ar foo ,
 a
 .Sx GtkButton
 named
-.Fa foo Ns Ic _send_text
+.Ar foo Ns Cm _send_text
 will send the content of the
-.Ic GtkTextView ;
+.Cm GtkTextView ;
 a
 .Sx GtkButton
 named
-.Fa foo Ns Ic _send_selection
+.Ar foo Ns Cm _send_selection
 will send the highlighted part the
-.Ic GtkTextView .
+.Cm GtkTextView .
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_text Fa string
+.Qq Ar name Ns Cm :set_text Ar string
 replaces the user-editable text with (potentially empty)
-.Fa string Ns .
+.Ar string Ns .
 .Pp
-.Qq Fa name Ns Ic :delete
+.Qq Ar name Ns Cm :delete
 deletes the text.
 .Pp
-.Qq Fa name Ns Ic :insert_at_cursor Fa string
+.Qq Ar name Ns Cm :insert_at_cursor Ar string
 inserts
-.Fa string
+.Ar string
 at cursor position.
 .Pp
-.Qq Fa name Ns Ic :place_cursor Brq Fa position | Ic end
+.Qq Ar name Ns Cm :place_cursor Brq Ar position | Cm end
 places the text cursor at
-.Fa position
+.Ar position
 or at the end of the text.
 .Pp
-.Qq Fa name Ns Ic :place_cursor_at_line Fa line
+.Qq Ar name Ns Cm :place_cursor_at_line Ar line
 places the text cursor at the beginning of
-.Fa line .
+.Ar line .
 .Pp
-.Qq Fa name Ns Ic :scroll_to_cursor
+.Qq Ar name Ns Cm :scroll_to_cursor
 scrolls to the cursor position if necessary.
 .Pp
-.Qq Fa name Ns Ic :save Fa file
+.Qq Ar name Ns Cm :save Ar file
 stores in
-.Fa file
+.Ar file
 a
 .Nm
 command containing the text.
 .It Feedback
-.Qq Fa button_name Ns Ic :text Fa text ,
-.Fa button_name
+.Qq Ar button_name Ns Cm :text Ar text ,
+.Ar button_name
 being the name of the
 .Sx GtkButton .
 Line endings in
-.Fa text
+.Ar text
 are replaced by
-.Ic \en ,
+.Cm \en ,
 and backslashes are replaced by
-.Ic \e\e .
+.Cm \e\e .
 .El
 .Ss GtkToggleButton
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_active Brq Ic 0 | 1
+.Qq Ar name Ns Cm :set_active Brq Cm 0 | 1
 switches the button off
-.Pq Ic 0
+.Pq Cm 0
 or on
-.Pq Ic 1 .
+.Pq Cm 1 .
 .Pp
-.Qq Fa name Ns Ic :set_label Fa string
+.Qq Ar name Ns Cm :set_label Ar string
 replaces the button text with
-.Fa string .
+.Ar string .
 .It Feedback
-.Qq Fa name Ns Ic \&:1
+.Qq Ar name Ns Cm \&:1
 if switched on, or
-.Qq Fa name Ns Ic \&:0
+.Qq Ar name Ns Cm \&:0
 otherwise.
 .El
 .Ss GtkTreeView
 .Nm
 can deal with columns of type
-.Ic gboolean , gint , guint , glong , gulong , gint64 , guint64 , gfloat , gdouble ,
+.Cm gboolean , gint , guint , glong , gulong , gint64 , guint64 , gfloat , gdouble ,
 and
-.Ic gchararray .
+.Cm gchararray .
 .Pp
-.Fa row
+.Ar row
 and
-.Fa column
+.Ar column
 refer to the underlying model
-.Ic ( GtkListStore
+.Cm ( GtkListStore
 or
-.Ic GtkTreeStore ) .
-.Fa row
+.Cm GtkTreeStore ) .
+.Ar row
 is a sequence of one or more colon-separated integers, e.g.
 .Qq 3
 or
 .Qq 0:0:1 .
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set Fa row column data
+.Qq Ar name Ns Cm :set Ar row column data
 replaces the content at
-.Pq Fa row , column
+.Pq Ar row , column
 with
-.Fa data
+.Ar data
 (which should be compatible with the type of
-.Fa column ) .
+.Ar column ) .
 If necessary, new tree nodes are created to obtain the minimal tree
 structure needed to support
-.Fa row .
+.Ar row .
 .Pp
-.Qq Fa name Ns Ic :insert_row Brq Fa row Bo Ic as_child Bc | Ic end
+.Qq Ar name Ns Cm :insert_row Brq Ar row Bo Cm as_child Bc | Cm end
 inserts a new, empty row; either as a sibling of
-.Fa row
+.Ar row
 at position
-.Fa row ,
+.Ar row ,
 or as a child of
-.Fa row ,
+.Ar row ,
 or at the end of the list, respectively.
 .Pp
-.Qq Fa name Ns Ic :move_row Fa origin Brq Fa destination | Ic end
+.Qq Ar name Ns Cm :move_row Ar origin Brq Ar destination | Cm end
 moves the row at
-.Fa origin
+.Ar origin
 within its current level to
-.Fa destination
+.Ar destination
 or to the end.
 .Pp
-.Qq Fa name Ns Ic :remove_row Fa row
+.Qq Ar name Ns Cm :remove_row Ar row
 removes the row at position
-.Fa row .
+.Ar row .
 .Pp
-.Qq Fa name Ns Ic :clear
+.Qq Ar name Ns Cm :clear
 removes all rows.
 .Pp
-.Qq Fa name Ns Ic :expand Fa row
+.Qq Ar name Ns Cm :expand Ar row
 expands one level of the subtree below
-.Fa row .
+.Ar row .
 .Pp
-.Qq Fa name Ns Ic :expand_all Bq Fa row
+.Qq Ar name Ns Cm :expand_all Bq Ar row
 expands the subtree below
-.Fa row ,
+.Ar row ,
 or the whole tree.
 .Pp
-.Qq Fa name Ns Ic :collapse Bq Fa row
+.Qq Ar name Ns Cm :collapse Bq Ar row
 collapses the subtree below
-.Fa row ,
+.Ar row ,
 or the whole tree.
 .Pp
-.Qq Fa name Ns Ic :set_cursor Bq Fa row
+.Qq Ar name Ns Cm :set_cursor Bq Ar row
 sets the cursor to
-.Fa row ,
+.Ar row ,
 or unsets it.
 .Pp
-.Qq Fa name Ns Ic :scroll Fa row column
+.Qq Ar name Ns Cm :scroll Ar row column
 scrolls the cell at
-.Pq Fa row , column
+.Pq Ar row , column
 into view.
 .Pp
-.Qq Fa name Ns Ic :save Fa file
+.Qq Ar name Ns Cm :save Ar file
 stores the content of the underlying model as a sequence of
 .Nm
 commands into
-.Fa file .
+.Ar file .
 .It Feedback
-.Qq Fa name Ns Ic \&:clicked
+.Qq Ar name Ns Cm \&:clicked
 .Pp
-.Qq Fa name Ns Ic \&: Ns Fa column_type row column value ,
+.Qq Ar name Ns Cm \&: Ns Ar column_type row column value ,
 one message per cell in the underlying model for each selected row; or
 .Pp
-.Qq Fa name Ns Ic \&: Ns Fa column_type row column new_value ,
+.Qq Ar name Ns Cm \&: Ns Ar column_type row column new_value ,
 if the cell at
-.Pq Fa row , column
+.Pq Ar row , column
 has been edited.
 .El
 .Ss GtkTreeViewColumn
@@ -1216,47 +1245,54 @@ has been edited.
 .It Commands
 none
 .It Feedback
-.Qq Fa name Ns Ic \&:clicked
+.Qq Ar name Ns Cm \&:clicked
 .El
 .Ss GtkWindow
 .Bl -tag -width "commands "
 .It Commands
-.Qq Fa name Ns Ic :set_title Fa string
+.Qq Ar name Ns Cm :set_title Ar string
 replaces the text in the title bar with
-.Fa string .
+.Ar string .
 .Pp
-.Qq Fa name Ns Ic :resize Bq Fa width height
+.Qq Ar name Ns Cm :resize Bq Ar width height
 changes the window size to
-.Fa width
+.Ar width
 x
-.Fa height
+.Ar height
 pixels if specified, or to the default size.
 .Pp
-.Qq Fa name Ns Ic :move Fa x y
+.Qq Ar name Ns Cm :move Ar x y
 moves the window to position
-.Fa x , y .
+.Ar x , y .
 .Pp
-.Qq Fa name Ns Ic :fullscreen
+.Qq Ar name Ns Cm :fullscreen
 and
-.Qq Fa name Ns Ic :unfullscreen
+.Qq Ar name Ns Cm :unfullscreen
 switch fullscreen mode on and off.
 .It Feedback
 none
 .El
+.Sh EXIT STATUS
+.Ex -std
 .Sh EXAMPLES
 .Ss Discovering Pipeglade Interactively
 Suppose the interface in
 .Pa ./pipeglade.ui
 has a
-.Sx GtkLabel Li label1
+.Sx GtkLabel Ql label1
 and a
-.Sx GtkButton Li button1 .
+.Sx GtkButton Ql button1 .
 After invoking
+.Pp
 .Dl pipeglade
+.Pp
 and clicking the
-.Sx GtkButton , Qq button1:clicked
-will be reported on the terminal.  Typing
+.Sx GtkButton , Ql button1:clicked
+will be reported on the terminal.
+Typing
+.Pp
 .Dl label1:set_text Button Label
+.Pp
 will change the text shown on the label into
 .Qq Button Label .
 .Ss One-Shot File Dialog
@@ -1268,9 +1304,11 @@ with an
 .Sq OK
 .Sx GtkButton
 named
-.Li main_ok .
+.Ql main_ok .
 Invoking
+.Pp
 .Dl pipeglade -u simple_open.ui
+.Pp
 will open the dialog; pressing
 .Sq OK
 will close it after sending the selected filename to
@@ -1279,32 +1317,35 @@ will close it after sending the selected filename to
 If the interface in
 .Pa ./simple_dialog.ui
 contains a
-.Sx GtkLabel Li label1 ,
+.Sx GtkLabel Ql label1 ,
 then
-.Dl pipeglade -u simple_dialog.ui <<< \e
-.Dl \ \ \ \ \&"label1:set_text NOW READ THIS!\&"
+.Bd -literal -offset indent
+pipeglade -u simple_dialog.ui <<< \e
+    "label1:set_text NOW READ THIS!"
+.Ed
 will set the label text accordingly and wait for user input.
 .Ss Continuous Input
 The following shell command displays a running clock:
-.Dl while true; do
-.Dl \ \ \ \ echo \&"label1:set_text `date`\&";
-.Dl \ \ \ \ sleep 1;
-.Dl done | pipeglade -u simple_dialog.ui
+.Bd -literal -offset indent
+while true; do
+    echo "label1:set_text `date`";
+    sleep 1;
+done | pipeglade -u simple_dialog.ui
+.Ed
 .Ss Continuous Input and Output
 The following shell script fragment sets up
 .Nm
 for continuous communication with another program,
-.Li main_prog :
-.Dl pipeglade -i in.fifo -o out.fifo &
-.Dl # wait for in.fifo and out.fifo to appear
-.Dl while test \& ! \e( -e in.fifo -a -e out.fifo \e); do :; done
-.Dl main_prog <out.fifo >in.fifo
-.Sh EXIT STATUS
-.Nm
-exits 0 on success, and >0 if an error occurs.
+.Pa main_prog :
+.Bd -literal -offset indent
+pipeglade -i in.fifo -o out.fifo &
+# wait for in.fifo and out.fifo to appear
+while test ! \e( -e in.fifo -a -e out.fifo \e); do :; done
+main_prog <out.fifo >in.fifo
+.Ed
 .Sh SEE ALSO
-.Xr glade 1 ,
 .Xr dialog 1 ,
+.Xr glade 1 ,
 .Xr gxmessage 1 ,
 .Xr kdialog 1 ,
 .Xr whiptail 1 ,
@@ -1313,6 +1354,11 @@ exits 0 on success, and >0 if an error occurs.
 .Sh AUTHOR
 .Nm
 was written by
-.An Bert Burgemeister Aq trebbu@googlemail.com .
+.An Bert Burgemeister
+.Aq Mt trebbu@googlemail.com .
 .Sh BUGS
-Please report them to the author.
+Due to what appears to be a bug in cairo v1.14.0,
+.Nm
+used with this library version occasionally crashes on
+.Cm GtkDrawingArea
+commands.
