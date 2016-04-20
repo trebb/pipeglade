@@ -159,6 +159,7 @@ static void
 send_msg(GtkBuildable *obj, const char *tag, ...)
 {
         va_list ap;
+
         va_start(ap, tag);
         send_msg_to(out, obj, tag, ap);
         va_end(ap);
@@ -173,6 +174,7 @@ static void
 save_msg(GtkBuildable *obj, const char *tag, ...)
 {
         va_list ap;
+
         va_start(ap, tag);
         send_msg_to(save, obj, tag, ap);
         va_end(ap);
@@ -187,6 +189,7 @@ static void
 save_action_set_msg(GtkBuildable *obj, const char *tag, ...)
 {
         va_list ap;
+
         va_start(ap, tag);
         send_msg_to(save, obj, "set", ap);
         va_end(ap);
@@ -232,7 +235,7 @@ cb_send_text_selection(GtkBuildable *obj, gpointer user_data)
 
 /*
  * Callbacks that send messages about pointer device activity in a
- * GtkEventBox.
+ * GtkEventBox
  */
 static bool
 cb_event_box_button(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
@@ -257,7 +260,7 @@ cb_event_box_motion(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
 
 /*
  * Callback that sends in a message the name of the key pressed when
- * a GtkEventBox is focused.
+ * a GtkEventBox is focused
  */
 static bool
 cb_event_box_key(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
@@ -267,7 +270,7 @@ cb_event_box_key(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
 }
 
 /*
- * Use msg_sender() to send a message describing a particular cell.
+ * Use msg_sender() to send a message describing a particular cell
  */
 static void
 send_tree_cell_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
@@ -329,7 +332,7 @@ send_tree_cell_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
 }
 
 /*
- * Use msg_sender() to send one message per column for a single row.
+ * Use msg_sender() to send one message per column for a single row
  */
 static void
 send_tree_row_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
@@ -337,6 +340,7 @@ send_tree_row_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
                      GtkTreeIter *iter, GtkBuildable *obj)
 {
         int col;
+
         for (col = 0; col < gtk_tree_model_get_n_columns(model); col++)
                 send_tree_cell_msg_by(msg_sender, model, path_s, iter, col, obj);
 }
@@ -421,7 +425,7 @@ cb(GtkBuildable *obj, const char *tag)
 }
 
 /*
- * Callback like cb(), but returning true.
+ * Callback like cb(), but returning true
  */
 static bool
 cb_true(GtkBuildable *obj, const char *tag)
@@ -1845,7 +1849,6 @@ main_quit(GObject *obj, const char *action,
         (void) data;
         (void) whole_msg;
         (void) type;
-
         gtk_main_quit();
 }
 
@@ -1856,7 +1859,6 @@ complain(GObject *obj, const char *action,
         (void) obj;
         (void) action;
         (void) data;
-
         ign_cmd(type, whole_msg);
 }
 
@@ -1905,7 +1907,7 @@ remember_loading_file(char *filename)
 /*
  * Parse command pointed to by ud, and act on ui accordingly; post
  * semaphore ud.msg_digested if done.  Runs once per command inside
- * gtk_main_loop()
+ * gtk_main_loop().
  */
 static gboolean
 update_ui_in(struct ui_data *ud)
@@ -1925,7 +1927,7 @@ us_since(clock_t start)
 }
 
 /*
- * Write log file.
+ * Write log file
  */
 static void
 log_msg(char *msg)
@@ -1980,7 +1982,7 @@ digest_msg(FILE *cmd)
                         break;
                 if ((ud.msg = malloc(msg_size)) == NULL)
                         OOM_ABORT;
-                pthread_cleanup_push((void(*)(void *))free_at, &ud.msg);
+                pthread_cleanup_push((void(*)(void *)) free_at, &ud.msg);
                 pthread_testcancel();
                 if (recursion == 0)
                         log_msg(NULL);
@@ -1990,7 +1992,7 @@ digest_msg(FILE *cmd)
                 data_start = strlen(ud.msg);
                 if ((ud.msg_tokens = malloc(strlen(ud.msg) + 1)) == NULL)
                         OOM_ABORT;
-                pthread_cleanup_push((void(*)(void *))free_at, &ud.msg_tokens);
+                pthread_cleanup_push((void(*)(void *)) free_at, &ud.msg_tokens);
                 strcpy(ud.msg_tokens, ud.msg);
                 sscanf(ud.msg, " %c", &first_char);
                 if (strlen(ud.msg) == 0 || first_char == '#') /* comment */
@@ -2090,7 +2092,7 @@ digest_msg(FILE *cmd)
                         ud.fn = complain;
         exec:
                 pthread_testcancel();
-                gdk_threads_add_timeout(1, (GSourceFunc)update_ui_in, &ud);
+                gdk_threads_add_timeout(1, (GSourceFunc) update_ui_in, &ud);
                 sem_wait(&ud.msg_digested);
         cleanup:
                 pthread_cleanup_pop(1); /* free ud.msg_tokens */
@@ -2269,7 +2271,7 @@ tree_view_column_get_renderer_column(const char *ui_file, GtkTreeViewColumn *t_c
                 xmlFreeDoc(doc);
                 return false;
         }
-        snprintf((char *)xpath, xpath_len, "%s%s%s%d%s%s|%s%s%s%d%s%s",
+        snprintf((char *) xpath, xpath_len, "%s%s%s%d%s%s|%s%s%s%d%s%s",
                  xpath_base1, xpath_id, xpath_base2, n, xpath_base3, xpath_text_col,
                  xpath_base1, xpath_id, xpath_base2, n, xpath_base3, xpath_renderer_id);
         if ((xpath_obj = xmlXPathEvalExpression(xpath, xpath_ctx)) == NULL) {
@@ -2291,10 +2293,10 @@ tree_view_column_get_renderer_column(const char *ui_file, GtkTreeViewColumn *t_c
         }
         if (renderer_name) {
                 *renderer = GTK_CELL_RENDERER(
-                        gtk_builder_get_object(builder, (char *)renderer_name));
+                        gtk_builder_get_object(builder, (char *) renderer_name));
                 if (m_col_s) {
                         g_object_set_data(G_OBJECT(*renderer), "col_number",
-                                          GINT_TO_POINTER(strtol((char *)m_col_s,
+                                          GINT_TO_POINTER(strtol((char *) m_col_s,
                                                                  NULL, 10)));
                         xmlFree(m_col_s);
                         r = true;
@@ -2450,8 +2452,8 @@ prepare_widgets(char *ui_file)
         GSList *objects = NULL;
 
         objects = gtk_builder_get_objects(builder);
-        g_slist_foreach(objects, (GFunc)connect_widget_signals, ui_file);
-        g_slist_foreach(objects, (GFunc)add_widget_style_provider, NULL);
+        g_slist_foreach(objects, (GFunc) connect_widget_signals, ui_file);
+        g_slist_foreach(objects, (GFunc) add_widget_style_provider, NULL);
         g_slist_free(objects);
 }
 
@@ -2507,7 +2509,7 @@ main(int argc, char *argv[])
         if (gtk_builder_add_from_file(builder, ui_file, &error) == 0)
                 bye(EXIT_FAILURE, stderr, "%s\n", error->message);
         log_out = log_file(log_name);
-        pthread_create(&receiver, NULL, (void *(*)(void *))digest_msg, in);
+        pthread_create(&receiver, NULL, (void *(*)(void *)) digest_msg, in);
         main_window = gtk_builder_get_object(builder, MAIN_WIN);
         if (!GTK_IS_WINDOW(main_window))
                 bye(EXIT_FAILURE, stderr,
