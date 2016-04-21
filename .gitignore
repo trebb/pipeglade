@@ -5,5 +5,5 @@ pipeglade
 *~
 \#*#
 *fifo
-test.log
+*.log
 output.pdf

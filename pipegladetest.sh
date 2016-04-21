@@ -149,8 +149,8 @@ check_call "./pipeglade -o $BAD_FIFO" 1 \
            "making fifo" ""
 rm $BAD_FIFO
 check_call "./pipeglade -h" 0 \
-           "" "usage: pipeglade [-h] [-e xid] [-i in-fifo] [-o out-fifo] [-u glade-file.ui]
-                 [-l log-file] [-G] [-V] [--display X-server]"
+           "" "usage: pipeglade [[-i in-fifo] [-o out-fifo] [-u glade-file.ui] [-e xid]
+                 [-l log-file] [--display X-server]]  |  [-h | -G | -V]"
 check_call "./pipeglade -G" 0 \
            "" "GTK+  v"
 check_call "./pipeglade -G" 0 \
@@ -204,11 +204,11 @@ check_error() {
     echo -e "$1" >$FIN
     while read r <$FERR; do
         # ignore irrelevant GTK warnings
-        if test "$r" != "" && ! grep -q "WARNING"<<< "$r"; then
+        if test "$r" != "" && ! grep -qe "WARNING"<<< "$r"; then
             break;
         fi
     done
-    if grep "$2" <<< "$r"; then
+    if grep -qe "$2" <<< "$r"; then
         count_ok
         echo " $OK $r"
     else
@@ -883,7 +883,7 @@ check() {
     while (( i<$N )); do
         read r <$FOUT
         if test "$r" != ""; then
-            if grep "$4" <<< $r; then
+            if grep -qe "$4" <<< $r; then
                 count_ok
                 echo " $OK  ($i)  $r"
             else
@@ -927,13 +927,28 @@ check_rm $FIN
 check_rm $FOUT
 
 
+./pipeglade -u simple_dialog.ui -i $FIN -o $FOUT &
+
+# wait for $FIN and $FOUT to appear
+while test ! \( -e $FIN -a -e $FOUT \); do :; done
+
+check 1 "" \
+      "button1:force" "button1:clicked"
+check 1 "" \
+      "main_ok:force" "main_ok:clicked"
+
+check_rm $FIN
+check_rm $FOUT
+
+
 ./pipeglade -u simple_open.ui -i $FIN -o $FOUT &
 
 # wait for $FIN and $FOUT to appear
 while test ! \( -e $FIN -a -e $FOUT \); do :; done
 
-check 2 "" \
+check 3 "" \
       "main_apply:force" \
+      "main_apply:clicked" \
       "main:file" \
       "main:folder"
 check 0 "" \
@@ -950,6 +965,7 @@ while test ! \( -e $FIN -a -e $FOUT \); do :; done
 
 check 2 "" \
       "main_ok:force" \
+      "main_ok:clicked" \
       "main:file" \
       "main:folder"
 
@@ -1530,19 +1546,23 @@ sleep .5
 check 1 "" \
       "scale1:set_value 10\n scale1:force" \
       "scale1:value 10.000000"
-check 5 "" \
+check 6 "" \
       "open_dialog:set_filename q.png\n file:force\n open_dialog_invoke:force\n open_dialog_apply:force\n open_dialog_ok:force" \
       "file:active _File" \
+      "open_dialog_apply:clicked" \
       "open_dialog:file $PWD/q.png" \
       "open_dialog:folder $PWD" \
+      "open_dialog_ok:clicked" \
       "open_dialog:file $PWD/q.png" \
       "open_dialog:folder $PWD"
-check 1 "" \
+check 2 "" \
       "file:force\n open_dialog_invoke:force\n open_dialog_cancel:force" \
-      "file:active _File"
+      "file:active _File" \
+      "open_dialog_cancel:clicked"
 check 3 "" \
       "save_as_dialog:set_current_name /somewhere/crazy_idea\n file:force\n save_as_dialog_invoke:force\n save_as_dialog_ok:force" \
       "file:active _File" \
+      "save_as_dialog_ok:clicked" \
       "save_as_dialog:file /somewhere/crazy_idea" \
       "save_as_dialog:folder"
 check 1 "" \
@@ -1647,8 +1667,9 @@ check 1 "Click \"Select\" (4)\n colorbutton1:set_color #ffff00000000" \
 check 1 "Click \"Select\" (5)\n colorbutton1:set_color rgba(0,255,0,.5)" \
       "colorbutton1:force" \
       "colorbutton1:color rgba(0,255,0,0.5)"
-check 0 "Click \"Cancel\"" \
-      "printdialog:print nonexistent.ps"
+check 1 "Close the dialog by hitting Escape" \
+      "printdialog:print nonexistent.ps" \
+      "printdialog:closed"
 check 1 "Press \"OK\" if both 1752-03-13 and 1752-03-14 are marked on the calendar" \
       "calendar1:mark_day 13\n calendar1:mark_day 14" \
       "button1:clicked"
@@ -1822,6 +1843,9 @@ check 1 "Press \"BIG BUTTON\" inside the window titled \"PRESS ME\"" \
 check 1 "" \
       "button3:set_label PRESS THIS GIANT BUTTON NOW\n dialog1:fullscreen" \
       "button3:clicked"
+check 1 "" \
+      "button3:set_label Hit Escape to close this window\n button3:set_sensitive 0" \
+      "dialog1:closed"
 check 0 "" \
       "dialog1:set_visible 0"
 
@@ -1841,10 +1865,10 @@ check_rm $FIN
 check_rm $FOUT
 
 
-check_cmd "head -n 2 $LOG | tail -n 1 | grep '##### (New Pipeglade session) #####'"
-check_cmd "tail -n 4 $LOG | head -n 1 | grep '### (Idle) ###'"
-check_cmd "tail -n 3 $LOG | head -n 1 | grep 'statusbar1:remove_all_id GHI'"
-check_cmd "tail -n 2 $LOG | head -n 1 | grep '### (Idle) ###'"
+check_cmd "head -n 2 $LOG | tail -n 1 | grep -q '##### (New Pipeglade session) #####'"
+check_cmd "tail -n 4 $LOG | head -n 1 | grep -q '### (Idle) ###'"
+check_cmd "tail -n 3 $LOG | head -n 1 | grep -q 'statusbar1:remove_all_id GHI'"
+check_cmd "tail -n 2 $LOG | head -n 1 | grep -q '### (Idle) ###'"
 check_cmd "tail -n 1 $LOG | grep '_:main_quit'"
 
 

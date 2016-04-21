@@ -506,7 +506,10 @@ and
 .Qq Ar name Ns Cm :unfullscreen
 switch fullscreen mode on and off.
 .It Feedback
-none
+.Qq Ar name Ns Cm \&:closed
+if the
+.Cm GtkDialog
+window was closed by the window manager.
 .El
 .Ss GtkDrawingArea
 Most drawing commands expect an
@@ -808,6 +811,11 @@ switch fullscreen mode on and off.
 .Qq Ar name Ns Cm :file Ar pathname
 and/or
 .Qq Ar name Ns Cm :folder Ar pathname
+.Pp
+.Qq Ar name Ns Cm \&:closed
+if the
+.Cm GtkFileChooserDialog
+window was closed by the window manager.
 .El
 .Ss GtkFontButton
 .Bl -tag -width "commands "
@@ -890,7 +898,10 @@ button sends
 .Ar file.ps
 to the printer the user selected in the dialog.
 .It Feedback
-none
+.Qq Ar name Ns Cm \&:closed
+if the
+.Cm GtkPrintUnixDialog
+window was closed by the window manager.
 .El
 .Ss GtkProgressBar
 .Bl -tag -width "commands "
@@ -1270,7 +1281,10 @@ and
 .Qq Ar name Ns Cm :unfullscreen
 switch fullscreen mode on and off.
 .It Feedback
-none
+.Qq Ar name Ns Cm \&:closed
+if the
+.Cm GtkWindow
+was closed by the window manager.
 .El
 .Sh EXIT STATUS
 .Ex -std
