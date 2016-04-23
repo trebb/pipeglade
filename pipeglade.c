@@ -184,7 +184,7 @@ fifo(const char *name, const char *mode)
  * requests use of stderr.
  */
 static FILE *
-log_file(const char *name)
+open_log(const char *name)
 {
         FILE *s = NULL;
 
@@ -2575,7 +2575,7 @@ main(int argc, char *argv[])
 {
         char opt;
         char *in_fifo = NULL, *out_fifo = NULL, *ui_file = NULL;
-        char *log_name = NULL;
+        char *log_file = NULL;
         char *xid_s = NULL, xid_s2[BUFLEN];
         bool bg = false;
         pid_t pid = 0;
@@ -2597,7 +2597,7 @@ main(int argc, char *argv[])
                 case 'b': bg = true; break;
                 case 'e': xid_s = optarg; break;
                 case 'i': in_fifo = optarg; break;
-                case 'l': log_name = optarg; break;
+                case 'l': log_file = optarg; break;
                 case 'o': out_fifo = optarg; break;
                 case 'u': ui_file = optarg; break;
                 case 'G': bye(EXIT_SUCCESS, stdout,
@@ -2634,7 +2634,7 @@ main(int argc, char *argv[])
         builder = gtk_builder_new();
         if (gtk_builder_add_from_file(builder, ui_file, &error) == 0)
                 bye(EXIT_FAILURE, stderr, "%s\n", error->message);
-        log_out = log_file(log_name);
+        log_out = open_log(log_file);
         pthread_create(&receiver, NULL, (void *(*)(void *)) digest_msg, in);
         main_window = gtk_builder_get_object(builder, MAIN_WIN);
         if (!GTK_IS_WINDOW(main_window))
