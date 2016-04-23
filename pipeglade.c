@@ -197,12 +197,16 @@ log_file(const char *name)
 }
 
 /*
- * Microseconds of processor time used since start
+ * Microseconds elapsed since start
  */
-static long double
-us_since(clock_t start)
+static long int
+usec_since(struct timespec *start)
 {
-        return 1e6L * (clock() - start) / CLOCKS_PER_SEC;
+        struct timespec now;
+
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        return (now.tv_sec - start->tv_sec) * 1e6 +
+                (now.tv_nsec - start->tv_nsec) / 1e3;
 }
 
 /*
@@ -211,7 +215,7 @@ us_since(clock_t start)
 static void
 log_msg(char *msg)
 {
-        static clock_t start;
+        static struct timespec start;
         static char *old_msg;
 
         if (log_out == NULL)    /* no logging */
@@ -221,18 +225,18 @@ log_msg(char *msg)
                         "##########\t##### (New Pipeglade session) #####\n");
         else if (msg == NULL && old_msg != NULL) { /* command done; start idle */
                 fprintf(log_out,
-                        "%10.Lf\t%s\n", us_since(start), old_msg);
+                        "%10ld\t%s\n", usec_since(&start), old_msg);
                 free(old_msg);
                 old_msg = NULL;
         } else if (msg != NULL && old_msg == NULL) { /* idle done; start command */
                 fprintf(log_out,
-                        "%10.Lf\t### (Idle) ###\n", us_since(start));
+                        "%10ld\t### (Idle) ###\n", usec_since(&start));
                 if ((old_msg = malloc(strlen(msg) + 1)) == NULL)
                         OOM_ABORT;
                 strcpy(old_msg, msg);
         } else
                 ABORT;
-        start = clock();
+        clock_gettime(CLOCK_MONOTONIC, &start);
 }
 
 /*
