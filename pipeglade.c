@@ -31,7 +31,6 @@
 #include <locale.h>
 #include <math.h>
 #include <pthread.h>
-#include <semaphore.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -296,12 +295,6 @@ read_buf(FILE *s, char **buf, size_t *bufsize)
         }
         (*buf)[i] = '\0';
         return i;
-}
-
-static void
-free_at(void **mem)
-{
-        free(*mem);
 }
 
 /*
@@ -1462,6 +1455,17 @@ update_notebook(GObject *obj, const char *action,
 }
 
 static void
+update_nothing(GObject *obj, const char *action,
+               const char *data, const char *whole_msg, GType type)
+{
+        (void) obj;
+        (void) action;
+        (void) data;
+        (void) whole_msg;
+        (void) type;
+}
+
+static void
 update_print_dialog(GObject *obj, const char *action,
                     const char *data, const char *whole_msg, GType type)
 {
@@ -2101,7 +2105,6 @@ struct ui_data {
         char *msg;
         char *msg_tokens;
         GType type;
-        sem_t msg_digested;
 };
 
 /*
@@ -2113,7 +2116,9 @@ static gboolean
 update_ui(struct ui_data *ud)
 {
         (ud->fn)(ud->obj, ud->action, ud->data, ud->msg, ud->type);
-        sem_post(&ud->msg_digested);
+        free(ud->msg_tokens);
+        free(ud->msg);
+        free(ud);
         return G_SOURCE_REMOVE;
 }
 
@@ -2151,144 +2156,142 @@ remember_loading_file(char *filename)
 static void *
 digest_msg(FILE *cmd)
 {
-        struct ui_data ud;
         FILE *load;             /* restoring user data */
         char *name;
         static int recursion = -1; /* > 0 means this is a recursive call */
 
         recursion++;
-        sem_init(&ud.msg_digested, 0, 0);
         for (;;) {
+                struct ui_data *ud;
                 char first_char = '\0';
                 size_t msg_size = 32;
                 int name_start = 0, name_end = 0;
                 int action_start = 0, action_end = 0;
                 int data_start;
 
-                ud.type = G_TYPE_INVALID;
                 if (feof(cmd))
                         break;
-                if ((ud.msg = malloc(msg_size)) == NULL)
+                if ((ud = malloc(sizeof(*ud))) == NULL)
                         OOM_ABORT;
-                pthread_cleanup_push((void(*)(void *)) free_at, &ud.msg);
+                if ((ud->msg = malloc(msg_size)) == NULL)
+                        OOM_ABORT;
+                ud->type = G_TYPE_INVALID;
                 pthread_testcancel();
                 if (recursion == 0)
                         log_msg(NULL);
-                read_buf(cmd, &ud.msg, &msg_size);
+                read_buf(cmd, &ud->msg, &msg_size);
                 if (recursion == 0)
-                        log_msg(ud.msg);
-                data_start = strlen(ud.msg);
-                if ((ud.msg_tokens = malloc(strlen(ud.msg) + 1)) == NULL)
+                        log_msg(ud->msg);
+                data_start = strlen(ud->msg);
+                if ((ud->msg_tokens = malloc(strlen(ud->msg) + 1)) == NULL)
                         OOM_ABORT;
-                pthread_cleanup_push((void(*)(void *)) free_at, &ud.msg_tokens);
-                strcpy(ud.msg_tokens, ud.msg);
-                sscanf(ud.msg, " %c", &first_char);
-                if (strlen(ud.msg) == 0 || first_char == '#') /* comment */
-                        goto cleanup;
-                sscanf(ud.msg_tokens,
-                       " %n%*[0-9a-zA-Z_]%n:%n%*[0-9a-zA-Z_]%n%*1[ \t]%n",
-                       &name_start, &name_end, &action_start, &action_end, &data_start);
-                ud.msg_tokens[name_end] = ud.msg_tokens[action_end] = '\0';
-                name = ud.msg_tokens + name_start;
-                ud.action = ud.msg_tokens + action_start;
-                if (eql(ud.action, "main_quit")) {
-                        ud.fn = main_quit;
+                strcpy(ud->msg_tokens, ud->msg);
+                sscanf(ud->msg, " %c", &first_char);
+                if (strlen(ud->msg) == 0 || first_char == '#') { /* comment */
+                        ud->fn = update_nothing;
                         goto exec;
                 }
-                ud.data = ud.msg_tokens + data_start;
-                if (eql(ud.action, "load") && strlen(ud.data) > 0 &&
-                    (load = fopen(ud.data, "r")) != NULL &&
-                    remember_loading_file(ud.data)) {
+                sscanf(ud->msg_tokens,
+                       " %n%*[0-9a-zA-Z_]%n:%n%*[0-9a-zA-Z_]%n%*1[ \t]%n",
+                       &name_start, &name_end, &action_start, &action_end, &data_start);
+                ud->msg_tokens[name_end] = ud->msg_tokens[action_end] = '\0';
+                name = ud->msg_tokens + name_start;
+                ud->action = ud->msg_tokens + action_start;
+                if (eql(ud->action, "main_quit")) {
+                        ud->fn = main_quit;
+                        goto exec;
+                }
+                ud->data = ud->msg_tokens + data_start;
+                if (eql(ud->action, "load") && strlen(ud->data) > 0 &&
+                    (load = fopen(ud->data, "r")) != NULL &&
+                    remember_loading_file(ud->data)) {
                         digest_msg(load);
                         fclose(load);
                         remember_loading_file(NULL);
-                        goto cleanup;
-                }
-                if ((ud.obj = (gtk_builder_get_object(builder, name))) == NULL) {
-                        ud.fn = complain;
+                        ud->fn = update_nothing;
                         goto exec;
                 }
-                ud.type = G_TYPE_FROM_INSTANCE(ud.obj);
-                if (eql(ud.action, "force"))
-                        ud.fn = fake_ui_activity;
-                else if (eql(ud.action, "set_sensitive"))
-                        ud.fn = update_sensitivity;
-                else if (eql(ud.action, "set_visible"))
-                        ud.fn = update_visibility;
-                else if (eql(ud.action, "set_size_request"))
-                        ud.fn = update_size_request;
-                else if (eql(ud.action, "set_tooltip_text"))
-                        ud.fn = update_tooltip_text;
-                else if (eql(ud.action, "grab_focus"))
-                        ud.fn = update_focus;
-                else if (eql(ud.action, "style")) {
-                        ud.action = name;
-                        ud.fn = update_widget_style;
-                } else if (ud.type == GTK_TYPE_DRAWING_AREA)
-                        ud.fn = update_drawing_area;
-                else if (ud.type == GTK_TYPE_TREE_VIEW)
-                        ud.fn = update_tree_view;
-                else if (ud.type == GTK_TYPE_COMBO_BOX_TEXT)
-                        ud.fn = update_combo_box_text;
-                else if (ud.type == GTK_TYPE_LABEL)
-                        ud.fn = update_label;
-                else if (ud.type == GTK_TYPE_IMAGE)
-                        ud.fn = update_image;
-                else if (ud.type == GTK_TYPE_TEXT_VIEW)
-                        ud.fn = update_text_view;
-                else if (ud.type == GTK_TYPE_NOTEBOOK)
-                        ud.fn = update_notebook;
-                else if (ud.type == GTK_TYPE_EXPANDER)
-                        ud.fn = update_expander;
-                else if (ud.type == GTK_TYPE_FRAME)
-                        ud.fn = update_frame;
-                else if (ud.type == GTK_TYPE_SCROLLED_WINDOW)
-                        ud.fn = update_scrolled_window;
-                else if (ud.type == GTK_TYPE_BUTTON)
-                        ud.fn = update_button;
-                else if (ud.type == GTK_TYPE_FILE_CHOOSER_DIALOG)
-                        ud.fn = update_file_chooser_dialog;
-                else if (ud.type == GTK_TYPE_FILE_CHOOSER_BUTTON)
-                        ud.fn = update_file_chooser_button;
-                else if (ud.type == GTK_TYPE_COLOR_BUTTON)
-                        ud.fn = update_color_button;
-                else if (ud.type == GTK_TYPE_FONT_BUTTON)
-                        ud.fn = update_font_button;
-                else if (ud.type == GTK_TYPE_PRINT_UNIX_DIALOG)
-                        ud.fn = update_print_dialog;
-                else if (ud.type == GTK_TYPE_SWITCH)
-                        ud.fn = update_switch;
-                else if (ud.type == GTK_TYPE_TOGGLE_BUTTON ||
-                         ud.type == GTK_TYPE_RADIO_BUTTON ||
-                         ud.type == GTK_TYPE_CHECK_BUTTON)
-                        ud.fn = update_toggle_button;
-                else if (ud.type == GTK_TYPE_SPIN_BUTTON ||
-                         ud.type == GTK_TYPE_ENTRY)
-                        ud.fn = update_entry;
-                else if (ud.type == GTK_TYPE_SCALE)
-                        ud.fn = update_scale;
-                else if (ud.type == GTK_TYPE_PROGRESS_BAR)
-                        ud.fn = update_progress_bar;
-                else if (ud.type == GTK_TYPE_SPINNER)
-                        ud.fn = update_spinner;
-                else if (ud.type == GTK_TYPE_STATUSBAR)
-                        ud.fn = update_statusbar;
-                else if (ud.type == GTK_TYPE_CALENDAR)
-                        ud.fn = update_calendar;
-                else if (ud.type == GTK_TYPE_SOCKET)
-                        ud.fn = update_socket;
-                else if (ud.type == GTK_TYPE_WINDOW ||
-                         ud.type == GTK_TYPE_DIALOG)
-                        ud.fn = update_window;
+                if ((ud->obj = (gtk_builder_get_object(builder, name))) == NULL) {
+                        ud->fn = complain;
+                        goto exec;
+                }
+                ud->type = G_TYPE_FROM_INSTANCE(ud->obj);
+                if (eql(ud->action, "force"))
+                        ud->fn = fake_ui_activity;
+                else if (eql(ud->action, "set_sensitive"))
+                        ud->fn = update_sensitivity;
+                else if (eql(ud->action, "set_visible"))
+                        ud->fn = update_visibility;
+                else if (eql(ud->action, "set_size_request"))
+                        ud->fn = update_size_request;
+                else if (eql(ud->action, "set_tooltip_text"))
+                        ud->fn = update_tooltip_text;
+                else if (eql(ud->action, "grab_focus"))
+                        ud->fn = update_focus;
+                else if (eql(ud->action, "style")) {
+                        ud->action = name;
+                        ud->fn = update_widget_style;
+                } else if (ud->type == GTK_TYPE_DRAWING_AREA)
+                        ud->fn = update_drawing_area;
+                else if (ud->type == GTK_TYPE_TREE_VIEW)
+                        ud->fn = update_tree_view;
+                else if (ud->type == GTK_TYPE_COMBO_BOX_TEXT)
+                        ud->fn = update_combo_box_text;
+                else if (ud->type == GTK_TYPE_LABEL)
+                        ud->fn = update_label;
+                else if (ud->type == GTK_TYPE_IMAGE)
+                        ud->fn = update_image;
+                else if (ud->type == GTK_TYPE_TEXT_VIEW)
+                        ud->fn = update_text_view;
+                else if (ud->type == GTK_TYPE_NOTEBOOK)
+                        ud->fn = update_notebook;
+                else if (ud->type == GTK_TYPE_EXPANDER)
+                        ud->fn = update_expander;
+                else if (ud->type == GTK_TYPE_FRAME)
+                        ud->fn = update_frame;
+                else if (ud->type == GTK_TYPE_SCROLLED_WINDOW)
+                        ud->fn = update_scrolled_window;
+                else if (ud->type == GTK_TYPE_BUTTON)
+                        ud->fn = update_button;
+                else if (ud->type == GTK_TYPE_FILE_CHOOSER_DIALOG)
+                        ud->fn = update_file_chooser_dialog;
+                else if (ud->type == GTK_TYPE_FILE_CHOOSER_BUTTON)
+                        ud->fn = update_file_chooser_button;
+                else if (ud->type == GTK_TYPE_COLOR_BUTTON)
+                        ud->fn = update_color_button;
+                else if (ud->type == GTK_TYPE_FONT_BUTTON)
+                        ud->fn = update_font_button;
+                else if (ud->type == GTK_TYPE_PRINT_UNIX_DIALOG)
+                        ud->fn = update_print_dialog;
+                else if (ud->type == GTK_TYPE_SWITCH)
+                        ud->fn = update_switch;
+                else if (ud->type == GTK_TYPE_TOGGLE_BUTTON ||
+                         ud->type == GTK_TYPE_RADIO_BUTTON ||
+                         ud->type == GTK_TYPE_CHECK_BUTTON)
+                        ud->fn = update_toggle_button;
+                else if (ud->type == GTK_TYPE_SPIN_BUTTON ||
+                         ud->type == GTK_TYPE_ENTRY)
+                        ud->fn = update_entry;
+                else if (ud->type == GTK_TYPE_SCALE)
+                        ud->fn = update_scale;
+                else if (ud->type == GTK_TYPE_PROGRESS_BAR)
+                        ud->fn = update_progress_bar;
+                else if (ud->type == GTK_TYPE_SPINNER)
+                        ud->fn = update_spinner;
+                else if (ud->type == GTK_TYPE_STATUSBAR)
+                        ud->fn = update_statusbar;
+                else if (ud->type == GTK_TYPE_CALENDAR)
+                        ud->fn = update_calendar;
+                else if (ud->type == GTK_TYPE_SOCKET)
+                        ud->fn = update_socket;
+                else if (ud->type == GTK_TYPE_WINDOW ||
+                         ud->type == GTK_TYPE_DIALOG)
+                        ud->fn = update_window;
                 else
-                        ud.fn = complain;
+                        ud->fn = complain;
         exec:
                 pthread_testcancel();
-                gdk_threads_add_timeout(1, (GSourceFunc) update_ui, &ud);
-                sem_wait(&ud.msg_digested);
-        cleanup:
-                pthread_cleanup_pop(1); /* free ud.msg_tokens */
-                pthread_cleanup_pop(1); /* free ud.msg */
+                gdk_threads_add_timeout(0, (GSourceFunc) update_ui, ud);
         }
         recursion--;
         return NULL;

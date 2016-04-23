@@ -1,6 +1,5 @@
 4.7.0 (unreleased)
 ------------------
-  * Avoid silly precision on mouse coordinates emitted from GtkEventBox.
   * GtkDialog and GtkFileChooserDialog now respond to the commands
   that work for GtkWindow.
   * Toplevel windows report 'name:closed' when closed by the window
@@ -10,6 +9,8 @@
   not just integers.
   * Add command line option -l for logging duration of pipeglade
   command execution.
+  * Execution time improved by a factor of about 20.
+  * Avoid silly precision on mouse coordinates emitted from GtkEventBox.
 
 4.6.0 (2016-03-27)
 ------------------
