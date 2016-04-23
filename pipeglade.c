@@ -48,6 +48,7 @@
 #define USAGE                                           \
         "usage: pipeglade [[-i in-fifo] "               \
                           "[-o out-fifo] "              \
+                          "[-b] "                       \
                           "[-u glade-file.ui] "         \
                           "[-e xid]\n"                  \
         "                  [-l log-file] "              \
@@ -2576,6 +2577,8 @@ main(int argc, char *argv[])
         char *in_fifo = NULL, *out_fifo = NULL, *ui_file = NULL;
         char *log_name = NULL;
         char *xid_s = NULL, xid_s2[BUFLEN];
+        bool bg = false;
+        pid_t pid = 0;
         Window xid;
         GtkWidget *plug, *body;
         pthread_t receiver;
@@ -2589,8 +2592,9 @@ main(int argc, char *argv[])
         save = NULL;
         log_out = NULL;
         gtk_init(&argc, &argv);
-        while ((opt = getopt(argc, argv, "he:i:l:o:u:GV")) != -1) {
+        while ((opt = getopt(argc, argv, "bhe:i:l:o:u:GV")) != -1) {
                 switch (opt) {
+                case 'b': bg = true; break;
                 case 'e': xid_s = optarg; break;
                 case 'i': in_fifo = optarg; break;
                 case 'l': log_name = optarg; break;
@@ -2615,6 +2619,16 @@ main(int argc, char *argv[])
                     "illegal parameter '%s'\n" USAGE, argv[optind]);
         in = fifo(in_fifo, "r");
         out = fifo(out_fifo, "w");
+        if (bg) {
+                if (in == stdin || out == stdout)
+                        bye(EXIT_FAILURE, stderr,
+                            "parameter -b requires both -i and -o\n");
+                else if ((pid = fork()) > 0)
+                        bye(EXIT_SUCCESS, stdout, "%d\n", pid);
+                else if (pid < 0)
+                        bye(EXIT_FAILURE, stderr,
+                            "going to background: %s\n", strerror(errno));
+        }
         if (ui_file == NULL)
                 ui_file = "pipeglade.ui";
         builder = gtk_builder_new();

@@ -14,6 +14,7 @@ FOUT=from-g.fifo
 FERR=err.fifo
 LOG=test.log
 BAD_FIFO=bad_fifo
+PID_FILE=pid
 DIR=test_dir
 FILE1=saved1.txt
 FILE2=saved2.txt
@@ -21,7 +22,7 @@ FILE3=saved3.txt
 FILE4=saved4.txt
 FILE5=saved5.txt
 FILE6=saved6.txt
-rm -rf $FIN $FOUT $FERR $BAD_FIFO $FILE1 $FILE2 $FILE3 $FILE4 $FILE5 $FILE6 $DIR
+rm -rf $FIN $FOUT $FERR $BAD_FIFO $PID_FILE $FILE1 $FILE2 $FILE3 $FILE4 $FILE5 $FILE6 $DIR
 
 if stat -f "%0p"; then
     STAT_CMD='stat -f "%0p"'
@@ -148,8 +149,15 @@ check_call "./pipeglade -i $BAD_FIFO" 1 \
 check_call "./pipeglade -o $BAD_FIFO" 1 \
            "making fifo" ""
 rm $BAD_FIFO
+check_call "./pipeglade -b" 1 \
+           "parameter -b requires both -i and -o"
+check_call "./pipeglade -b -i $FIN" 1 \
+           "parameter -b requires both -i and -o"
+check_call "./pipeglade -b -i $FOUT" 1 \
+           "parameter -b requires both -i and -o"
+rm $FIN $FOUT
 check_call "./pipeglade -h" 0 \
-           "" "usage: pipeglade [[-i in-fifo] [-o out-fifo] [-u glade-file.ui] [-e xid]
+           "" "usage: pipeglade [[-i in-fifo] [-o out-fifo] [-b] [-u glade-file.ui] [-e xid]
                  [-l log-file] [--display X-server]]  |  [-h | -G | -V]"
 check_call "./pipeglade -G" 0 \
            "" "GTK+  v"
@@ -901,6 +909,11 @@ check() {
 }
 
 
+./pipeglade -i $FIN -o $FOUT -b >$PID_FILE
+check_cmd "kill `cat $PID_FILE`"
+rm $FIN $FOUT
+
+
 ./pipeglade --display ${DISPLAY-:0} -i $FIN -o $FOUT &
 
 # wait for $FIN and $FOUT to appear
@@ -913,11 +926,12 @@ check_rm $FIN
 check_rm $FOUT
 
 
-./pipeglade -u simple_dialog.ui -i $FIN -o $FOUT &
+./pipeglade -u simple_dialog.ui -i $FIN -o $FOUT -b >$PID_FILE
 
 # wait for $FIN and $FOUT to appear
 while test ! \( -e $FIN -a -e $FOUT \); do :; done
 
+check_cmd "ps -p `cat $PID_FILE` >/dev/null"
 check 1 "" \
       "main_apply:force" "main_apply:clicked"
 check 0 "" \
@@ -925,6 +939,8 @@ check 0 "" \
 
 check_rm $FIN
 check_rm $FOUT
+check_cmd "! ps -p `cat $PID_FILE` >/dev/null"
+rm $PID_FILE
 
 
 ./pipeglade -u simple_dialog.ui -i $FIN -o $FOUT &

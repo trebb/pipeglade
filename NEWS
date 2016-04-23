@@ -7,9 +7,10 @@
   * Add missing GtkStatusbar command remove_all_id.
   * GtkStatusbar commands take non-whitespace strings as context id,
   not just integers.
+  * Add command line option -b for sending pipeglade to background.
   * Add command line option -l for logging duration of pipeglade
   command execution.
-  * Execution time improved by a factor of about 20.
+  * Command execution time improved by a factor of about 20.
   * Avoid silly precision on mouse coordinates emitted from GtkEventBox.
 
 4.6.0 (2016-03-27)

@@ -30,6 +30,7 @@
 .Oo
 .Op Fl i Ar in-fifo
 .Op Fl o Ar out-fifo
+.Op Fl b
 .Op Fl u Ar builder-file
 .Op Fl e Ar parent-xid
 .Op Fl l Ar log-file
@@ -118,6 +119,19 @@ is deleted upon successful program termination.
 .Pp
 Default feedback-message output is
 .Va stdout .
+.It Fl b
+Runs
+.Nm
+in the background after printing its process ID to
+.Va stdout .
+.Pp
+It is an error if option
+.Fl b
+is used and not both
+.Fl i Ar in-fifo
+and
+.Fl o Ar out_fifo
+are specified.
 .It Fl u Ar builder-file
 Displays the graphical user interface
 .Ar builder-file
