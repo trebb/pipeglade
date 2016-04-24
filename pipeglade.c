@@ -754,7 +754,7 @@ struct set_dash_args {
 struct set_font_face_args {
         cairo_font_slant_t slant;
         cairo_font_weight_t weight;
-        char *family;
+        char family[];
 };
 
 struct set_font_size_args {
@@ -1204,17 +1204,18 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 }
         } else if (eql(action, "set_font_face")) {
                 struct set_font_face_args *args;
-                const char *family;
-                int family_start;
+                int family_start, family_len;
                 char slant[7 + 1];
                 char weight[6 + 1];
 
-                if ((args = malloc(sizeof(*args))) == NULL)
+                if (sscanf(data, "%u %s %s %n%*s", &op->id, slant, weight, &family_start) != 3)
+                        return false;
+                family_len = strlen(data + family_start) + 1;
+                if ((args = malloc(sizeof(*args) + family_len * sizeof(args->family[0]))) == NULL)
                         OOM_ABORT;
                 op->op = SET_FONT_FACE;
                 op->op_args = args;
-                if (sscanf(data, "%u %s %s %n%*s", &op->id, slant, weight, &family_start) != 3)
-                        return false;
+                strncpy(args->family, data + family_start, family_len);
                 if (eql(slant, "normal"))
                         args->slant = CAIRO_FONT_SLANT_NORMAL;
                 else if (eql(slant, "italic"))
@@ -1229,10 +1230,6 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         args->weight = CAIRO_FONT_WEIGHT_BOLD;
                 else
                         return false;
-                family = data + family_start;
-                if ((args->family = malloc(strlen(family) + 1)) == NULL)
-                        OOM_ABORT;
-                strcpy(args->family, family);
         } else if (eql(action, "set_font_size")) {
                 struct set_font_size_args *args;
 
