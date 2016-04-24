@@ -635,6 +635,13 @@ resets the dash pattern to a line with arbitrary on/off portions.
 .Qq Ar name Ns Cm :set_dash Ar id
 resets the dash pattern to a solid line.
 .Pp
+.Qo Ar name Ns Cm :set_font_family Ar id Brq Cm normal | italic | oblique
+.Brq Cm normal | bold
+.Bq Cm family
+.Qc
+sets the font face for subsequent calls of
+.Ar name Ns Cm :show_text .
+.Pp
 .Qq Ar name Ns Cm :set_font_size Ar id size
 sets the font size for subsequent calls of
 .Ar name Ns Cm :show_text .

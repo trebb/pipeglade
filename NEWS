@@ -7,6 +7,7 @@
   * Add missing GtkStatusbar command remove_all_id.
   * GtkStatusbar commands take non-whitespace strings as context id,
   not just integers.
+  * Add GtkDrawingArea command set_font_face.
   * Add command line option -b for sending pipeglade to background.
   * Add command line option -l for logging duration of pipeglade
   command execution.

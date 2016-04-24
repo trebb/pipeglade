@@ -692,6 +692,7 @@ enum cairo_fn {
         REL_LINE_TO,
         REL_MOVE_TO,
         SET_DASH,
+        SET_FONT_FACE,
         SET_FONT_SIZE,
         SET_LINE_CAP,
         SET_LINE_JOIN,
@@ -748,6 +749,12 @@ struct rectangle_args {
 struct set_dash_args {
         int num_dashes;
         double dashes[];
+};
+
+struct set_font_face_args {
+        cairo_font_slant_t slant;
+        cairo_font_weight_t weight;
+        char *family;
 };
 
 struct set_font_size_args {
@@ -858,6 +865,12 @@ draw(cairo_t *cr, enum cairo_fn op, void *op_args)
                 struct set_dash_args *args = op_args;
 
                 cairo_set_dash(cr, args->dashes, args->num_dashes, 0);
+                break;
+        }
+        case SET_FONT_FACE: {
+                struct set_font_face_args *args = op_args;
+
+                cairo_select_font_face(cr, args->family, args->slant, args->weight);
                 break;
         }
         case SET_FONT_SIZE: {
@@ -1189,6 +1202,37 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 for (i = 0, next = data1 + d_start; i < n; i++, next = end) {
                         args->dashes[i] = strtod(next, &end);
                 }
+        } else if (eql(action, "set_font_face")) {
+                struct set_font_face_args *args;
+                const char *family;
+                int family_start;
+                char slant[7 + 1];
+                char weight[6 + 1];
+
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
+                op->op = SET_FONT_FACE;
+                op->op_args = args;
+                if (sscanf(data, "%u %s %s %n%*s", &op->id, slant, weight, &family_start) != 3)
+                        return false;
+                if (eql(slant, "normal"))
+                        args->slant = CAIRO_FONT_SLANT_NORMAL;
+                else if (eql(slant, "italic"))
+                        args->slant = CAIRO_FONT_SLANT_ITALIC;
+                else if (eql(slant, "oblique"))
+                        args->slant = CAIRO_FONT_SLANT_OBLIQUE;
+                else
+                        return false;
+                if (eql(weight, "normal"))
+                        args->weight = CAIRO_FONT_WEIGHT_NORMAL;
+                else if (eql(weight, "bold"))
+                        args->weight = CAIRO_FONT_WEIGHT_BOLD;
+                else
+                        return false;
+                family = data + family_start;
+                if ((args->family = malloc(strlen(family) + 1)) == NULL)
+                        OOM_ABORT;
+                strcpy(args->family, family);
         } else if (eql(action, "set_font_size")) {
                 struct set_font_size_args *args;
 

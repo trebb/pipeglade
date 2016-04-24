@@ -839,6 +839,18 @@ check_error "drawingarea1:set_font_size 1" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_font_size 1\""
 check_error "drawingarea1:set_font_size 1 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_font_size 1 nnn\""
+check_error "drawingarea1:set_font_face" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_face\""
+check_error "drawingarea1:set_font_face 1" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_face 1\""
+check_error "drawingarea1:set_font_face 1 normal" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_face 1 normal\""
+check_error "drawingarea1:set_font_face 1 normal nnn" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_face 1 normal nnn\""
+check_error "drawingarea1:set_font_face 1 nnn normal" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_face 1 nnn normal\""
+check_error "drawingarea1:set_font_face x normal normal" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_face x normal normal\""
 
 echo "_:main_quit" >$FIN
 
@@ -1747,7 +1759,9 @@ check 1 "Press \"OK\" if all three brown shapes look the same" \
 check 0 "" \
       "drawingarea1:move_to 5 50 50\n drawingarea1:line_to 5 200 10\n drawingarea1:line_to 5 150 200\n drawingarea1:close_path 1\n drawingarea1:set_source_rgba 5 rgba(0,255,0,.2)\n drawingarea1:fill_preserve 1\n drawingarea1:refresh"
 check 0 "" \
-      "drawingarea1:move_to 5 10 50\n drawingarea1:set_source_rgba 5 cyan\n drawingarea1:set_font_size 5 30\n drawingarea1:show_text 5 Xyz\n drawingarea1:set_font_size 5 10\n drawingarea1:show_text 5 Abc\n drawingarea1:refresh"
+      "drawingarea1:move_to 5 10 50\n drawingarea1:set_source_rgba 5 cyan\n drawingarea1:set_font_size 5 30\n drawingarea1:show_text 5 Xyz 789\n drawingarea1:set_font_size 5 10\n drawingarea1:show_text 5 Abc 123\n drawingarea1:refresh"
+check 0 "" \
+      "drawingarea1:move_to 5 10 75\n drawingarea1:set_source_rgba 5 red\n drawingarea1:set_font_face 5 italic bold Courier\n drawingarea1:set_font_size 5 30\n drawingarea1:show_text 5 Xyz 789\n drawingarea1:set_font_size 5 10\n drawingarea1:show_text 5 Abc 123\n drawingarea1:refresh"
 check 0 "" \
       "drawingarea1:remove 1\n drawingarea1:remove 2\n drawingarea1:remove 3\n drawingarea1:remove 4\n drawingarea1:refresh"
 
