@@ -19,7 +19,7 @@
 .\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 .\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.Dd April 17, 2016
+.Dd April 24, 2016
 .Dt PIPEGLADE 1 PRM
 .Os BSD
 .Sh NAME
@@ -611,6 +611,15 @@ All coordinates are offsets relative to the current point.
 .Qq Ar name Ns Cm :rel_line_to Ar id dx dy
 adds a line from the current point to a point offset from there by
 .Pq Ar dx , dy .
+.Pp
+.Qo Ar name Ns Cm :rel_move_for Ar id Brq Cm c | e | n | ne | nw | s | se | sw | w
+.Ar text
+.Qc
+moves the current point such that
+.Qq Ar name Ns Cm :show_text Ar id text
+will place the specified reference point of
+.Ar text
+on the original current point.
 .Pp
 .Qq Ar name Ns Cm :rel_move_to Ar id dx dy
 moves the current point by

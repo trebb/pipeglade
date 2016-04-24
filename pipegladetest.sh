@@ -851,6 +851,16 @@ check_error "drawingarea1:set_font_face 1 nnn normal" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_font_face 1 nnn normal\""
 check_error "drawingarea1:set_font_face x normal normal" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_font_face x normal normal\""
+check_error "drawingarea1:rel_move_for" \
+            "ignoring GtkDrawingArea command \"drawingarea1:rel_move_for\""
+check_error "drawingarea1:rel_move_for " \
+            "ignoring GtkDrawingArea command \"drawingarea1:rel_move_for \""
+check_error "drawingarea1:rel_move_for 1" \
+            "ignoring GtkDrawingArea command \"drawingarea1:rel_move_for 1\""
+check_error "drawingarea1:rel_move_for 1 nnn Text" \
+            "ignoring GtkDrawingArea command \"drawingarea1:rel_move_for 1 nnn Text\""
+check_error "drawingarea1:rel_move_for nnn c Text" \
+            "ignoring GtkDrawingArea command \"drawingarea1:rel_move_for nnn c Text\""
 
 echo "_:main_quit" >$FIN
 
@@ -876,7 +886,7 @@ rm $FERR
 
 
 
-#exit
+# exit
 echo "
 # BATCH THREE
 #
@@ -1797,6 +1807,34 @@ check 0 "" \
       "drawingarea2:remove 2\n drawingarea2:refresh"
 check 0 "" \
       "drawingarea2:remove 3\n drawingarea2:refresh"
+
+check 0 "" \
+      "drawingarea1:set_source_rgba 6 red\n drawingarea1:set_font_size 6 20"
+check 0 "" \
+      "drawingarea1:move_to 6 100 100\n drawingarea1:rel_move_for 6 c CENTER\n drawingarea1:show_text 6 CENTER"
+check 0 "" \
+      "drawingarea1:set_source_rgba 6 blue\n drawingarea1:set_font_size 6 20"
+check 0 "" \
+      "drawingarea1:move_to 6 100 100\n drawingarea1:rel_move_for 6 nw NORTHWEST\n drawingarea1:show_text 6 NORTHWEST"
+check 0 "" \
+      "drawingarea1:move_to 6 100 100\n drawingarea1:rel_move_for 6 ne NORTHEAST\n drawingarea1:show_text 6 NORTHEAST"
+check 0 "" \
+      "drawingarea1:move_to 6 100 100\n drawingarea1:rel_move_for 6 se SOUTHEAST\n drawingarea1:show_text 6 SOUTHEAST"
+check 0 "" \
+      "drawingarea1:move_to 6 100 100\n drawingarea1:rel_move_for 6 sw SOUTHWEST\n drawingarea1:show_text 6 SOUTHWEST"
+check 0 "" \
+      "drawingarea1:set_source_rgba 6 magenta\n drawingarea1:set_font_size 6 20"
+check 0 "" \
+      "drawingarea1:move_to 6 100 140\n drawingarea1:rel_move_for 6 s SOUTH\n drawingarea1:show_text 6 SOUTH"
+check 0 "" \
+      "drawingarea1:move_to 6 100 140\n drawingarea1:rel_move_for 6 n NORTH\n drawingarea1:show_text 6 NORTH"
+check 0 "" \
+      "drawingarea1:set_source_rgba 6 green\n drawingarea1:set_font_size 6 20"
+check 0 "" \
+      "drawingarea1:move_to 6 100 140\n drawingarea1:rel_move_for 6 e EAST\n drawingarea1:show_text 6 EAST"
+check 0 "" \
+      "drawingarea1:move_to 6 100 140\n drawingarea1:rel_move_for 6 w WEST\n drawingarea1:show_text 6 WEST\n drawingarea1:refresh"
+
 check 2 "Hit Backspace, Enter" \
       "eventbox1:grab_focus" \
       "eventbox1:key_press BackSpace" \

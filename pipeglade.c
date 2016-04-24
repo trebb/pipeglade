@@ -691,6 +691,7 @@ enum cairo_fn {
         REL_CURVE_TO,
         REL_LINE_TO,
         REL_MOVE_TO,
+        REL_MOVE_FOR,
         SET_DASH,
         SET_FONT_FACE,
         SET_FONT_SIZE,
@@ -701,6 +702,21 @@ enum cairo_fn {
         SHOW_TEXT,
         STROKE,
         STROKE_PRESERVE,
+};
+
+/*
+ * Text placement mode for rel_move_for()
+ */
+enum ref_point {
+        C,
+        E,
+        N,
+        NE,
+        NW,
+        S,
+        SE,
+        SW,
+        W,
 };
 
 /*
@@ -744,6 +760,12 @@ struct rectangle_args {
         double y;
         double width;
         double height;
+};
+
+struct rel_move_for_args {
+        enum ref_point ref;
+        int len;
+        char text[];
 };
 
 struct set_dash_args {
@@ -847,6 +869,27 @@ draw(cairo_t *cr, enum cairo_fn op, void *op_args)
                 struct show_text_args *args = op_args;
 
                 cairo_show_text(cr, args->text);
+                break;
+        }
+        case REL_MOVE_FOR: {
+                struct rel_move_for_args *args = op_args;
+                cairo_text_extents_t e;
+                double dx = 0.0, dy = 0.0;
+
+                cairo_text_extents(cr, args->text, &e);
+                switch (args->ref) {
+                case C: dx = -e.width / 2; dy = e.height / 2; break;
+                case E: dx = -e.width; dy = e.height / 2; break;
+                case N: dx = -e.width / 2; dy = e.height; break;
+                case NE: dx = -e.width; dy = e.height; break;
+                case NW: dy = e.height; break;
+                case S: dx = -e.width / 2; break;
+                case SE: dx = -e.width; break;
+                case SW: break;
+                case W: dy = e.height / 2; break;
+                default: ABORT; break;
+                }
+                cairo_rel_move_to(cr, dx, dy);
                 break;
         }
         case STROKE:
@@ -1155,6 +1198,40 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 if ((args = malloc(sizeof(*args) + len * sizeof(args->text[0]))) == NULL)
                         OOM_ABORT;
                 op->op = SHOW_TEXT;
+                op->op_args = args;
+                args->len = len; /* not used */
+                strncpy(args->text, (data + start), len);
+        } else if (eql(action, "rel_move_for")) {
+                struct rel_move_for_args *args;
+                char ref_point[2 + 1];
+                int start, len;
+
+                if (sscanf(data, "%u %2s %n", &op->id, ref_point, &start) < 2)
+                        return false;
+                len = strlen(data + start) + 1;
+                if ((args = malloc(sizeof(*args) + len * sizeof(args->text[0]))) == NULL)
+                        OOM_ABORT;
+                if (eql(ref_point, "c"))
+                        args->ref = C;
+                else if (eql(ref_point, "e"))
+                        args->ref = E;
+                else if (eql(ref_point, "n"))
+                        args->ref = N;
+                else if (eql(ref_point, "ne"))
+                        args->ref = NE;
+                else if (eql(ref_point, "nw"))
+                        args->ref = NW;
+                else if (eql(ref_point, "s"))
+                        args->ref = S;
+                else if (eql(ref_point, "se"))
+                        args->ref = SE;
+                else if (eql(ref_point, "sw"))
+                        args->ref = SW;
+                else if (eql(ref_point, "w"))
+                        args->ref = W;
+                else
+                        return false;
+                op->op = REL_MOVE_FOR;
                 op->op_args = args;
                 args->len = len; /* not used */
                 strncpy(args->text, (data + start), len);
