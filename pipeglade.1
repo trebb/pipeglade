@@ -573,6 +573,8 @@ using
 and
 .Pq Ar x2 , y2
 as control points.
+If there is no current point, the curve will start at
+.Pq Ar x1 , y1 .
 .Pp
 .Qq Ar name Ns Cm :fill Ar id
 fills the current path and clears it.
@@ -582,6 +584,8 @@ fills the current path without clearing it.
 .Pp
 .Qq Ar name Ns Cm :line_to Ar id x y
 adds a line from the current point to
+.Pq Ar x , y ,
+or creates a new current point at
 .Pq Ar x , y .
 .Pp
 .Qq Ar name Ns Cm :move_to Ar id x y
