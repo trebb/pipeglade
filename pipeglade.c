@@ -2741,11 +2741,16 @@ main(int argc, char *argv[])
                 if (in == stdin || out == stdout)
                         bye(EXIT_FAILURE, stderr,
                             "parameter -b requires both -i and -o\n");
-                else if ((pid = fork()) > 0)
-                        bye(EXIT_SUCCESS, stdout, "%d\n", pid);
-                else if (pid < 0)
+                pid = fork();
+                if (pid < 0)
                         bye(EXIT_FAILURE, stderr,
                             "going to background: %s\n", strerror(errno));
+                if (pid > 0)
+                        bye(EXIT_SUCCESS, stdout, "%d\n", pid);
+                /* We're the child */
+                close(fileno(stdin));  /* making certain not-so-smart     */
+                close(fileno(stdout)); /* system/run-shell commands happy */
+                close(fileno(stderr));
         }
         if (ui_file == NULL)
                 ui_file = "pipeglade.ui";
