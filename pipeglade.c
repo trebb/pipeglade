@@ -125,57 +125,59 @@ ign_cmd(GType type, const char *msg)
 }
 
 /*
+ * Check if n is, or can be made, the name of a fifo.  Give up if n
+ * exists but is not a fifo.
+ */
+static void
+find_fifo(const char *n)
+{
+        struct stat sb;
+
+        stat(n, &sb);
+        if (S_ISFIFO(sb.st_mode)) {
+                if (chmod(n, 0600) != 0)
+                        bye(EXIT_FAILURE, stderr, "using pre-existing fifo %s: %s\n",
+                            n, strerror(errno));
+        } else if (mkfifo(n, 0600) != 0)
+                bye(EXIT_FAILURE, stderr, "making fifo %s: %s\n",
+                    n, strerror(errno));
+}
+
+/*
  * Create a fifo if necessary, and open it.  Give up if the file
  * exists but is not a fifo
  */
 static FILE *
-fifo(const char *name, const char *mode)
+open_in_fifo(const char *name)
 {
-        struct stat sb;
         int fd;
         FILE *s = NULL;
-        int bufmode;
 
-        if (name != NULL) {
-                stat(name, &sb);
-                if (S_ISFIFO(sb.st_mode)) {
-                        if (chmod(name, 0600) != 0)
-                                bye(EXIT_FAILURE, stderr,
-                                    "using pre-existing fifo %s: %s\n",
-                                    name, strerror(errno));
-                } else if (mkfifo(name, 0600) != 0)
-                        bye(EXIT_FAILURE, stderr,
-                            "making fifo %s: %s\n", name, strerror(errno));
-        }
-        switch (mode[0]) {
-        case 'r':
-                bufmode = _IONBF;
-                if (name == NULL)
-                        s = stdin;
-                else {
-                        if ((fd = open(name, O_RDWR | O_NONBLOCK)) < 0)
-                                bye(EXIT_FAILURE, stderr,
-                                    "opening fifo %s (%s): %s\n",
-                                    name, mode, strerror(errno));
-                        s = fdopen(fd, "r");
-                }
-                break;
-        case 'w':
-                bufmode = _IOLBF;
-                if (name == NULL)
-                        s = stdout;
-                else
-                        s = fopen(name, "w+");
-                break;
-        default:
-                ABORT;
-                break;
-        }
-        if (s == NULL)
-                bye(EXIT_FAILURE, stderr, "opening fifo %s (%s): %s\n",
-                    name, mode, strerror(errno));
-        else
-                setvbuf(s, NULL, bufmode, 0);
+        if (name == NULL)
+                return stdin;
+        find_fifo(name);
+        if ((fd = open(name, O_RDWR | O_NONBLOCK)) < 0)
+                bye(EXIT_FAILURE, stderr, "opening fifo %s (r): %s\n",
+                    name, strerror(errno));
+        if ((s = fdopen(fd, "r")) == NULL)
+                bye(EXIT_FAILURE, stderr, "opening fifo %s (r): %s\n",
+                    name, strerror(errno));
+        setvbuf(s, NULL, _IONBF, 0);
+        return s;
+}
+
+static FILE *
+open_out_fifo(const char *name)
+{
+        FILE *s = NULL;
+
+        if (name == NULL)
+                return stdout;
+        find_fifo(name);
+        if ((s = fopen(name, "w+")) == NULL)
+                bye(EXIT_FAILURE, stderr, "opening fifo %s (w): %s\n",
+                    name, strerror(errno));
+        setvbuf(s, NULL, _IOLBF, 0);
         return s;
 }
 
@@ -2735,8 +2737,8 @@ main(int argc, char *argv[])
         if (argv[optind] != NULL)
                 bye(EXIT_FAILURE, stderr,
                     "illegal parameter '%s'\n" USAGE, argv[optind]);
-        in = fifo(in_fifo, "r");
-        out = fifo(out_fifo, "w");
+        in = open_in_fifo(in_fifo);
+        out = open_out_fifo(out_fifo);
         if (bg) {
                 if (in == stdin || out == stdout)
                         bye(EXIT_FAILURE, stderr,
