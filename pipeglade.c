@@ -107,6 +107,73 @@ bye(int status, FILE *s, const char *fmt, ...)
         exit(status);
 }
 
+static void
+show_lib_versions(void)
+{
+        bye(EXIT_SUCCESS, stdout,
+            "GTK+  v%d.%d.%d (running v%d.%d.%d)\n"
+            "cairo v%s (running v%s)\n",
+            GTK_MAJOR_VERSION, GTK_MINOR_VERSION, GTK_MICRO_VERSION,
+            gtk_get_major_version(), gtk_get_minor_version(),
+            gtk_get_micro_version(),
+            CAIRO_VERSION_STRING, cairo_version_string());
+}
+
+/*
+ * fork() if requested in bg; give up on errors
+ */
+static void
+go_bg_if(bool bg, FILE *in, FILE *out)
+{
+        pid_t pid = 0;
+
+        if (!bg)
+                return;
+        if (in == stdin || out == stdout)
+                bye(EXIT_FAILURE, stderr,
+                    "parameter -b requires both -i and -o\n");
+        pid = fork();
+        if (pid < 0)
+                bye(EXIT_FAILURE, stderr,
+                    "going to background: %s\n", strerror(errno));
+        if (pid > 0)
+                bye(EXIT_SUCCESS, stdout, "%d\n", pid);
+        /* We're the child */
+        close(fileno(stdin));   /* making certain not-so-smart     */
+        close(fileno(stdout));  /* system/run-shell commands happy */
+}
+
+/*
+ * XEmbed us if xid_s is given, or show a standalone window; give up
+ * on errors
+ */
+static void
+xembed_if(char *xid_s, GObject *main_window)
+{
+        char xid_s2[BUFLEN];
+        Window xid;
+        GtkWidget *plug, *body;
+
+        if (xid_s == NULL) {    /* standalone */
+                gtk_widget_show(GTK_WIDGET(main_window));
+                return;
+        }
+        /* We're being XEmbedded */
+        xid = strtoul(xid_s, NULL, 10);
+        snprintf(xid_s2, BUFLEN, "%lu", xid);
+        if (!eql(xid_s, xid_s2))
+                bye(EXIT_FAILURE, stderr,
+                    "%s is not a valid XEmbed socket id\n", xid_s);
+        body = gtk_bin_get_child(GTK_BIN(main_window));
+        gtk_container_remove(GTK_CONTAINER(main_window), body);
+        plug = gtk_plug_new(xid);
+        if (!gtk_plug_get_embedded(GTK_PLUG(plug)))
+                bye(EXIT_FAILURE, stderr,
+                    "unable to embed into XEmbed socket %s\n", xid_s);
+        gtk_container_add(GTK_CONTAINER(plug), body);
+        gtk_widget_show(plug);
+}
+
 /*
  * Print a warning about a malformed command to stderr
  */
@@ -198,6 +265,15 @@ open_log(const char *name)
         return s;
 }
 
+static void
+rm_unless(FILE *forbidden, FILE *s, char *name)
+{
+        if (s == forbidden)
+                return;
+        fclose(s);
+        unlink(name);
+}
+
 /*
  * Microseconds elapsed since start
  */
@@ -255,10 +331,39 @@ obj_sans_suffix(const char *suffix, const char *name)
         return gtk_builder_get_object(builder, str);
 }
 
+/*
+ * Read UI definition from ui_file; give up on errors
+ */
+static GtkBuilder *
+builder_from_file(char *ui_file)
+{
+        GtkBuilder *b;
+        GError *error = NULL;
+
+        b = gtk_builder_new();
+        if (gtk_builder_add_from_file(b, ui_file, &error) == 0)
+                bye(EXIT_FAILURE, stderr, "%s\n", error->message);
+        return b;
+}
+
 static const char *
 widget_name(GtkBuildable *obj)
 {
         return gtk_buildable_get_name(obj);
+}
+
+/*
+ * Get the main window; give up on errors
+ */
+static GObject *
+find_main_window(void)
+{
+        GObject *mw;
+
+        if (GTK_IS_WINDOW(mw = gtk_builder_get_object(builder, MAIN_WIN)))
+                return mw;
+        bye(EXIT_FAILURE, stderr, "no toplevel window named \'" MAIN_WIN "\'\n");
+        return NULL;            /* NOT REACHED */
 }
 
 /*
@@ -2425,41 +2530,6 @@ digest_msg(FILE *cmd)
  */
 
 /*
- * Callbacks that forward a modification of a tree view cell to the
- * underlying model
- */
-static void
-cb_tree_model_edit(GtkCellRenderer *renderer, const gchar *path_s,
-                   const gchar *new_text, gpointer model)
-{
-        GtkTreeIter iter;
-        GtkTreeView *view;
-        void *col;
-
-        gtk_tree_model_get_iter_from_string(model, &iter, path_s);
-        view = g_object_get_data(G_OBJECT(renderer), "tree_view");
-        col = g_object_get_data(G_OBJECT(renderer), "col_number");
-        set_tree_view_cell(model, &iter, path_s, GPOINTER_TO_INT(col),
-                           new_text);
-        send_tree_cell_msg_by(send_msg, model, path_s, &iter, GPOINTER_TO_INT(col),
-                              GTK_BUILDABLE(view));
-}
-
-static void
-cb_tree_model_toggle(GtkCellRenderer *renderer, gchar *path_s, gpointer model)
-{
-        GtkTreeIter iter;
-        void *col;
-        bool toggle_state;
-
-        gtk_tree_model_get_iter_from_string(model, &iter, path_s);
-        col = g_object_get_data(G_OBJECT(renderer), "col_number");
-        gtk_tree_model_get(model, &iter, col, &toggle_state, -1);
-        set_tree_view_cell(model, &iter, path_s, GPOINTER_TO_INT(col),
-                           toggle_state? "0" : "1");
-}
-
-/*
  * Attach to renderer key "col_number".  Associate "col_number" with
  * the corresponding column number in the underlying model.
  * Due to what looks like a gap in the GTK API, renderer id and column
@@ -2541,6 +2611,41 @@ tree_view_column_get_renderer_column(const char *ui_file, GtkTreeViewColumn *t_c
         free(xpath);
         xmlFreeDoc(doc);
         return r;
+}
+
+/*
+ * Callbacks that forward a modification of a tree view cell to the
+ * underlying model
+ */
+static void
+cb_tree_model_edit(GtkCellRenderer *renderer, const gchar *path_s,
+                   const gchar *new_text, gpointer model)
+{
+        GtkTreeIter iter;
+        GtkTreeView *view;
+        void *col;
+
+        gtk_tree_model_get_iter_from_string(model, &iter, path_s);
+        view = g_object_get_data(G_OBJECT(renderer), "tree_view");
+        col = g_object_get_data(G_OBJECT(renderer), "col_number");
+        set_tree_view_cell(model, &iter, path_s, GPOINTER_TO_INT(col),
+                           new_text);
+        send_tree_cell_msg_by(send_msg, model, path_s, &iter, GPOINTER_TO_INT(col),
+                              GTK_BUILDABLE(view));
+}
+
+static void
+cb_tree_model_toggle(GtkCellRenderer *renderer, gchar *path_s, gpointer model)
+{
+        GtkTreeIter iter;
+        void *col;
+        bool toggle_state;
+
+        gtk_tree_model_get_iter_from_string(model, &iter, path_s);
+        col = g_object_get_data(G_OBJECT(renderer), "col_number");
+        gtk_tree_model_get(model, &iter, col, &toggle_state, -1);
+        set_tree_view_cell(model, &iter, path_s, GPOINTER_TO_INT(col),
+                           toggle_state? "0" : "1");
 }
 
 static void
@@ -2694,15 +2799,11 @@ int
 main(int argc, char *argv[])
 {
         char opt;
-        char *in_fifo = NULL, *out_fifo = NULL, *ui_file = NULL;
-        char *log_file = NULL;
-        char *xid_s = NULL, xid_s2[BUFLEN];
+        char *in_fifo = NULL, *out_fifo = NULL;
+        char *ui_file = "pipeglade.ui", *log_file = NULL;
+        char *xid = NULL;
         bool bg = false;
-        pid_t pid = 0;
-        Window xid;
-        GtkWidget *plug, *body;
         pthread_t receiver;
-        GError *error = NULL;
         GObject *main_window = NULL;
         FILE *in = NULL;        /* command input */
 
@@ -2715,19 +2816,12 @@ main(int argc, char *argv[])
         while ((opt = getopt(argc, argv, "bhe:i:l:o:u:GV")) != -1) {
                 switch (opt) {
                 case 'b': bg = true; break;
-                case 'e': xid_s = optarg; break;
+                case 'e': xid = optarg; break;
                 case 'i': in_fifo = optarg; break;
                 case 'l': log_file = optarg; break;
                 case 'o': out_fifo = optarg; break;
                 case 'u': ui_file = optarg; break;
-                case 'G': bye(EXIT_SUCCESS, stdout,
-                              "GTK+  v%d.%d.%d (running v%d.%d.%d)\n"
-                              "cairo v%s (running v%s)\n",
-                              GTK_MAJOR_VERSION, GTK_MINOR_VERSION, GTK_MICRO_VERSION,
-                              gtk_get_major_version(), gtk_get_minor_version(),
-                              gtk_get_micro_version(),
-                              CAIRO_VERSION_STRING, cairo_version_string());
-                        break;
+                case 'G': show_lib_versions(); break;
                 case 'V': bye(EXIT_SUCCESS, stdout, "%s\n", VERSION); break;
                 case 'h': bye(EXIT_SUCCESS, stdout, USAGE); break;
                 case '?':
@@ -2739,61 +2833,18 @@ main(int argc, char *argv[])
                     "illegal parameter '%s'\n" USAGE, argv[optind]);
         in = open_in_fifo(in_fifo);
         out = open_out_fifo(out_fifo);
-        if (bg) {
-                if (in == stdin || out == stdout)
-                        bye(EXIT_FAILURE, stderr,
-                            "parameter -b requires both -i and -o\n");
-                pid = fork();
-                if (pid < 0)
-                        bye(EXIT_FAILURE, stderr,
-                            "going to background: %s\n", strerror(errno));
-                if (pid > 0)
-                        bye(EXIT_SUCCESS, stdout, "%d\n", pid);
-                /* We're the child */
-                close(fileno(stdin));  /* making certain not-so-smart     */
-                close(fileno(stdout)); /* system/run-shell commands happy */
-                close(fileno(stderr));
-        }
-        if (ui_file == NULL)
-                ui_file = "pipeglade.ui";
-        builder = gtk_builder_new();
-        if (gtk_builder_add_from_file(builder, ui_file, &error) == 0)
-                bye(EXIT_FAILURE, stderr, "%s\n", error->message);
+        go_bg_if(bg, in, out);
+        builder = builder_from_file(ui_file);
         log_out = open_log(log_file);
         pthread_create(&receiver, NULL, (void *(*)(void *)) digest_msg, in);
-        main_window = gtk_builder_get_object(builder, MAIN_WIN);
-        if (!GTK_IS_WINDOW(main_window))
-                bye(EXIT_FAILURE, stderr,
-                    "no toplevel window named \'" MAIN_WIN "\'\n");
+        main_window = find_main_window();
         xmlInitParser();
         LIBXML_TEST_VERSION;
         prepare_widgets(ui_file);
-        if (xid_s == NULL)      /* standalone */
-                gtk_widget_show(GTK_WIDGET(main_window));
-        else {                  /* We're being XEmbedded */
-                xid = strtoul(xid_s, NULL, 10);
-                snprintf(xid_s2, BUFLEN, "%lu", xid);
-                if (!eql(xid_s, xid_s2))
-                        bye(EXIT_FAILURE, stderr,
-                            "%s is not a valid XEmbed socket id\n", xid_s);
-                body = gtk_bin_get_child(GTK_BIN(main_window));
-                gtk_container_remove(GTK_CONTAINER(main_window), body);
-                plug = gtk_plug_new(xid);
-                if (!gtk_plug_get_embedded(GTK_PLUG(plug)))
-                        bye(EXIT_FAILURE, stderr,
-                            "unable to embed into XEmbed socket %s\n", xid_s);
-                gtk_container_add(GTK_CONTAINER(plug), body);
-                gtk_widget_show(plug);
-        }
+        xembed_if(xid, main_window);
         gtk_main();
-        if (in != stdin) {
-                fclose(in);
-                unlink(in_fifo);
-        }
-        if (out != stdout) {
-                fclose(out);
-                unlink(out_fifo);
-        }
+        rm_unless(stdin, in, in_fifo);
+        rm_unless(stdout, out, out_fifo);
         pthread_cancel(receiver);
         pthread_join(receiver, NULL);
         xmlCleanupParser();
