@@ -34,6 +34,7 @@
 .Op Fl u Ar builder-file
 .Op Fl e Ar parent-xid
 .Op Fl l Ar log-file
+.Op Fl O Ar err-file
 .Op Fl -display Ar X-server
 .Oc |
 .Op Fl h | G | V
@@ -167,6 +168,11 @@ name of
 .Ql -
 means
 .Va stderr .
+.It Fl O Ar err-file
+Redirects
+.Va stderr
+to
+.Ar err-file .
 .It Fl -display Ar X-server
 Uses the display on
 .Ar X-server

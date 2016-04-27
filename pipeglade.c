@@ -52,9 +52,10 @@
                           "[-u glade-file.ui] "         \
                           "[-e xid]\n"                  \
         "                  [-l log-file] "              \
-                          "[--display X-server]]  |  "  \
-                         "[-h | "                       \
-                          "-G | "                       \
+                          "[-O err-file] "              \
+                          "[--display X-server]] | "    \
+                         "[-h |"                        \
+                          "-G |"                        \
                           "-V]\n"
 
 #define ABORT                                           \
@@ -120,30 +121,6 @@ show_lib_versions(void)
 }
 
 /*
- * fork() if requested in bg; give up on errors
- */
-static void
-go_bg_if(bool bg, FILE *in, FILE *out)
-{
-        pid_t pid = 0;
-
-        if (!bg)
-                return;
-        if (in == stdin || out == stdout)
-                bye(EXIT_FAILURE, stderr,
-                    "parameter -b requires both -i and -o\n");
-        pid = fork();
-        if (pid < 0)
-                bye(EXIT_FAILURE, stderr,
-                    "going to background: %s\n", strerror(errno));
-        if (pid > 0)
-                bye(EXIT_SUCCESS, stdout, "%d\n", pid);
-        /* We're the child */
-        close(fileno(stdin));   /* making certain not-so-smart     */
-        close(fileno(stdout));  /* system/run-shell commands happy */
-}
-
-/*
  * XEmbed us if xid_s is given, or show a standalone window; give up
  * on errors
  */
@@ -175,6 +152,44 @@ xembed_if(char *xid_s, GObject *main_window)
 }
 
 /*
+ * If requested, redirect stderr to file name
+ */
+static void
+redirect_stderr(const char *name)
+{
+        if (name && (freopen(name, "a", stderr)) == NULL)
+                /* complaining on stdout since stderr is closed now */
+                bye(EXIT_FAILURE, stdout, "couldn't redirect stderr to %s: %s\n",
+                    name, strerror(errno));
+}
+
+/*
+ * fork() if requested in bg; give up on errors
+ */
+static void
+go_bg_if(bool bg, FILE *in, FILE *out, char *err_file)
+{
+        pid_t pid = 0;
+
+        if (!bg)
+                return;
+        if (in == stdin || out == stdout)
+                bye(EXIT_FAILURE, stderr,
+                    "parameter -b requires both -i and -o\n");
+        pid = fork();
+        if (pid < 0)
+                bye(EXIT_FAILURE, stderr,
+                    "going to background: %s\n", strerror(errno));
+        if (pid > 0)
+                bye(EXIT_SUCCESS, stdout, "%d\n", pid);
+        /* We're the child */
+        close(fileno(stdin));   /* making certain not-so-smart     */
+        close(fileno(stdout));  /* system/run-shell commands happy */
+        if (err_file == NULL)
+                redirect_stderr("/dev/null");
+}
+
+/*
  * Print a warning about a malformed command to stderr
  */
 static void
@@ -185,8 +200,7 @@ ign_cmd(GType type, const char *msg)
         if (type == G_TYPE_INVALID) {
                 name = "";
                 pad = "";
-        }
-        else
+        } else
                 name = g_type_name(type);
         fprintf(stderr, "ignoring %s%scommand \"%s\"\n", name, pad, msg);
 }
@@ -260,8 +274,8 @@ open_log(const char *name)
         if (eql(name, "-"))
                 s = stderr;
         else if (name && (s = fopen(name, "a")) == NULL)
-                bye(EXIT_FAILURE, stderr,
-                    "opening log file %s: %s\n", name, strerror(errno));
+                bye(EXIT_FAILURE, stderr, "opening log file %s: %s\n",
+                    name, strerror(errno));
         return s;
 }
 
@@ -2800,7 +2814,7 @@ main(int argc, char *argv[])
 {
         char opt;
         char *in_fifo = NULL, *out_fifo = NULL;
-        char *ui_file = "pipeglade.ui", *log_file = NULL;
+        char *ui_file = "pipeglade.ui", *log_file = NULL, *err_file = NULL;
         char *xid = NULL;
         bool bg = false;
         pthread_t receiver;
@@ -2813,17 +2827,18 @@ main(int argc, char *argv[])
         save = NULL;
         log_out = NULL;
         gtk_init(&argc, &argv);
-        while ((opt = getopt(argc, argv, "bhe:i:l:o:u:GV")) != -1) {
+        while ((opt = getopt(argc, argv, "bGhe:i:l:o:O:u:V")) != -1) {
                 switch (opt) {
                 case 'b': bg = true; break;
                 case 'e': xid = optarg; break;
+                case 'G': show_lib_versions(); break;
+                case 'h': bye(EXIT_SUCCESS, stdout, USAGE); break;
                 case 'i': in_fifo = optarg; break;
                 case 'l': log_file = optarg; break;
                 case 'o': out_fifo = optarg; break;
+                case 'O': err_file = optarg; break;
                 case 'u': ui_file = optarg; break;
-                case 'G': show_lib_versions(); break;
                 case 'V': bye(EXIT_SUCCESS, stdout, "%s\n", VERSION); break;
-                case 'h': bye(EXIT_SUCCESS, stdout, USAGE); break;
                 case '?':
                 default: bye(EXIT_FAILURE, stderr, USAGE); break;
                 }
@@ -2831,9 +2846,10 @@ main(int argc, char *argv[])
         if (argv[optind] != NULL)
                 bye(EXIT_FAILURE, stderr,
                     "illegal parameter '%s'\n" USAGE, argv[optind]);
+        redirect_stderr(err_file);
         in = open_in_fifo(in_fifo);
         out = open_out_fifo(out_fifo);
-        go_bg_if(bg, in, out);
+        go_bg_if(bg, in, out, err_file);
         builder = builder_from_file(ui_file);
         log_out = open_log(log_file);
         pthread_create(&receiver, NULL, (void *(*)(void *)) digest_msg, in);

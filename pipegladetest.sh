@@ -13,6 +13,7 @@ FIN=to-g.fifo
 FOUT=from-g.fifo
 FERR=err.fifo
 LOG=test.log
+ERR_FILE=err.txt
 BAD_FIFO=bad_fifo
 PID_FILE=pid
 DIR=test_dir
@@ -22,7 +23,7 @@ FILE3=saved3.txt
 FILE4=saved4.txt
 FILE5=saved5.txt
 FILE6=saved6.txt
-rm -rf $FIN $FOUT $FERR $BAD_FIFO $PID_FILE $FILE1 $FILE2 $FILE3 $FILE4 $FILE5 $FILE6 $DIR
+rm -rf $FIN $FOUT $FERR $LOG $ERR_FILE $BAD_FIFO $PID_FILE $FILE1 $FILE2 $FILE3 $FILE4 $FILE5 $FILE6 $DIR
 
 if stat -f "%0p"; then
     STAT_CMD='stat -f "%0p"'
@@ -158,7 +159,7 @@ check_call "./pipeglade -b -i $FOUT" 1 \
 rm $FIN $FOUT
 check_call "./pipeglade -h" 0 \
            "" "usage: pipeglade [[-i in-fifo] [-o out-fifo] [-b] [-u glade-file.ui] [-e xid]
-                 [-l log-file] [--display X-server]]  |  [-h | -G | -V]"
+                 [-l log-file] [-O err-file] [--display X-server]] | [-h|-G|-V]"
 check_call "./pipeglade -G" 0 \
            "" "GTK+  v"
 check_call "./pipeglade -G" 0 \
@@ -175,6 +176,13 @@ check_call "./pipeglade -i" 1 \
            "argument" ""
 check_call "./pipeglade -o" 1 \
            "argument" ""
+mkdir -p $DIR
+check_call "./pipeglade -O" 1 \
+           "argument" ""
+check_call "./pipeglade -O $DIR" 1 \
+           "" "couldn't redirect stderr to"
+check_call "./pipeglade -l $DIR" 1 \
+           "opening log file" ""
 check_call "./pipeglade -l" 1 \
            "argument" ""
 check_call "./pipeglade yyy" 1 \
@@ -886,7 +894,7 @@ rm $FERR
 
 
 
-# exit
+#exit
 echo "
 # BATCH THREE
 #
@@ -929,6 +937,23 @@ check() {
         echo -e "statusbar1:pop_id =check=" >$FIN
     fi
 }
+
+
+## Logging to stderr while redirecting stderr
+./pipeglade -i $FIN -o $FOUT -O $ERR_FILE -l - &
+
+# wait for $FIN and $FOUT to appear
+while test ! \( -e $FIN \); do :; done
+check 0 "" \
+      "# Comment"
+check 0 "" \
+      "BlahBlah"
+check 0 "" \
+      "_:main_quit"
+
+check_cmd "grep -qe \"# Comment\" $ERR_FILE"
+check_cmd "grep -qe \"ignoring command\" $ERR_FILE"
+check_rm $FIN
 
 
 ./pipeglade -i $FIN -o $FOUT -b >$PID_FILE

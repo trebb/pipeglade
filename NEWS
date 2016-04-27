@@ -13,6 +13,7 @@
   * Add command line option -b for sending pipeglade to background.
   * Add command line option -l for logging duration of pipeglade
   command execution.
+  * Add command line option -O for redirecting stderr.
   * Command execution time improved by a factor of about 20.
   * Avoid silly precision on mouse coordinates emitted from GtkEventBox.
 
