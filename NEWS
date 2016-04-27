@@ -7,6 +7,8 @@
   * Add missing GtkStatusbar command remove_all_id.
   * GtkStatusbar commands take non-whitespace strings as context id,
   not just integers.
+  * Remove GtkDrawingArea command refresh; refreshing happens
+  automatically.
   * Add GtkDrawingArea command set_font_face.
   * Add GtkDrawingArea command rel_move_for supporting text placement
   with respect to center, upper left corner, etc., of the text.

@@ -1751,19 +1751,19 @@ check 1 "" \
       "calendar1:clicked 1752-03-13"
 
 check 0 "" \
-      "drawingarea1:rectangle 1 0 0 150 150\n drawingarea1:fill 1\n drawingarea1:refresh"
+      "drawingarea1:rectangle 1 0 0 150 150\n drawingarea1:fill 1"
 check 0 "" \
-      "drawingarea1:remove 1\n drawingarea1:remove 2\n drawingarea1:remove 3\n drawingarea1:remove 4\n drawingarea1:refresh"
+      "drawingarea1:remove 1\n drawingarea1:remove 2\n drawingarea1:remove 3\n drawingarea1:remove 4"
 check 0 "" \
-      "drawingarea1:rectangle 1 0 0 150 150\n drawingarea1:fill 1\n drawingarea1:refresh"
+      "drawingarea1:rectangle 1 0 0 150 150\n drawingarea1:fill 1"
 check 0 "" \
-      "drawingarea1:arc 1 80 80 60 30 60\n drawingarea1:set_source_rgba 1 red\n drawingarea1:stroke_preserve 1\n drawingarea1:line_to 1 80 80\n drawingarea1:fill 1\n drawingarea1:refresh"
+      "drawingarea1:arc 1 80 80 60 30 60\n drawingarea1:set_source_rgba 1 red\n drawingarea1:stroke_preserve 1\n drawingarea1:line_to 1 80 80\n drawingarea1:fill 1"
 check 0 "" \
-      "drawingarea1:arc_negative 1 80 80 70 30 60\n drawingarea1:set_source_rgba 1 green\n drawingarea1:stroke_preserve 1\n drawingarea1:rel_line_to 1 -50 -50\n drawingarea1:stroke 1\n drawingarea1:refresh"
+      "drawingarea1:arc_negative 1 80 80 70 30 60\n drawingarea1:set_source_rgba 1 green\n drawingarea1:stroke_preserve 1\n drawingarea1:rel_line_to 1 -50 -50\n drawingarea1:stroke 1"
 check 0 "" \
-      "drawingarea1:curve_to 1 30 30 90 120 120 30\n drawingarea1:set_source_rgba 1 blue\n drawingarea1:stroke 1\n drawingarea1:refresh"
+      "drawingarea1:curve_to 1 30 30 90 120 120 30\n drawingarea1:set_source_rgba 1 blue\n drawingarea1:stroke 1"
 check 0 "" \
-      "drawingarea1:move_to 1 160 160\n drawingarea1:rel_curve_to 1 30 30 90 120 120 30\n drawingarea1:set_source_rgba 1 orange\n drawingarea1:stroke_preserve 1\n drawingarea1:refresh"
+      "drawingarea1:move_to 1 160 160\n drawingarea1:rel_curve_to 1 30 30 90 120 120 30\n drawingarea1:set_source_rgba 1 orange\n drawingarea1:stroke_preserve 1"
 check 0 "" \
       "drawingarea1:move_to 1 0 0\n drawingarea1:rel_move_to 1 0 155\n drawingarea1:rel_line_to 1 300 0\n drawingarea1:set_dash 1 10\n drawingarea1:stroke 1"
 check 0 "" \
@@ -1773,43 +1773,43 @@ check 0 "" \
 check 0 "" \
       "drawingarea1:move_to 1 0 170\n drawingarea1:rel_line_to 1 300 0\n drawingarea1:set_dash 1 3 3 3 3 3 15\n drawingarea1:stroke 1"
 check 0 "" \
-      "drawingarea1:refresh\n drawingarea1:set_dash 1"
+      "drawingarea1:set_dash 1"
 check 0 "" \
       "drawingarea1:set_source_rgba 1 brown\n drawingarea1:set_line_width 1 15"
 check 1 "Press \"OK\" if the brown shape is rounded" \
-      "drawingarea1:set_line_join 2 round\n drawingarea1:set_line_cap 2 round\n drawingarea1:move_to 1 160 20\n drawingarea1:rel_line_to 1 20 0\n drawingarea1:rel_line_to 1 0 20\n drawingarea1:stroke 1\n drawingarea1:refresh" \
+      "drawingarea1:set_line_join 2 round\n drawingarea1:set_line_cap 2 round\n drawingarea1:move_to 1 160 20\n drawingarea1:rel_line_to 1 20 0\n drawingarea1:rel_line_to 1 0 20\n drawingarea1:stroke 1" \
       "button1:clicked"
 check 1 "Press \"OK\" if the second brown shape is shorter and bevelled" \
-      "drawingarea1:set_line_join 3 bevel\n drawingarea1:set_line_cap 3 butt\n drawingarea1:move_to 1 160 70\n drawingarea1:rel_line_to 1 20 0\n drawingarea1:rel_line_to 1 0 20\n drawingarea1:stroke 1\n drawingarea1:refresh" \
+      "drawingarea1:set_line_join 3 bevel\n drawingarea1:set_line_cap 3 butt\n drawingarea1:move_to 1 160 70\n drawingarea1:rel_line_to 1 20 0\n drawingarea1:rel_line_to 1 0 20\n drawingarea1:stroke 1" \
       "button1:clicked"
 check 1 "Press \"OK\" if the third brown shape is square" \
-      "drawingarea1:set_line_join 3 miter\n drawingarea1:set_line_cap 3 square\n drawingarea1:move_to 1 160 120\n drawingarea1:rel_line_to 1 20 0\n drawingarea1:rel_line_to 1 0 20\n drawingarea1:stroke 1\n drawingarea1:refresh" \
+      "drawingarea1:set_line_join 3 miter\n drawingarea1:set_line_cap 3 square\n drawingarea1:move_to 1 160 120\n drawingarea1:rel_line_to 1 20 0\n drawingarea1:rel_line_to 1 0 20\n drawingarea1:stroke 1" \
       "button1:clicked"
 check 1 "Press \"OK\" if the first brown shape is no longer rounded" \
-      "drawingarea1:remove 2\n drawingarea1:refresh" \
+      "drawingarea1:remove 2" \
       "button1:clicked"
 check 1 "Press \"OK\" if all three brown shapes look the same" \
-      "drawingarea1:remove 3\n drawingarea1:refresh" \
+      "drawingarea1:remove 3" \
       "button1:clicked"
 check 0 "" \
-      "drawingarea1:move_to 5 50 50\n drawingarea1:line_to 5 200 10\n drawingarea1:line_to 5 150 200\n drawingarea1:close_path 1\n drawingarea1:set_source_rgba 5 rgba(0,255,0,.2)\n drawingarea1:fill_preserve 1\n drawingarea1:refresh"
+      "drawingarea1:move_to 5 50 50\n drawingarea1:line_to 5 200 10\n drawingarea1:line_to 5 150 200\n drawingarea1:close_path 1\n drawingarea1:set_source_rgba 5 rgba(0,255,0,.2)\n drawingarea1:fill_preserve 1"
 check 0 "" \
-      "drawingarea1:move_to 5 10 50\n drawingarea1:set_source_rgba 5 cyan\n drawingarea1:set_font_size 5 30\n drawingarea1:show_text 5 Xyz 789\n drawingarea1:set_font_size 5 10\n drawingarea1:show_text 5 Abc 123\n drawingarea1:refresh"
+      "drawingarea1:move_to 5 10 50\n drawingarea1:set_source_rgba 5 cyan\n drawingarea1:set_font_size 5 30\n drawingarea1:show_text 5 Xyz 789\n drawingarea1:set_font_size 5 10\n drawingarea1:show_text 5 Abc 123"
 check 0 "" \
-      "drawingarea1:move_to 5 10 75\n drawingarea1:set_source_rgba 5 red\n drawingarea1:set_font_face 5 italic bold Courier\n drawingarea1:set_font_size 5 30\n drawingarea1:show_text 5 Xyz 789\n drawingarea1:set_font_size 5 10\n drawingarea1:show_text 5 Abc 123\n drawingarea1:refresh"
+      "drawingarea1:move_to 5 10 75\n drawingarea1:set_source_rgba 5 red\n drawingarea1:set_font_face 5 italic bold Courier\n drawingarea1:set_font_size 5 30\n drawingarea1:show_text 5 Xyz 789\n drawingarea1:set_font_size 5 10\n drawingarea1:show_text 5 Abc 123"
 check 0 "" \
-      "drawingarea1:remove 1\n drawingarea1:remove 2\n drawingarea1:remove 3\n drawingarea1:remove 4\n drawingarea1:refresh"
+      "drawingarea1:remove 1\n drawingarea1:remove 2\n drawingarea1:remove 3\n drawingarea1:remove 4"
 
 check 0 "" \
-      "drawingarea2:rectangle 1 0 0 150 150\n drawingarea2:fill 1\n drawingarea2:refresh"
+      "drawingarea2:rectangle 1 0 0 150 150\n drawingarea2:fill 1"
 check 0 "" \
-      "drawingarea2:arc 1 80 80 60 30 60\n drawingarea2:set_source_rgba 1 red\n drawingarea2:stroke_preserve 1\n drawingarea2:line_to 1 80 80\n drawingarea2:fill 1\n drawingarea2:refresh"
+      "drawingarea2:arc 1 80 80 60 30 60\n drawingarea2:set_source_rgba 1 red\n drawingarea2:stroke_preserve 1\n drawingarea2:line_to 1 80 80\n drawingarea2:fill 1"
 check 0 "" \
-      "drawingarea2:arc_negative 1 80 80 70 30 60\n drawingarea2:set_source_rgba 1 green\n drawingarea2:stroke_preserve 1\n drawingarea2:rel_line_to 1 -50 -50\n drawingarea2:stroke 1\n drawingarea2:refresh"
+      "drawingarea2:arc_negative 1 80 80 70 30 60\n drawingarea2:set_source_rgba 1 green\n drawingarea2:stroke_preserve 1\n drawingarea2:rel_line_to 1 -50 -50\n drawingarea2:stroke 1"
 check 0 "" \
-      "drawingarea2:curve_to 1 30 30 90 120 120 30\n drawingarea2:set_source_rgba 1 blue\n drawingarea2:stroke 1\n drawingarea2:refresh"
+      "drawingarea2:curve_to 1 30 30 90 120 120 30\n drawingarea2:set_source_rgba 1 blue\n drawingarea2:stroke 1"
 check 0 "" \
-      "drawingarea2:move_to 1 160 160\n drawingarea2:rel_curve_to 1 30 30 90 120 120 30\n drawingarea2:set_source_rgba 1 orange\n drawingarea2:stroke_preserve 1\n drawingarea2:refresh"
+      "drawingarea2:move_to 1 160 160\n drawingarea2:rel_curve_to 1 30 30 90 120 120 30\n drawingarea2:set_source_rgba 1 orange\n drawingarea2:stroke_preserve 1"
 check 0 "" \
       "drawingarea2:move_to 1 0 0\n drawingarea2:rel_move_to 1 0 155\n drawingarea2:rel_line_to 1 300 0\n drawingarea2:set_dash 1 10\n drawingarea2:stroke 1"
 check 0 "" \
@@ -1819,19 +1819,19 @@ check 0 "" \
 check 0 "" \
       "drawingarea2:move_to 1 0 170\n drawingarea2:rel_line_to 1 300 0\n drawingarea2:set_dash 1 3 3 3 3 3 15\n drawingarea2:stroke 1"
 check 0 "" \
-      "drawingarea2:refresh\n drawingarea2:set_dash 1"
+      "drawingarea2:set_dash 1"
 check 0 "" \
       "drawingarea2:set_source_rgba 1 brown\n drawingarea2:set_line_width 1 15"
 check 0 "" \
-      "drawingarea2:set_line_cap 2 round\n drawingarea2:move_to 1 160 20\n drawingarea2:rel_line_to 1 20 0\n drawingarea2:rel_line_to 1 0 20\n drawingarea2:stroke 1\n drawingarea2:refresh"
+      "drawingarea2:set_line_cap 2 round\n drawingarea2:move_to 1 160 20\n drawingarea2:rel_line_to 1 20 0\n drawingarea2:rel_line_to 1 0 20\n drawingarea2:stroke 1"
 check 0 "" \
-      "drawingarea2:set_line_join 3 bevel\n drawingarea2:set_line_cap 3 butt\n drawingarea2:move_to 1 160 70\n drawingarea2:rel_line_to 1 20 0\n drawingarea2:rel_line_to 1 0 20\n drawingarea2:stroke 1\n drawingarea2:refresh"
+      "drawingarea2:set_line_join 3 bevel\n drawingarea2:set_line_cap 3 butt\n drawingarea2:move_to 1 160 70\n drawingarea2:rel_line_to 1 20 0\n drawingarea2:rel_line_to 1 0 20\n drawingarea2:stroke 1"
 check 0 "" \
-      "drawingarea2:set_line_join 3 miter\n drawingarea2:set_line_cap 3 square\n drawingarea2:move_to 1 160 120\n drawingarea2:rel_line_to 1 20 0\n drawingarea2:rel_line_to 1 0 20\n drawingarea2:stroke 1\n drawingarea2:refresh"
+      "drawingarea2:set_line_join 3 miter\n drawingarea2:set_line_cap 3 square\n drawingarea2:move_to 1 160 120\n drawingarea2:rel_line_to 1 20 0\n drawingarea2:rel_line_to 1 0 20\n drawingarea2:stroke 1"
 check 0 "" \
-      "drawingarea2:remove 2\n drawingarea2:refresh"
+      "drawingarea2:remove 2"
 check 0 "" \
-      "drawingarea2:remove 3\n drawingarea2:refresh"
+      "drawingarea2:remove 3"
 
 check 0 "" \
       "drawingarea1:set_source_rgba 6 red\n drawingarea1:set_font_size 6 20"
@@ -1858,7 +1858,7 @@ check 0 "" \
 check 0 "" \
       "drawingarea1:move_to 6 100 140\n drawingarea1:rel_move_for 6 e EAST\n drawingarea1:show_text 6 EAST"
 check 0 "" \
-      "drawingarea1:move_to 6 100 140\n drawingarea1:rel_move_for 6 w WEST\n drawingarea1:show_text 6 WEST\n drawingarea1:refresh"
+      "drawingarea1:move_to 6 100 140\n drawingarea1:rel_move_for 6 w WEST\n drawingarea1:show_text 6 WEST"
 
 check 2 "Hit Backspace, Enter" \
       "eventbox1:grab_focus" \

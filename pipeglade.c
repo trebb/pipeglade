@@ -1554,6 +1554,16 @@ rem_draw_op(GObject *widget, const char *data)
         return true;
 }
 
+static gboolean
+refresh_widget(GtkWidget *widget)
+{
+        gint width = gtk_widget_get_allocated_width(widget);
+        gint height = gtk_widget_get_allocated_height(widget);
+
+        gtk_widget_queue_draw_area(widget, 0, 0, width, height);
+        return G_SOURCE_REMOVE;
+}
+
 static void
 update_drawing_area(GObject *obj, const char *action,
                     const char *data, const char *whole_msg, GType type)
@@ -1561,14 +1571,16 @@ update_drawing_area(GObject *obj, const char *action,
         if (eql(action, "remove")) {
                 if (!rem_draw_op(obj, data))
                         ign_cmd(type, whole_msg);
-        } else if (eql(action, "refresh")) {
-                gint width = gtk_widget_get_allocated_width(GTK_WIDGET(obj));
-                gint height = gtk_widget_get_allocated_height(GTK_WIDGET(obj));
-
-                gtk_widget_queue_draw_area(GTK_WIDGET(obj), 0, 0, width, height);
         } else if (ins_draw_op(obj, action, data));
         else
                 ign_cmd(type, whole_msg);
+        if (eql(action, "stroke") ||
+            eql(action, "fill") ||
+            eql(action, "show_text") ||
+            eql(action, "remove"))
+                gdk_threads_add_idle_full(G_PRIORITY_LOW,
+                                          (GSourceFunc) refresh_widget,
+                                          GTK_WIDGET(obj), NULL);
 }
 
 static void
@@ -2697,8 +2709,7 @@ connect_widget_signals(gpointer *obj, char *ui_file)
                                         g_signal_connect(renderer, "toggled", G_CALLBACK(cb_tree_model_toggle), model);
                         }
                 }
-        }
-        else if (type == GTK_TYPE_BUTTON) {
+        } else if (type == GTK_TYPE_BUTTON) {
                 /* Button associated with a GtkTextView. */
                 if ((suffix = strstr(name, "_send_text")) != NULL &&
                     GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(suffix, name)))

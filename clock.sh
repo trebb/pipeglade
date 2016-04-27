@@ -56,7 +56,6 @@
         echo "drawingarea1:stroke $S"
         echo "drawingarea1:remove $S0"
         S0=$S
-        echo "drawingarea1:refresh"
 
         sleep 1
     done
