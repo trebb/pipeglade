@@ -16,6 +16,7 @@ LOG=test.log
 ERR_FILE=err.txt
 BAD_FIFO=bad_fifo
 PID_FILE=pid
+OUT_FILE=out.txt
 DIR=test_dir
 FILE1=saved1.txt
 FILE2=saved2.txt
@@ -23,7 +24,8 @@ FILE3=saved3.txt
 FILE4=saved4.txt
 FILE5=saved5.txt
 FILE6=saved6.txt
-rm -rf $FIN $FOUT $FERR $LOG $ERR_FILE $BAD_FIFO $PID_FILE $FILE1 $FILE2 $FILE3 $FILE4 $FILE5 $FILE6 $DIR
+rm -rf $FIN $FOUT $FERR $LOG $ERR_FILE $BAD_FIFO $PID_FILE $OUT_FILE \
+   $FILE1 $FILE2 $FILE3 $FILE4 $FILE5 $FILE6 $DIR
 
 if stat -f "%0p"; then
     STAT_CMD='stat -f "%0p"'
@@ -939,10 +941,10 @@ check() {
 }
 
 
-## Logging to stderr while redirecting stderr
+# Logging to stderr while redirecting stderr
 ./pipeglade -i $FIN -o $FOUT -O $ERR_FILE -l - &
 
-# wait for $FIN and $FOUT to appear
+# wait for $FIN to appear
 while test ! \( -e $FIN \); do :; done
 check 0 "" \
       "# Comment"
@@ -954,6 +956,16 @@ check 0 "" \
 check_cmd "grep -qe \"# Comment\" $ERR_FILE"
 check_cmd "grep -qe \"ignoring command\" $ERR_FILE"
 check_rm $FIN
+
+
+# check if stdout remains line buffered even if directed to file
+./pipeglade -i $FIN >$OUT_FILE &
+# wait for $FIN to appear
+while test ! \( -e $FIN \); do :; done
+echo "button1:force" >$FIN
+check_cmd "grep -qe 'button1:clicked' $OUT_FILE"
+echo "_:main_quit" >$FIN
+#rm -f $OUT_FILE
 
 
 ./pipeglade -i $FIN -o $FOUT -b >$PID_FILE

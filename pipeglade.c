@@ -235,14 +235,16 @@ open_in_fifo(const char *name)
         FILE *s = NULL;
 
         if (name == NULL)
-                return stdin;
-        find_fifo(name);
-        if ((fd = open(name, O_RDWR | O_NONBLOCK)) < 0)
-                bye(EXIT_FAILURE, stderr, "opening fifo %s (r): %s\n",
-                    name, strerror(errno));
-        if ((s = fdopen(fd, "r")) == NULL)
-                bye(EXIT_FAILURE, stderr, "opening fifo %s (r): %s\n",
-                    name, strerror(errno));
+                s = stdin;
+        else {
+                find_fifo(name);
+                if ((fd = open(name, O_RDWR | O_NONBLOCK)) < 0)
+                        bye(EXIT_FAILURE, stderr, "opening fifo %s (r): %s\n",
+                            name, strerror(errno));
+                if ((s = fdopen(fd, "r")) == NULL)
+                        bye(EXIT_FAILURE, stderr, "opening fifo %s (r): %s\n",
+                            name, strerror(errno));
+        }
         setvbuf(s, NULL, _IONBF, 0);
         return s;
 }
@@ -253,11 +255,13 @@ open_out_fifo(const char *name)
         FILE *s = NULL;
 
         if (name == NULL)
-                return stdout;
-        find_fifo(name);
-        if ((s = fopen(name, "w+")) == NULL)
-                bye(EXIT_FAILURE, stderr, "opening fifo %s (w): %s\n",
-                    name, strerror(errno));
+                s = stdout;
+        else {
+                find_fifo(name);
+                if ((s = fopen(name, "w+")) == NULL)
+                        bye(EXIT_FAILURE, stderr, "opening fifo %s (w): %s\n",
+                            name, strerror(errno));
+        }
         setvbuf(s, NULL, _IOLBF, 0);
         return s;
 }
