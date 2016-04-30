@@ -405,7 +405,7 @@ read_buf(FILE *s, char **buf, size_t *bufsize)
                 if (c == '\n' || feof(s))
                         break;
                 if (i >= *bufsize - 1)
-                        if ((*buf = realloc(*buf, *bufsize = *bufsize * 2)) == NULL)
+                        if ((*buf = realloc(*buf, *bufsize *= 2)) == NULL)
                                 OOM_ABORT;
                 if (esc) {
                         esc = false;
@@ -1579,7 +1579,9 @@ update_drawing_area(GObject *obj, const char *action,
         else
                 ign_cmd(type, whole_msg);
         if (eql(action, "stroke") ||
+            eql(action, "stroke_preserve") ||
             eql(action, "fill") ||
+            eql(action, "fill_preserve") ||
             eql(action, "show_text") ||
             eql(action, "remove"))
                 gdk_threads_add_idle_full(G_PRIORITY_LOW,
