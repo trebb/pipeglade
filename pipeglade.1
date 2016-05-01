@@ -523,18 +523,18 @@ if the
 window was closed by the window manager.
 .El
 .Ss GtkDrawingArea
-Most drawing commands expect an
-.Ar id
-parameter (an arbitrary non-negative integer) which can be used to
+Drawing commands expect a context parameter
+.Ar n
+(an arbitrary non-negative integer) which can be used to
 reference the command for later removal.
 .Pp
-Default is a left-handed coordinate system with its origin in the
-upper-left corner.
+The default coordinate system is a left-handed system with its origin
+in the upper-left corner.
 Angles increase from the positive X axis towards the positve Y axis
 .Pq clockwise in the default system .
 .Bl -tag -width "commands "
 .It Commands
-.Qq Ar id Ns Cm :arc Ar id x y radius angle1 angle2
+.Qq Ar id Ns Cm :arc Ar n x y radius angle1 angle2
 adds a circular arc to the current path.
 The arc is centered at
 .Pq Ar x , y
@@ -544,7 +544,7 @@ to
 .Ar angle2
 .Pq in degrees .
 .Pp
-.Qq Ar id Ns Cm :arc_negative Ar id x y radius angle1 angle2
+.Qq Ar id Ns Cm :arc_negative Ar n x y radius angle1 angle2
 adds a circular arc to the current path.
 The arc is centered at
 .Pq Ar x , y
@@ -554,14 +554,14 @@ to
 .Ar angle2
 .Pq in degrees .
 .Pp
-.Qq Ar id Ns Cm :close_path Ar id
+.Qq Ar id Ns Cm :close_path Ar n
 adds a line segment from the current point to the point most recently
 passed to
 .Ar id Ns Cm :move_to
 or
 .Ar id Ns Cm :rel_move_to .
 .Pp
-.Qq Ar id Ns Cm :curve_to Ar id x1 y1 x2 y2 x3 y3
+.Qq Ar id Ns Cm :curve_to Ar n x1 y1 x2 y2 x3 y3
 adds a cubic Bezier spline from the current point to
 .Pq Ar x3 , y3 ,
 using
@@ -572,28 +572,28 @@ as control points.
 If there is no current point, the curve will start at
 .Pq Ar x1 , y1 .
 .Pp
-.Qq Ar id Ns Cm :fill Ar id
+.Qq Ar id Ns Cm :fill Ar n
 fills the current path and clears it.
 .Pp
-.Qq Ar id Ns Cm :fill_preserve Ar id
+.Qq Ar id Ns Cm :fill_preserve Ar n
 fills the current path without clearing it.
 .Pp
-.Qq Ar id Ns Cm :line_to Ar id x y
+.Qq Ar id Ns Cm :line_to Ar n x y
 adds a line from the current point to
 .Pq Ar x , y ,
 or creates a new current point at
 .Pq Ar x , y .
 .Pp
-.Qq Ar id Ns Cm :move_to Ar id x y
+.Qq Ar id Ns Cm :move_to Ar n x y
 sets the current point to
 .Pq Ar x , y .
 .Pp
-.Qq Ar id Ns Cm :rectangle Ar id x y width height
+.Qq Ar id Ns Cm :rectangle Ar n x y width height
 adds a rectangle to the current path.
 The top left corner is at
 .Pq Ar x , y .
 .Pp
-.Qq Ar id Ns Cm :rel_curve_to Ar id dx1 dy1 dx2 dy2 dx3 dy3
+.Qq Ar id Ns Cm :rel_curve_to Ar n dx1 dy1 dx2 dy2 dx3 dy3
 adds a cubic Bezier spline from the current point to
 .Pq Ar dx3 , dy3 ,
 using
@@ -603,96 +603,96 @@ and
 as control points.
 All coordinates are offsets relative to the current point.
 .Pp
-.Qq Ar id Ns Cm :rel_line_to Ar id dx dy
+.Qq Ar id Ns Cm :rel_line_to Ar n dx dy
 adds a line from the current point to a point offset from there by
 .Pq Ar dx , dy .
 .Pp
-.Qo Ar id Ns Cm :rel_move_for Ar id Brq Cm c | e | n | ne | nw | s | se | sw | w
+.Qo Ar id Ns Cm :rel_move_for Ar n Brq Cm c | e | n | ne | nw | s | se | sw | w
 .Ar text
 .Qc
 moves the current point such that
-.Qq Ar id Ns Cm :show_text Ar id text
+.Qq Ar id Ns Cm :show_text Ar n text
 will place the specified reference point of
 .Ar text
 on the original current point.
 .Pp
-.Qq Ar id Ns Cm :rel_move_to Ar id dx dy
+.Qq Ar id Ns Cm :rel_move_to Ar n dx dy
 moves the current point by
 .Pq Ar dx , dy .
 .Pp
-.Qq Ar id Ns Cm :remove Ar id
-removes the elements with
-.Ar id
+.Qq Ar id Ns Cm :remove Ar n
+removes the elements with context parameter
+.Ar n
 from the
 .Cm GtkDrawingArea Ar id .
 .Pp
-.Qq Ar id Ns Cm :rotate Ar id Ar angle
+.Qq Ar id Ns Cm :rotate Ar n Ar angle
 rotates the user space axes by
 .Ar angle
 .Pq in degrees .
 .Pp
-.Qq Ar id Ns Cm :scale Ar id Ar sx sy
+.Qq Ar id Ns Cm :scale Ar n Ar sx sy
 scales the user space axes by
 .Pq Ar sx , sy .
 .Pp
-.Qq Ar id Ns Cm :set_dash Ar id l
+.Qq Ar id Ns Cm :set_dash Ar n l
 sets the dash pattern to
 .Ar l
 on,
 .Ar l
 off.
 .Pp
-.Qq Ar id Ns Cm :set_dash Ar id l1on l1off l2on l2off ...
+.Qq Ar id Ns Cm :set_dash Ar n l1on l1off l2on l2off ...
 resets the dash pattern to a line with arbitrary on/off portions.
 .Pp
-.Qq Ar id Ns Cm :set_dash Ar id
+.Qq Ar id Ns Cm :set_dash Ar n
 resets the dash pattern to a solid line.
 .Pp
-.Qo Ar id Ns Cm :set_font_family Ar id Brq Cm normal | italic | oblique
+.Qo Ar id Ns Cm :set_font_family Ar n Brq Cm normal | italic | oblique
 .Brq Cm normal | bold
 .Bq Cm family
 .Qc
 sets the font face for subsequent calls of
 .Ar id Ns Cm :show_text .
 .Pp
-.Qq Ar id Ns Cm :set_font_size Ar id size
+.Qq Ar id Ns Cm :set_font_size Ar n size
 sets the font size for subsequent calls of
 .Ar id Ns Cm :show_text .
 .Pp
-.Qq Ar id Ns Cm :set_line_cap Ar id Brq Cm butt | round | square
+.Qq Ar id Ns Cm :set_line_cap Ar n Brq Cm butt | round | square
 sets the line cap style.
 Default is
 .Cm butt .
 .Pp
-.Qq Ar id Ns Cm :set_line_join Ar id Brq Cm miter | round | bevel
+.Qq Ar id Ns Cm :set_line_join Ar n Brq Cm miter | round | bevel
 sets the line junction style.
 Default is
 .Cm miter .
 .Pp
-.Qq Ar id Ns Cm :set_line_width Ar id width
+.Qq Ar id Ns Cm :set_line_width Ar n width
 sets the line width.
 Default
 .Ar width
 is 2.
 .Pp
-.Qq Ar id Ns Cm :set_source_rgba Ar id color
+.Qq Ar id Ns Cm :set_source_rgba Ar n color
 sets the color.
 .Ar color
 is in the format used with
 .Sx GtkColorButton .
 .Pp
-.Qq Ar id Ns Cm :show_text Ar id text
+.Qq Ar id Ns Cm :show_text Ar n text
 writes
 .Ar text ,
 beginning at the current point.
 .Pp
-.Qq Ar id Ns Cm :stroke Ar id
+.Qq Ar id Ns Cm :stroke Ar n
 strokes the current path and clears it.
 .Pp
-.Qq Ar id Ns Cm :stroke_preserve Ar id
+.Qq Ar id Ns Cm :stroke_preserve Ar n
 strokes the current path without clearing it.
 .Pp
-.Qq Ar id Ns Cm :transform Ar id Bq Ar xx yx xy yy x0 y0
+.Qq Ar id Ns Cm :transform Ar n Bq Ar xx yx xy yy x0 y0
 modifies the current transformation matrix such that
 .Pp
 .Dl Va x' Li = Ar xx Va x Li + Ar xy Va y Li + Ar x0 ,
@@ -700,7 +700,7 @@ modifies the current transformation matrix such that
 .Pp
 Default is resetting the current transformation matrix.
 .Pp
-.Qq Ar id Ns Cm :translate Ar id Ar tx ty
+.Qq Ar id Ns Cm :translate Ar n Ar tx ty
 translates the user space origin by
 .Pq Ar tx , ty .
 .It Feedback
@@ -1079,33 +1079,33 @@ start and stop the spinner.
 none
 .El
 .Ss GtkStatusbar
-The context
-.Ar id
-parameter is an arbitrary non-whitespace string.
+The context parameter
+.Ar c
+is an arbitrary non-whitespace string.
 .Bl -tag -width "commands "
 .It Commands
-.Qq Ar id Ns Cm :push_id Ar id string ,
+.Qq Ar id Ns Cm :push_id Ar c string ,
 .Qq Ar id Ns Cm :push Ar string
 associate
 .Ar string
-with context id
-.Ar id
+with context parameter
+.Ar c
 or
 .Ql 0 ,
 respectively, and display it in the statusbar.
 .Pp
-.Qq Ar id Ns Cm :pop_id Ar id ,
+.Qq Ar id Ns Cm :pop_id Ar c ,
 .Qq Ar id Ns Cm :pop
-remove the latest entry associated with context id
-.Ar id
+remove the latest entry associated with context parameter
+.Ar c
 or
 .Ql 0 ,
 respectively, from the statusbar.
 .Pp
-.Qq Ar id Ns Cm :remove_all_id Ar id ,
+.Qq Ar id Ns Cm :remove_all_id Ar c ,
 .Qq Ar id Ns Cm :remove_all
-remove the entries associated with context id
-.Ar id
+remove the entries associated with context parameter
+.Ar c
 or
 .Ql 0 ,
 respectively, from the statusbar.
