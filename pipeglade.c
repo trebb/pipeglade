@@ -190,6 +190,33 @@ go_bg_if(bool bg, FILE *in, FILE *out, char *err_file)
 }
 
 /*
+ * Return the current locale and set it to "C".  Should be free()d if
+ * done.
+ */
+static char *
+lc_numeric()
+{
+        char *lc_orig;
+        char *lc = setlocale(LC_NUMERIC, NULL);
+
+        if ((lc_orig = malloc(strlen(lc) + 1)) == NULL)
+                OOM_ABORT;
+        strcpy(lc_orig, lc);
+        setlocale(LC_NUMERIC, "C");
+        return lc_orig;
+}
+
+/*
+ * Set locale (back) to lc; free lc
+ */
+static void
+lc_numeric_free(char *lc)
+{
+        setlocale(LC_NUMERIC, lc);
+        free(lc);
+}
+
+/*
  * Print a warning about a malformed command to stderr
  */
 static void
@@ -516,7 +543,7 @@ send_tree_cell_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
 {
         GValue value = G_VALUE_INIT;
         GType col_type;
-        char str[BUFLEN];
+        char str[BUFLEN], *lc = lc_numeric();
 
         gtk_tree_model_get_value(model, iter, col, &value);
         col_type = gtk_tree_model_get_column_type(model, col);
@@ -566,6 +593,7 @@ send_tree_cell_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
                 break;
         }
         g_value_unset(&value);
+        lc_numeric_free(lc);
 }
 
 /*
@@ -647,11 +675,12 @@ cb_editable(GtkBuildable *obj, const char *tag)
 static bool
 cb_event_box_button(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
 {
-        char data[BUFLEN];
+        char data[BUFLEN], *lc = lc_numeric();
 
         snprintf(data, BUFLEN, "%d %.1lf %.1lf",
                  e->button.button, e->button.x, e->button.y);
         send_msg(obj, user_data, data, NULL);
+        lc_numeric_free(lc);
         return true;
 }
 
@@ -673,10 +702,11 @@ cb_event_box_key(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
 static bool
 cb_event_box_motion(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
 {
-        char data[BUFLEN];
+        char data[BUFLEN], *lc = lc_numeric();
 
         snprintf(data, BUFLEN, "%.1lf %.1lf", e->button.x, e->button.y);
         send_msg(obj, user_data, data, NULL);
+        lc_numeric_free(lc);
         return true;
 }
 
@@ -712,10 +742,11 @@ cb_menu_item(GtkBuildable *obj, const char *tag)
 static void
 cb_range(GtkBuildable *obj, const char *tag)
 {
-        char str[BUFLEN];
+        char str[BUFLEN], *lc = lc_numeric();
 
         snprintf(str, BUFLEN, "%f", gtk_range_get_value(GTK_RANGE(obj)));
         send_msg(obj, tag, str, NULL);
+        lc_numeric_free(lc);
 }
 
 /*
@@ -1835,11 +1866,12 @@ update_progress_bar(GObject *obj, const char *action,
                     const char *data, const char *whole_msg, GType type)
 {
         GtkProgressBar *progressbar = GTK_PROGRESS_BAR(obj);
+        double frac;
 
         if (eql(action, "set_text"))
                 gtk_progress_bar_set_text(progressbar, *data == '\0' ? NULL : data);
-        else if (eql(action, "set_fraction"))
-                gtk_progress_bar_set_fraction(progressbar, strtod(data, NULL));
+        else if (eql(action, "set_fraction") && (sscanf(data, "%lf", &frac) == 1))
+                gtk_progress_bar_set_fraction(progressbar, frac);
         else
                 ign_cmd(type, whole_msg);
 }
@@ -1848,8 +1880,10 @@ static void
 update_scale(GObject *obj, const char *action,
              const char *data, const char *whole_msg, GType type)
 {
-        if (eql(action, "set_value"))
-                gtk_range_set_value(GTK_RANGE(obj), strtod(data, NULL));
+        double val;
+
+        if (eql(action, "set_value") && (sscanf(data, "%lf", &val) == 1))
+                gtk_range_set_value(GTK_RANGE(obj), val);
         else
                 ign_cmd(type, whole_msg);
 }
@@ -2434,17 +2468,19 @@ struct ui_data {
 };
 
 /*
- * Parse command pointed to by ud, and act on ui accordingly; post
- * semaphore ud.msg_digested if done.  Runs once per command inside
- * gtk_main_loop().
+ * Parse command pointed to by ud, and act on ui accordingly.  Runs
+ * once per command inside gtk_main_loop().
  */
 static gboolean
 update_ui(struct ui_data *ud)
 {
+        char *lc = lc_numeric();
+
         (ud->fn)(ud->obj, ud->action, ud->data, ud->msg, ud->type);
         free(ud->msg_tokens);
         free(ud->msg);
         free(ud);
+        lc_numeric_free(lc);
         return G_SOURCE_REMOVE;
 }
 

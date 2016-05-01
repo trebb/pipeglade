@@ -993,11 +993,33 @@ check() {
 }
 
 
+# Being impervious to locale
+LC_ALL=de_DE.UTF-8 ./pipeglade -i $FIN -o $FOUT -O $ERR_FILE &
+# wait for $FIN and $FOUT to appear
+while test ! \( -e $FIN -a -e $FOUT -a $ERR_FILE \); do :; done
+check 0 "" \
+      "drawingarea1:transform 1 1.5 1 1 1 1 1"
+check 0 "" \
+      "progressbar1:set_fraction .5"
+check 1 "Press \"No\" to continue" \
+      "scale1:set_value .5" \
+      "scale1:value 0\.50"
+sleep .5
+check 0 "" \
+      "_:main_quit"
+sleep .5
+check_cmd "(! grep -qe \"ignoring GtkDrawingArea command\" $ERR_FILE)"
+check_cmd "(! grep -qe \"ignoring GtkProgressBar command\" $ERR_FILE)"
+check_cmd "(! grep -qe \"ignoring GtkScale command\" $ERR_FILE)"
+check_rm $FIN
+check_rm $FOUT
+rm $ERR_FILE
+
+
 # Logging to stderr while redirecting stderr
 ./pipeglade -i $FIN -o $FOUT -O $ERR_FILE -l - &
-
-# wait for $FIN to appear
-while test ! \( -e $FIN \); do :; done
+# wait for $FIN and $FOUT to appear
+while test ! \( -e $FIN -a -e $FOUT \); do :; done
 check 0 "" \
       "# Comment"
 check 0 "" \
@@ -1122,7 +1144,7 @@ check_rm $FOUT
 
 
 echo "####	# Initial line to check if -l option appends" >$LOG
-./pipeglade -i $FIN -o $FOUT -l $LOG &
+LC_NUMERIC=de_DE.UTF-8 ./pipeglade -i $FIN -o $FOUT -l $LOG &
 
 # wait for $FIN and $FOUT to appear
 while test ! \( -e $FIN -a -e $FOUT \); do :; done
