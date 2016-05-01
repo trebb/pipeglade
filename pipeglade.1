@@ -528,33 +528,31 @@ Most drawing commands expect an
 parameter (an arbitrary non-negative integer) which can be used to
 reference the command for later removal.
 .Pp
-All coordinates refer to a left-handed coordinate system with its
-origin in the upper-left corner.
+Default is a left-handed coordinate system with its origin in the
+upper-left corner.
+Angles increase from the positive X axis towards the positve Y axis
+.Pq clockwise in the default system .
 .Bl -tag -width "commands "
 .It Commands
 .Qq Ar id Ns Cm :arc Ar id x y radius angle1 angle2
 adds a circular arc to the current path.
 The arc is centered at
 .Pq Ar x , y
-and proceeds clockwise from
+and proceeds from
 .Ar angle1
 to
 .Ar angle2
-.Po
-in degrees
-.Pc .
+.Pq in degrees .
 .Pp
 .Qq Ar id Ns Cm :arc_negative Ar id x y radius angle1 angle2
 adds a circular arc to the current path.
 The arc is centered at
 .Pq Ar x , y
-and proceeds counterclockwise from
+and proceeds in the direction of decreasing angles from
 .Ar angle1
 to
 .Ar angle2
-.Po
-in degrees
-.Pc .
+.Pq in degrees .
 .Pp
 .Qq Ar id Ns Cm :close_path Ar id
 adds a line segment from the current point to the point most recently
@@ -628,6 +626,15 @@ removes the elements with
 from the
 .Cm GtkDrawingArea Ar id .
 .Pp
+.Qq Ar id Ns Cm :rotate Ar id Ar angle
+rotates the user space axes by
+.Ar angle
+.Pq in degrees .
+.Pp
+.Qq Ar id Ns Cm :scale Ar id Ar sx sy
+scales the user space axes by
+.Pq Ar sx , sy .
+.Pp
 .Qq Ar id Ns Cm :set_dash Ar id l
 sets the dash pattern to
 .Ar l
@@ -654,12 +661,19 @@ sets the font size for subsequent calls of
 .Pp
 .Qq Ar id Ns Cm :set_line_cap Ar id Brq Cm butt | round | square
 sets the line cap style.
+Default is
+.Cm butt .
 .Pp
 .Qq Ar id Ns Cm :set_line_join Ar id Brq Cm miter | round | bevel
 sets the line junction style.
+Default is
+.Cm miter .
 .Pp
 .Qq Ar id Ns Cm :set_line_width Ar id width
 sets the line width.
+Default
+.Ar width
+is 2.
 .Pp
 .Qq Ar id Ns Cm :set_source_rgba Ar id color
 sets the color.
@@ -677,6 +691,18 @@ strokes the current path and clears it.
 .Pp
 .Qq Ar id Ns Cm :stroke_preserve Ar id
 strokes the current path without clearing it.
+.Pp
+.Qq Ar id Ns Cm :transform Ar id Bq Ar xx yx xy yy x0 y0
+modifies the current transformation matrix such that
+.Pp
+.Dl Va x' Li = Ar xx Va x Li + Ar xy Va y Li + Ar x0 ,
+.Dl Va y' Li = Ar yx Va y Li + Ar yy Va y Li + Ar y0 .
+.Pp
+Default is resetting the current transformation matrix.
+.Pp
+.Qq Ar id Ns Cm :translate Ar id Ar tx ty
+translates the user space origin by
+.Pq Ar tx , ty .
 .It Feedback
 none
 .El

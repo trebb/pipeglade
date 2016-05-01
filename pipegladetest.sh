@@ -871,6 +871,58 @@ check_error "drawingarea1:rel_move_for 1 nnn Text" \
             "ignoring GtkDrawingArea command \"drawingarea1:rel_move_for 1 nnn Text\""
 check_error "drawingarea1:rel_move_for nnn c Text" \
             "ignoring GtkDrawingArea command \"drawingarea1:rel_move_for nnn c Text\""
+check_error "drawingarea1:transform" \
+            "ignoring GtkDrawingArea command \"drawingarea1:transform\""
+check_error "drawingarea1:transform " \
+            "ignoring GtkDrawingArea command \"drawingarea1:transform \""
+check_error "drawingarea1:transform nnn" \
+            "ignoring GtkDrawingArea command \"drawingarea1:transform nnn\""
+check_error "drawingarea1:transform 1 2" \
+            "ignoring GtkDrawingArea command \"drawingarea1:transform 1 2\""
+check_error "drawingarea1:transform 1 2 3" \
+            "ignoring GtkDrawingArea command \"drawingarea1:transform 1 2 3\""
+check_error "drawingarea1:transform 1 2 3 4" \
+            "ignoring GtkDrawingArea command \"drawingarea1:transform 1 2 3 4\""
+check_error "drawingarea1:transform 1 2 3 4 5" \
+            "ignoring GtkDrawingArea command \"drawingarea1:transform 1 2 3 4 5\""
+check_error "drawingarea1:transform 1 2 3 4 5 6" \
+            "ignoring GtkDrawingArea command \"drawingarea1:transform 1 2 3 4 5 6\""
+check_error "drawingarea1:transform 1 2 3 x 5 6 7" \
+            "ignoring GtkDrawingArea command \"drawingarea1:transform 1 2 3 x 5 6 7\""
+check_error "drawingarea1:translate" \
+            "ignoring GtkDrawingArea command \"drawingarea1:translate\""
+check_error "drawingarea1:translate " \
+            "ignoring GtkDrawingArea command \"drawingarea1:translate \""
+check_error "drawingarea1:translate 1" \
+            "ignoring GtkDrawingArea command \"drawingarea1:translate 1\""
+check_error "drawingarea1:translate 1 2" \
+            "ignoring GtkDrawingArea command \"drawingarea1:translate 1 2\""
+check_error "drawingarea1:translate nnn 2 3" \
+            "ignoring GtkDrawingArea command \"drawingarea1:translate nnn 2 3\""
+check_error "drawingarea1:translate 1 x 3" \
+            "ignoring GtkDrawingArea command \"drawingarea1:translate 1 x 3\""
+check_error "drawingarea1:scale" \
+            "ignoring GtkDrawingArea command \"drawingarea1:scale\""
+check_error "drawingarea1:scale " \
+            "ignoring GtkDrawingArea command \"drawingarea1:scale \""
+check_error "drawingarea1:scale 1" \
+            "ignoring GtkDrawingArea command \"drawingarea1:scale 1\""
+check_error "drawingarea1:scale 1 2" \
+            "ignoring GtkDrawingArea command \"drawingarea1:scale 1 2\""
+check_error "drawingarea1:scale nnn 2 3" \
+            "ignoring GtkDrawingArea command \"drawingarea1:scale nnn 2 3\""
+check_error "drawingarea1:scale 1 x 3" \
+            "ignoring GtkDrawingArea command \"drawingarea1:scale 1 x 3\""
+check_error "drawingarea1:rotate" \
+            "ignoring GtkDrawingArea command \"drawingarea1:rotate\""
+check_error "drawingarea1:rotate " \
+            "ignoring GtkDrawingArea command \"drawingarea1:rotate \""
+check_error "drawingarea1:rotate 1" \
+            "ignoring GtkDrawingArea command \"drawingarea1:rotate 1\""
+check_error "drawingarea1:rotate nnn 2" \
+            "ignoring GtkDrawingArea command \"drawingarea1:rotate nnn 2\""
+check_error "drawingarea1:rotate 1 x" \
+            "ignoring GtkDrawingArea command \"drawingarea1:rotate 1 x\""
 
 echo "_:main_quit" >$FIN
 
@@ -1813,6 +1865,8 @@ check 0 "" \
       "drawingarea1:remove 1\n drawingarea1:remove 2\n drawingarea1:remove 3\n drawingarea1:remove 4"
 
 check 0 "" \
+      "drawingarea2:rotate 55 5\n drawingarea2:scale 33 .7 .7\n drawingarea2:translate 77 30 30\n drawingarea2:transform 44"
+check 0 "" \
       "drawingarea2:rectangle 1 0 0 150 150\n drawingarea2:fill 1"
 check 0 "" \
       "drawingarea2:arc 1 80 80 60 30 60\n drawingarea2:set_source_rgba 1 red\n drawingarea2:stroke_preserve 1\n drawingarea2:line_to 1 80 80\n drawingarea2:fill 1"
@@ -1844,9 +1898,21 @@ check 0 "" \
       "drawingarea2:remove 2"
 check 0 "" \
       "drawingarea2:remove 3"
+check 1 "Press \"OK\" if the drawing looks tilted and displaced" \
+      "drawingarea2:remove 44" \
+      "button1:clicked"
+check 1 "Press \"OK\" if the drawing doesn't look tilted anymore" \
+      "drawingarea2:remove 55" \
+      "button1:clicked"
+check 1 "Press \"OK\" if the drawing has grown a bit" \
+      "drawingarea2:remove 33" \
+      "button1:clicked"
+check 1 "Press \"OK\" if the drawing has moved into the NE corner" \
+      "drawingarea2:remove 77" \
+      "button1:clicked"
 
 check 0 "" \
-      "drawingarea1:set_source_rgba 6 red\n drawingarea1:set_font_size 6 20"
+      "drawingarea1:set_source_rgba 6 red\n drawingarea1:set_font_size 6 20\n drawingarea1:transform 99 .985 -.174 .174 .985 0 0"
 check 0 "" \
       "drawingarea1:move_to 6 100 100\n drawingarea1:rel_move_for 6 c CENTER\n drawingarea1:show_text 6 CENTER"
 check 0 "" \

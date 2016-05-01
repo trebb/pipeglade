@@ -817,6 +817,7 @@ enum cairo_fn {
         REL_LINE_TO,
         REL_MOVE_TO,
         REL_MOVE_FOR,
+        RESET_CTM,
         SET_DASH,
         SET_FONT_FACE,
         SET_FONT_SIZE,
@@ -827,6 +828,7 @@ enum cairo_fn {
         SHOW_TEXT,
         STROKE,
         STROKE_PRESERVE,
+        TRANSFORM,
 };
 
 /*
@@ -929,6 +931,10 @@ struct show_text_args {
         char text[];
 };
 
+struct transform_args {
+        cairo_matrix_t matrix;
+};
+
 static void
 draw(cairo_t *cr, enum cairo_fn op, void *op_args)
 {
@@ -1017,6 +1023,9 @@ draw(cairo_t *cr, enum cairo_fn op, void *op_args)
                 cairo_rel_move_to(cr, dx, dy);
                 break;
         }
+        case RESET_CTM:
+                cairo_identity_matrix(cr);
+                break;
         case STROKE:
                 cairo_stroke(cr);
                 break;
@@ -1069,6 +1078,12 @@ draw(cairo_t *cr, enum cairo_fn op, void *op_args)
                 struct set_source_rgba_args *args = op_args;
 
                 gdk_cairo_set_source_rgba(cr, &args->color);
+                break;
+        }
+        case TRANSFORM: {
+                struct transform_args *args = op_args;
+
+                cairo_transform(cr, &args->matrix);
                 break;
         }
         default:
@@ -1263,8 +1278,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 if (sscanf(data, "%u %lf %lf %lf %lf %lf", &op->id,
                            &args->x, &args->y, &args->radius, &deg1, &deg2) != 6)
                         return false;
-                args->angle1 = deg1 * (M_PI / 180.);
-                args->angle2 = deg2 * (M_PI / 180.);
+                args->angle1 = deg1 * (M_PI / 180.L);
+                args->angle2 = deg2 * (M_PI / 180.L);
         } else if (eql(action, "arc_negative")) {
                 struct arc_args *args;
                 double deg1, deg2;
@@ -1276,8 +1291,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 if (sscanf(data, "%u %lf %lf %lf %lf %lf", &op->id,
                            &args->x, &args->y, &args->radius, &deg1, &deg2) != 6)
                         return false;
-                args->angle1 = deg1 * (M_PI / 180.);
-                args->angle2 = deg2 * (M_PI / 180.);
+                args->angle1 = deg1 * (M_PI / 180.L);
+                args->angle2 = deg2 * (M_PI / 180.L);
         } else if (eql(action, "curve_to")) {
                 struct curve_to_args *args;
 
@@ -1497,6 +1512,59 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 if ((sscanf(data, "%u %n", &op->id, &c_start) < 1))
                         return false;;
                 gdk_rgba_parse(&args->color, data + c_start);
+        } else if (eql(action, "transform")) {
+                double xx, yx, xy, yy, x0, y0;
+                char dummy;
+
+                if (sscanf(data, "%u %lf %lf %lf %lf %lf %lf",
+                           &op->id, &xx, &yx, &xy, &yy, &x0, &y0) == 7) {
+                        struct transform_args *args;
+
+                        if ((args = malloc(sizeof(*args))) == NULL)
+                                OOM_ABORT;
+                        op->op_args = args;
+                        op->op = TRANSFORM;
+                        cairo_matrix_init(&args->matrix, xx, yx, xy, yy, x0, y0);
+                } else if (sscanf(data, "%u, %c", &op->id, &dummy))
+                        return false;
+                else if (sscanf(data, "%u", &op->id) == 1) {
+                        op->op = RESET_CTM;
+                        op->op_args = NULL;
+                } else
+                        return false;
+        } else if (eql(action, "translate")) {
+                struct transform_args *args;
+                double tx, ty;
+
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
+                op->op = TRANSFORM;
+                op->op_args = args;
+                if (sscanf(data, "%u %lf %lf", &op->id, &tx, &ty) != 3)
+                        return false;
+                cairo_matrix_init_translate(&args->matrix, tx, ty);
+        } else if (eql(action, "scale")) {
+                struct transform_args *args;
+                double sx, sy;
+
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
+                op->op = TRANSFORM;
+                op->op_args = args;
+                if (sscanf(data, "%u %lf %lf", &op->id, &sx, &sy) != 3)
+                        return false;
+                cairo_matrix_init_scale(&args->matrix, sx, sy);
+        } else if (eql(action, "rotate")) {
+                struct transform_args *args;
+                double angle;
+
+                if ((args = malloc(sizeof(*args))) == NULL)
+                        OOM_ABORT;
+                op->op = TRANSFORM;
+                op->op_args = args;
+                if (sscanf(data, "%u %lf", &op->id, &angle) != 2)
+                        return false;
+                cairo_matrix_init_rotate(&args->matrix, angle * (M_PI / 180.L));
         } else
                 return false;
         return true;
