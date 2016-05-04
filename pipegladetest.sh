@@ -88,6 +88,7 @@ check_cmd() {
     fi
 }
 
+
 echo "
 # BATCH ONE
 #
@@ -206,6 +207,7 @@ check_rm $FOUT
 
 
 #exit
+
 echo "
 # BATCH TWO
 #
@@ -249,10 +251,10 @@ check_error "nnn:set_text FFFF" \
             "ignoring command \"nnn:set_text FFFF\""
 check_error "nnn:set_tooltip_text FFFF" \
             "ignoring command \"nnn:set_tooltip_text FFFF\""
-check_error "nnn:set_sensible 0" \
-            "ignoring command \"nnn:set_sensible 0\""
-check_error "nnn:set_sensible 1" \
-            "ignoring command \"nnn:set_sensible 1\""
+check_error "nnn:set_sensitive 0" \
+            "ignoring command \"nnn:set_sensitive 0\""
+check_error "nnn:set_sensitive 1" \
+            "ignoring command \"nnn:set_sensitive 1\""
 check_error "nnn:set_visible 0" \
             "ignoring command \"nnn:set_visible 0\""
 check_error "nnn:set_visible 1" \
@@ -265,6 +267,29 @@ check_error "nnn:style font:Bold 11" \
             "ignoring command \"nnn:style font:Bold 11\""
 check_error "nnn:force" \
             "ignoring command \"nnn:force\""
+# Wrong number or kind of arguments for generic actions
+check_error "button1:set_sensitive" \
+            "ignoring command \"button1:set_sensitive\""
+check_error "button1:set_sensitive 2" \
+            "ignoring command \"button1:set_sensitive 2\""
+check_error "button1:set_sensitive nnn" \
+            "ignoring command \"button1:set_sensitive nnn\""
+check_error "button1:set_sensitive 0 1" \
+            "ignoring command \"button1:set_sensitive 0 1\""
+check_error "button1:set_visible" \
+            "ignoring command \"button1:set_visible\""
+check_error "button1:set_visible 2" \
+            "ignoring command \"button1:set_visible 2\""
+check_error "button1:set_visible nnn" \
+            "ignoring command \"button1:set_visible nnn\""
+check_error "button1:set_visible 0 1" \
+            "ignoring command \"button1:set_visible 0 1\""
+check_error "button1:grab_focus 2" \
+            "ignoring command \"button1:grab_focus 2\""
+check_error "button1:force 2" \
+            "ignoring command \"button1:force 2\""
+check_error "button1:main_quit 2" \
+            "ignoring command \"button1:main_quit 2\""
 # Widget that shouldn't fire callbacks
 check_error "label1:force" \
             "ignoring GtkLabel command \"label1:force\""
@@ -305,6 +330,18 @@ check_error "main:move 700" \
             "ignoring GtkWindow command \"main:move 700\""
 check_error "main:move 700 nnn" \
             "ignoring GtkWindow command \"main:move 700 nnn\""
+check_error "main:move 700 700 700" \
+            "ignoring GtkWindow command \"main:move 700 700 700\""
+check_error "main:resize 700" \
+            "ignoring GtkWindow command \"main:resize 700\""
+check_error "main:resize 700 nnn" \
+            "ignoring GtkWindow command \"main:resize 700 nnn\""
+check_error "main:resize 700 700 700" \
+            "ignoring GtkWindow command \"main:resize 700 700 700\""
+check_error "main:fullscreen 1" \
+            "ignoring GtkWindow command \"main:fullscreen 1\""
+check_error "main:unfullscreen 1" \
+            "ignoring GtkWindow command \"main:unfullscreen 1\""
 # GtkLabel
 check_error "label1:nnn" \
             "ignoring GtkLabel command \"label1:nnn\""
@@ -314,14 +351,50 @@ check_error "image1:nnn" \
 # GtkNotebook
 check_error "notebook1:nnn" \
             "ignoring GtkNotebook command \"notebook1:nnn\""
+check_error "notebook1:set_current_page" \
+            "ignoring GtkNotebook command \"notebook1:set_current_page\""
+check_error "notebook1:set_current_page " \
+            "ignoring GtkNotebook command \"notebook1:set_current_page \""
+check_error "notebook1:set_current_page nnn" \
+            "ignoring GtkNotebook command \"notebook1:set_current_page nnn\""
+check_error "notebook1:set_current_page 1 1" \
+            "ignoring GtkNotebook command \"notebook1:set_current_page 1 1\""
 # GtkExpander
 check_error "expander1:nnn" \
             "ignoring GtkExpander command \"expander1:nnn\""
+check_error "expander1:set_expanded" \
+            "ignoring GtkExpander command \"expander1:set_expanded\""
+check_error "expander1:set_expanded 3" \
+            "ignoring GtkExpander command \"expander1:set_expanded 3\""
+check_error "expander1:set_expanded 0 1" \
+            "ignoring GtkExpander command \"expander1:set_expanded 0 1\""
 # GtkTextView
 check_error "textview1:nnn" \
             "ignoring GtkTextView command \"textview1:nnn\""
 check_error "textview1:save" \
             "ignoring GtkTextView command \"textview1:save\""
+check_error "textview1:delete nnn" \
+            "ignoring GtkTextView command \"textview1:delete nnn\""
+check_error "textview1:place_cursor" \
+            "ignoring GtkTextView command \"textview1:place_cursor\""
+check_error "textview1:place_cursor " \
+            "ignoring GtkTextView command \"textview1:place_cursor \""
+check_error "textview1:place_cursor nnn" \
+            "ignoring GtkTextView command \"textview1:place_cursor nnn\""
+check_error "textview1:place_cursor 1 1" \
+            "ignoring GtkTextView command \"textview1:place_cursor 1 1\""
+check_error "textview1:place_cursor end 1" \
+            "ignoring GtkTextView command \"textview1:place_cursor end 1\""
+check_error "textview1:place_cursor_at_line" \
+            "ignoring GtkTextView command \"textview1:place_cursor_at_line\""
+check_error "textview1:place_cursor_at_line " \
+            "ignoring GtkTextView command \"textview1:place_cursor_at_line \""
+check_error "textview1:place_cursor_at_line nnn" \
+            "ignoring GtkTextView command \"textview1:place_cursor_at_line nnn\""
+check_error "textview1:place_cursor_at_line 1 1" \
+            "ignoring GtkTextView command \"textview1:place_cursor_at_line 1 1\""
+check_error "textview1:scroll_to_cursor nnn" \
+            "ignoring GtkTextView command \"textview1:scroll_to_cursor nnn\""
 mkdir $DIR; chmod a-w $DIR
 check_error "textview1:save $DIR/$FILE1" \
             "ignoring GtkTextView command \"textview1:save $DIR/$FILE1\""
@@ -334,24 +407,89 @@ check_error "button1:nnn" \
 # GtkSwitch
 check_error "switch1:nnn" \
             "ignoring GtkSwitch command \"switch1:nnn\""
+check_error "switch1:set_active" \
+            "ignoring GtkSwitch command \"switch1:set_active\""
+check_error "switch1:set_active " \
+            "ignoring GtkSwitch command \"switch1:set_active \""
+check_error "switch1:set_active 2" \
+            "ignoring GtkSwitch command \"switch1:set_active 2\""
+check_error "switch1:set_active 0 1" \
+            "ignoring GtkSwitch command \"switch1:set_active 0 1\""
 # GtkToggleButton
 check_error "togglebutton1:nnn" \
             "ignoring GtkToggleButton command \"togglebutton1:nnn\""
+check_error "togglebutton1:set_active" \
+            "ignoring GtkToggleButton command \"togglebutton1:set_active\""
+check_error "togglebutton1:set_active " \
+            "ignoring GtkToggleButton command \"togglebutton1:set_active \""
+check_error "togglebutton1:set_active 2" \
+            "ignoring GtkToggleButton command \"togglebutton1:set_active 2\""
+check_error "togglebutton1:set_active 1 0" \
+            "ignoring GtkToggleButton command \"togglebutton1:set_active 1 0\""
 # GtkCheckButton
 check_error "checkbutton1:nnn" \
             "ignoring GtkCheckButton command \"checkbutton1:nnn\""
+check_error "checkbutton1:set_active" \
+            "ignoring GtkCheckButton command \"checkbutton1:set_active\""
+check_error "checkbutton1:set_active " \
+            "ignoring GtkCheckButton command \"checkbutton1:set_active \""
+check_error "checkbutton1:set_active 2" \
+            "ignoring GtkCheckButton command \"checkbutton1:set_active 2\""
+check_error "checkbutton1:set_active 1 1" \
+            "ignoring GtkCheckButton command \"checkbutton1:set_active 1 1\""
 # GtkRadioButton
 check_error "radiobutton1:nnn" \
             "ignoring GtkRadioButton command \"radiobutton1:nnn\""
+check_error "radiobutton1:set_active" \
+            "ignoring GtkRadioButton command \"radiobutton1:set_active\""
+check_error "radiobutton1:set_active " \
+            "ignoring GtkRadioButton command \"radiobutton1:set_active \""
+check_error "radiobutton1:set_active nnn" \
+            "ignoring GtkRadioButton command \"radiobutton1:set_active nnn\""
+check_error "radiobutton1:set_active 0 1" \
+            "ignoring GtkRadioButton command \"radiobutton1:set_active 0 1\""
 # GtkSpinButton
 check_error "spinbutton1:nnn" \
             "ignoring GtkSpinButton command \"spinbutton1:nnn\""
+# GtkDialog
+check_error "dialog1:resize 100" \
+            "ignoring GtkDialog command \"dialog1:resize 100\""
+check_error "dialog1:resize 100 100 100" \
+            "ignoring GtkDialog command \"dialog1:resize 100 100 100\""
+check_error "dialog1:move" \
+            "ignoring GtkDialog command \"dialog1:move\""
+check_error "dialog1:move " \
+            "ignoring GtkDialog command \"dialog1:move \""
+check_error "dialog1:move 100" \
+            "ignoring GtkDialog command \"dialog1:move 100\""
+check_error "dialog1:move 100 100 100" \
+            "ignoring GtkDialog command \"dialog1:move 100 100 100\""
+check_error "dialog1:fullscreen 1" \
+            "ignoring GtkDialog command \"dialog1:fullscreen 1\""
+check_error "dialog1:unfullscreen 1" \
+            "ignoring GtkDialog command \"dialog1:unfullscreen 1\""
 # GtkFileChooserButton
 check_error "filechooserbutton1:nnn" \
             "ignoring GtkFileChooserButton command \"filechooserbutton1:nnn\""
 # GtkFilechooserDialog
 check_error "open_dialog:nnn" \
             "ignoring GtkFileChooserDialog command \"open_dialog:nnn\""
+check_error "open_dialog:resize 100" \
+            "ignoring GtkFileChooserDialog command \"open_dialog:resize 100\""
+check_error "open_dialog:resize 100 100 100" \
+            "ignoring GtkFileChooserDialog command \"open_dialog:resize 100 100 100\""
+check_error "open_dialog:move" \
+            "ignoring GtkFileChooserDialog command \"open_dialog:move\""
+check_error "open_dialog:move " \
+            "ignoring GtkFileChooserDialog command \"open_dialog:move \""
+check_error "open_dialog:move 100" \
+            "ignoring GtkFileChooserDialog command \"open_dialog:move 100\""
+check_error "open_dialog:move 100 100 100" \
+            "ignoring GtkFileChooserDialog command \"open_dialog:move 100 100 100\""
+check_error "open_dialog:fullscreen 1" \
+            "ignoring GtkFileChooserDialog command \"open_dialog:fullscreen 1\""
+check_error "open_dialog:unfullscreen 1" \
+            "ignoring GtkFileChooserDialog command \"open_dialog:unfullscreen 1\""
 # GtkFontButton
 check_error "fontbutton1:nnn" \
             "ignoring GtkFontButton command \"fontbutton1:nnn\""
@@ -366,15 +504,47 @@ check_error "statusbar1:push Click \"Print\"\n printdialog:print nonexistent.ps"
 # GtkScale
 check_error "scale1:nnn" \
             "ignoring GtkScale command \"scale1:nnn\""
+check_error "scale1:set_value" \
+            "ignoring GtkScale command \"scale1:set_value\""
+check_error "scale1:set_value " \
+            "ignoring GtkScale command \"scale1:set_value \""
+check_error "scale1:set_value nnn" \
+            "ignoring GtkScale command \"scale1:set_value nnn\""
+check_error "scale1:set_value 10 10" \
+            "ignoring GtkScale command \"scale1:set_value 10 10\""
 # GtkProgressBar
 check_error "progressbar1:nnn" \
             "ignoring GtkProgressBar command \"progressbar1:nnn\""
+check_error "progressbar1:set_fraction" \
+            "ignoring GtkProgressBar command \"progressbar1:set_fraction\""
+check_error "progressbar1:set_fraction " \
+            "ignoring GtkProgressBar command \"progressbar1:set_fraction \""
+check_error "progressbar1:set_fraction nnn" \
+            "ignoring GtkProgressBar command \"progressbar1:set_fraction nnn\""
+check_error "progressbar1:set_fraction .5 1" \
+            "ignoring GtkProgressBar command \"progressbar1:set_fraction .5 1\""
 # GtkSpinner
 check_error "spinner1:nnn" \
             "ignoring GtkSpinner command \"spinner1:nnn\""
+check_error "spinner1:start 1" \
+            "ignoring GtkSpinner command \"spinner1:start 1\""
+check_error "spinner1:stop 1" \
+            "ignoring GtkSpinner command \"spinner1:stop 1\""
 # GtkStatusbar
 check_error "statusbar1:nnn" \
             "ignoring GtkStatusbar command \"statusbar1:nnn\""
+check_error "statusbar1:push_id" \
+            "ignoring GtkStatusbar command \"statusbar1:push_id\""
+check_error "statusbar1:pop_id" \
+            "ignoring GtkStatusbar command \"statusbar1:pop_id\""
+check_error "statusbar1:remove_all_id" \
+            "ignoring GtkStatusbar command \"statusbar1:remove_all_id\""
+check_error "statusbar1:remove_all_id " \
+            "ignoring GtkStatusbar command \"statusbar1:remove_all_id \""
+check_error "statusbar1:remove_all_id a b" \
+            "ignoring GtkStatusbar command \"statusbar1:remove_all_id a b\""
+check_error "statusbar1:remove_all a" \
+            "ignoring GtkStatusbar command \"statusbar1:remove_all a\""
 # GtkComboBoxText
 check_error "comboboxtext1:nnn" \
             "ignoring GtkComboBoxText command \"comboboxtext1:nnn\""
@@ -422,20 +592,28 @@ check_error "treeview2:expand" \
             "ignoring GtkTreeView command \"treeview2:expand\""
 check_error "treeview2:expand 0:abc" \
             "ignoring GtkTreeView command \"treeview2:expand 0:abc\""
+check_error "treeview2:expand 0 0" \
+            "ignoring GtkTreeView command \"treeview2:expand 0 0\""
 check_error "treeview2:expand_all abc" \
             "ignoring GtkTreeView command \"treeview2:expand_all abc\""
 check_error "treeview2:expand_all 0:abc" \
             "ignoring GtkTreeView command \"treeview2:expand_all 0:abc\""
+check_error "treeview2:expand_all 0 0" \
+            "ignoring GtkTreeView command \"treeview2:expand_all 0 0\""
 check_error "treeview2:collapse abc" \
             "ignoring GtkTreeView command \"treeview2:collapse abc\""
 check_error "treeview2:collapse 0:abc" \
             "ignoring GtkTreeView command \"treeview2:collapse 0:abc\""
+check_error "treeview2:collapse 0 0" \
+            "ignoring GtkTreeView command \"treeview2:collapse 0 0\""
 check_error "treeview2:insert_row" \
             "ignoring GtkTreeView command \"treeview2:insert_row\""
 check_error "treeview2:insert_row abc" \
             "ignoring GtkTreeView command \"treeview2:insert_row abc\""
 check_error "treeview2:insert_row 0:abc" \
             "ignoring GtkTreeView command \"treeview2:insert_row 0:abc\""
+check_error "treeview2:insert_row end 0" \
+            "ignoring GtkTreeView command \"treeview2:insert_row end 0\""
 # GtkTreeView move_row
 check_error "treeview1:move_row" \
             "ignoring GtkTreeView command \"treeview1:move_row\""
@@ -465,6 +643,8 @@ check_error "treeview2:move_row abc end" \
             "ignoring GtkTreeView command \"treeview2:move_row abc end\""
 check_error "treeview2:move_row 0:abc end" \
             "ignoring GtkTreeView command \"treeview2:move_row 0:abc end\""
+check_error "treeview2:move_row 0 end 0" \
+            "ignoring GtkTreeView command \"treeview2:move_row 0 end 0\""
 # GtkTreeView remove_row
 check_error "treeview1:remove_row 10000" \
             "ignoring GtkTreeView command \"treeview1:remove_row 10000\""
@@ -482,6 +662,8 @@ check_error "treeview2:remove_row abc" \
             "ignoring GtkTreeView command \"treeview2:remove_row abc\""
 check_error "treeview2:remove_row 0:abc" \
             "ignoring GtkTreeView command \"treeview2:remove_row 0:abc\""
+check_error "treeview2:remove_row 0 0" \
+            "ignoring GtkTreeView command \"treeview2:remove_row 0 0\""
 # GtkTreeView scroll
 check_error "treeview1:scroll" \
             "ignoring GtkTreeView command \"treeview1:scroll\""
@@ -497,6 +679,8 @@ check_error "treeview1:scroll nnn 1" \
             "ignoring GtkTreeView command \"treeview1:scroll nnn 1\""
 check_error "treeview1:scroll 1 nnn" \
             "ignoring GtkTreeView command \"treeview1:scroll 1 nnn\""
+check_error "treeview1:scroll 0 0 0" \
+            "ignoring GtkTreeView command \"treeview1:scroll 0 0 0\""
 check_error "treeview2:scroll" \
             "ignoring GtkTreeView command \"treeview2:scroll\""
 check_error "treeview2:scroll abc" \
@@ -515,6 +699,8 @@ check_error "treeview2:set_cursor abc" \
             "ignoring GtkTreeView command \"treeview2:set_cursor abc\""
 check_error "treeview2:set_cursor 0:abc" \
             "ignoring GtkTreeView command \"treeview2:set_cursor 0:abc\""
+check_error "treeview2:set_cursor 0 0" \
+            "ignoring GtkTreeView command \"treeview2:set_cursor 0 0\""
 check_error "treeview2:clear 0" \
             "ignoring GtkTreeView command \"treeview2:clear 0\""
 check_error "treeview2:clear\n treeview2:insert_row 0" \
@@ -567,9 +753,23 @@ check_error "calendar1:select_date 2000-12-33" \
             "ignoring GtkCalendar command \"calendar1:select_date 2000-12-33\""
 check_error "calendar1:select_date 2000-13-20" \
             "ignoring GtkCalendar command \"calendar1:select_date 2000-13-20\""
+check_error "calendar1:select_date 2000-10-10 1" \
+            "ignoring GtkCalendar command \"calendar1:select_date 2000-10-10 1\""
+check_error "calendar1:mark_day" \
+            "ignoring GtkCalendar command \"calendar1:mark_day\""
+check_error "calendar1:mark_day " \
+            "ignoring GtkCalendar command \"calendar1:mark_day \""
+check_error "calendar1:mark_day nnn" \
+            "ignoring GtkCalendar command \"calendar1:mark_day nnn\""
+check_error "calendar1:mark_day 10 1" \
+            "ignoring GtkCalendar command \"calendar1:mark_day 10 1\""
+check_error "calendar1:clear_marks 1" \
+            "ignoring GtkCalendar command \"calendar1:clear_marks 1\""
 # GtkSocket
 check_error "socket1:nnn" \
             "ignoring GtkSocket command \"socket1:nnn\""
+check_error "socket1:id 1" \
+            "ignoring GtkSocket command \"socket1:id 1\""
 # GtkScrolledWindow
 check_error "scrolledwindow3:nnn" \
             "ignoring GtkScrolledWindow command \"scrolledwindow3:nnn\""
@@ -579,12 +779,16 @@ check_error "scrolledwindow3:hscroll " \
             "ignoring GtkScrolledWindow command \"scrolledwindow3:hscroll \""
 check_error "scrolledwindow3:hscroll nnn" \
             "ignoring GtkScrolledWindow command \"scrolledwindow3:hscroll nnn\""
+check_error "scrolledwindow3:hscroll 100 100" \
+            "ignoring GtkScrolledWindow command \"scrolledwindow3:hscroll 100 100\""
 check_error "scrolledwindow3:vscroll" \
             "ignoring GtkScrolledWindow command \"scrolledwindow3:vscroll\""
 check_error "scrolledwindow3:vscroll " \
             "ignoring GtkScrolledWindow command \"scrolledwindow3:vscroll \""
 check_error "scrolledwindow3:vscroll nnn" \
             "ignoring GtkScrolledWindow command \"scrolledwindow3:vscroll nnn\""
+check_error "scrolledwindow3:vscroll 100 100" \
+            "ignoring GtkScrolledWindow command \"scrolledwindow3:vscroll 100 100\""
 check_error "scrolledwindow3:hscroll_to_range" \
             "ignoring GtkScrolledWindow command \"scrolledwindow3:hscroll_to_range\""
 check_error "scrolledwindow3:hscroll_to_range " \
@@ -597,6 +801,8 @@ check_error "scrolledwindow3:hscroll_to_range 10 nnn" \
             "ignoring GtkScrolledWindow command \"scrolledwindow3:hscroll_to_range 10 nnn\""
 check_error "scrolledwindow3:hscroll_to_range nnn 10" \
             "ignoring GtkScrolledWindow command \"scrolledwindow3:hscroll_to_range nnn 10\""
+check_error "scrolledwindow3:hscroll_to_range 5 10 10" \
+            "ignoring GtkScrolledWindow command \"scrolledwindow3:hscroll_to_range 5 10 10\""
 check_error "scrolledwindow3:vscroll_to_range" \
             "ignoring GtkScrolledWindow command \"scrolledwindow3:vscroll_to_range\""
 check_error "scrolledwindow3:vscroll_to_range " \
@@ -609,6 +815,8 @@ check_error "scrolledwindow3:vscroll_to_range 10 nnn" \
             "ignoring GtkScrolledWindow command \"scrolledwindow3:vscroll_to_range 10 nnn\""
 check_error "scrolledwindow3:vscroll_to_range nnn 10" \
             "ignoring GtkScrolledWindow command \"scrolledwindow3:vscroll_to_range nnn 10\""
+check_error "scrolledwindow3:vscroll_to_range 5 10 10" \
+            "ignoring GtkScrolledWindow command \"scrolledwindow3:vscroll_to_range 5 10 10\""
 # GtkEventBox
 check_error "eventbox1:nnn" \
             "ignoring GtkEventBox command \"eventbox1:nnn\""
@@ -631,6 +839,8 @@ check_error "drawingarea1:rectangle 1 10 10 20" \
             "ignoring GtkDrawingArea command \"drawingarea1:rectangle 1 10 10 20\""
 check_error "drawingarea1:rectangle 1 10 10 20 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:rectangle 1 10 10 20 nnn\""
+check_error "drawingarea1:rectangle 1 10 10 20 20 20" \
+            "ignoring GtkDrawingArea command \"drawingarea1:rectangle 1 10 10 20 20 20\""
 check_error "drawingarea1:arc" \
             "ignoring GtkDrawingArea command \"drawingarea1:arc\""
 check_error "drawingarea1:arc " \
@@ -649,6 +859,8 @@ check_error "drawingarea1:arc 1 10 10 20 45" \
             "ignoring GtkDrawingArea command \"drawingarea1:arc 1 10 10 20 45\""
 check_error "drawingarea1:arc 1 10 10 20 45 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:arc 1 10 10 20 45 nnn\""
+check_error "drawingarea1:arc 1 10 10 20 45 90 7" \
+            "ignoring GtkDrawingArea command \"drawingarea1:arc 1 10 10 20 90 7 nnn\""
 check_error "drawingarea1:arc_negative" \
             "ignoring GtkDrawingArea command \"drawingarea1:arc_negative\""
 check_error "drawingarea1:arc_negative " \
@@ -667,6 +879,8 @@ check_error "drawingarea1:arc_negative 1 10 10 20 45" \
             "ignoring GtkDrawingArea command \"drawingarea1:arc_negative 1 10 10 20 45\""
 check_error "drawingarea1:arc_negative 1 10 10 20 45 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:arc_negative 1 10 10 20 45 nnn\""
+check_error "drawingarea1:arc_negative 1 10 10 20 45 90 7" \
+            "ignoring GtkDrawingArea command \"drawingarea1:arc_negative 1 10 10 20 90 7 nnn\""
 check_error "drawingarea1:curve_to" \
             "ignoring GtkDrawingArea command \"drawingarea1:curve_to\""
 check_error "drawingarea1:curve_to " \
@@ -687,6 +901,8 @@ check_error "drawingarea1:curve_to 1 10 10 20 20 25" \
             "ignoring GtkDrawingArea command \"drawingarea1:curve_to 1 10 10 20 20 25\""
 check_error "drawingarea1:curve_to 1 10 10 20 20 25 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:curve_to 1 10 10 20 20 25 nnn\""
+check_error "drawingarea1:curve_to 1 10 10 20 20 25 25 77" \
+            "ignoring GtkDrawingArea command \"drawingarea1:curve_to 1 10 10 20 20 25 25 77\""
 check_error "drawingarea1:rel_curve_to" \
             "ignoring GtkDrawingArea command \"drawingarea1:rel_curve_to\""
 check_error "drawingarea1:rel_curve_to " \
@@ -707,6 +923,8 @@ check_error "drawingarea1:rel_curve_to 1 10 10 20 20 25" \
             "ignoring GtkDrawingArea command \"drawingarea1:rel_curve_to 1 10 10 20 20 25\""
 check_error "drawingarea1:rel_curve_to 1 10 10 20 20 25 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:rel_curve_to 1 10 10 20 20 25 nnn\""
+check_error "drawingarea1:rel_curve_to 1 10 10 20 20 25 25 77" \
+            "ignoring GtkDrawingArea command \"drawingarea1:rel_curve_to 1 10 10 20 20 25 25 77\""
 check_error "drawingarea1:line_to" \
             "ignoring GtkDrawingArea command \"drawingarea1:line_to\""
 check_error "drawingarea1:line_to " \
@@ -719,6 +937,8 @@ check_error "drawingarea1:line_to 1 20" \
             "ignoring GtkDrawingArea command \"drawingarea1:line_to 1 20\""
 check_error "drawingarea1:line_to 1 20 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:line_to 1 20 nnn\""
+check_error "drawingarea1:line_to 1 20 20 20" \
+            "ignoring GtkDrawingArea command \"drawingarea1:line_to 1 20 20 20\""
 check_error "drawingarea1:rel_line_to" \
             "ignoring GtkDrawingArea command \"drawingarea1:rel_line_to\""
 check_error "drawingarea1:rel_line_to " \
@@ -731,6 +951,10 @@ check_error "drawingarea1:rel_line_to 1 20" \
             "ignoring GtkDrawingArea command \"drawingarea1:rel_line_to 1 20\""
 check_error "drawingarea1:rel_line_to 1 20 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:rel_line_to 1 20 nnn\""
+check_error "drawingarea1:rel_line_to 1 20 nnn" \
+            "ignoring GtkDrawingArea command \"drawingarea1:rel_line_to 1 20 nnn\""
+check_error "drawingarea1:rel_line_to 1 20 20 20" \
+            "ignoring GtkDrawingArea command \"drawingarea1:rel_line_to 1 20 20 20\""
 check_error "drawingarea1:move_to" \
             "ignoring GtkDrawingArea command \"drawingarea1:move_to\""
 check_error "drawingarea1:move_to " \
@@ -743,6 +967,8 @@ check_error "drawingarea1:move_to 1 20" \
             "ignoring GtkDrawingArea command \"drawingarea1:move_to 1 20\""
 check_error "drawingarea1:move_to 1 20 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:move_to 1 20 nnn\""
+check_error "drawingarea1:move_to 1 20 20 20" \
+            "ignoring GtkDrawingArea command \"drawingarea1:move_to 1 20 20 20\""
 check_error "drawingarea1:rel_move_to" \
             "ignoring GtkDrawingArea command \"drawingarea1:rel_move_to\""
 check_error "drawingarea1:rel_move_to " \
@@ -755,12 +981,16 @@ check_error "drawingarea1:rel_move_to 1 20" \
             "ignoring GtkDrawingArea command \"drawingarea1:rel_move_to 1 20\""
 check_error "drawingarea1:rel_move_to 1 20 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:rel_move_to 1 20 nnn\""
+check_error "drawingarea1:rel_move_to 1 20 20 20" \
+            "ignoring GtkDrawingArea command \"drawingarea1:rel_move_to 1 20 20 20\""
 check_error "drawingarea1:close_path" \
             "ignoring GtkDrawingArea command \"drawingarea1:close_path\""
 check_error "drawingarea1:close_path " \
             "ignoring GtkDrawingArea command \"drawingarea1:close_path \""
 check_error "drawingarea1:close_path nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:close_path nnn\""
+check_error "drawingarea1:close_path 1 1" \
+            "ignoring GtkDrawingArea command \"drawingarea1:close_path 1 1\""
 check_error "drawingarea1:set_source_rgba" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_source_rgba\""
 check_error "drawingarea1:set_source_rgba " \
@@ -783,6 +1013,8 @@ check_error "drawingarea1:set_line_cap 1" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_line_cap 1\""
 check_error "drawingarea1:set_line_cap 1 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_line_cap 1 nnn\""
+check_error "drawingarea1:set_line_cap 1 butt butt" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_line_cap 1 butt butt\""
 check_error "drawingarea1:set_line_join" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_line_join\""
 check_error "drawingarea1:set_line_join " \
@@ -793,6 +1025,8 @@ check_error "drawingarea1:set_line_join 1" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_line_join 1\""
 check_error "drawingarea1:set_line_join 1 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_line_join 1 nnn\""
+check_error "drawingarea1:set_line_join 1 miter miter" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_line_join 1 miter miter\""
 check_error "drawingarea1:set_line_width" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_line_width\""
 check_error "drawingarea1:set_line_width " \
@@ -803,42 +1037,64 @@ check_error "drawingarea1:set_line_width 1" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_line_width 1\""
 check_error "drawingarea1:set_line_width 1 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_line_width 1 nnn\""
+check_error "drawingarea1:set_line_width 1 3 3" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_line_width 1 3 3\""
 check_error "drawingarea1:fill" \
             "ignoring GtkDrawingArea command \"drawingarea1:fill\""
 check_error "drawingarea1:fill " \
             "ignoring GtkDrawingArea command \"drawingarea1:fill \""
 check_error "drawingarea1:fill nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:fill nnn\""
+check_error "drawingarea1:fill 1 1" \
+            "ignoring GtkDrawingArea command \"drawingarea1:fill 1 1\""
 check_error "drawingarea1:fill_preserve" \
             "ignoring GtkDrawingArea command \"drawingarea1:fill_preserve\""
 check_error "drawingarea1:fill_preserve " \
             "ignoring GtkDrawingArea command \"drawingarea1:fill_preserve \""
 check_error "drawingarea1:fill_preserve nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:fill_preserve nnn\""
+check_error "drawingarea1:fill_preserve 1 1" \
+            "ignoring GtkDrawingArea command \"drawingarea1:fill_preserve 1 1\""
 check_error "drawingarea1:stroke" \
             "ignoring GtkDrawingArea command \"drawingarea1:stroke\""
 check_error "drawingarea1:stroke " \
             "ignoring GtkDrawingArea command \"drawingarea1:stroke \""
 check_error "drawingarea1:stroke nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:stroke nnn\""
+check_error "drawingarea1:stroke 3 3" \
+            "ignoring GtkDrawingArea command \"drawingarea1:stroke 3 3\""
 check_error "drawingarea1:stroke_preserve" \
             "ignoring GtkDrawingArea command \"drawingarea1:stroke_preserve\""
 check_error "drawingarea1:stroke_preserve " \
             "ignoring GtkDrawingArea command \"drawingarea1:stroke_preserve \""
 check_error "drawingarea1:stroke_preserve nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:stroke_preserve nnn\""
+check_error "drawingarea1:stroke_preserve 3 3" \
+            "ignoring GtkDrawingArea command \"drawingarea1:stroke_preserve 3 3\""
 check_error "drawingarea1:remove" \
             "ignoring GtkDrawingArea command \"drawingarea1:remove\""
 check_error "drawingarea1:remove " \
             "ignoring GtkDrawingArea command \"drawingarea1:remove \""
 check_error "drawingarea1:remove nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:remove nnn\""
+check_error "drawingarea1:remove 1 1" \
+            "ignoring GtkDrawingArea command \"drawingarea1:remove 1 1\""
 check_error "drawingarea1:set_show_text" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_show_text\""
 check_error "drawingarea1:set_show_text " \
             "ignoring GtkDrawingArea command \"drawingarea1:set_show_text \""
 check_error "drawingarea1:set_show_text nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_show_text nnn\""
+check_error "drawingarea1:set_font_family" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_family\""
+check_error "drawingarea1:set_font_family " \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_family \""
+check_error "drawingarea1:set_font_family nnn" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_family nnn\""
+check_error "drawingarea1:set_font_family 1" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_family 1\""
+check_error "drawingarea1:set_font_family 1 normal" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_family 1 normal\""
 check_error "drawingarea1:set_font_size" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_font_size\""
 check_error "drawingarea1:set_font_size " \
@@ -849,6 +1105,8 @@ check_error "drawingarea1:set_font_size 1" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_font_size 1\""
 check_error "drawingarea1:set_font_size 1 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_font_size 1 nnn\""
+check_error "drawingarea1:set_font_size 1 10 10" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_size 1 10 10\""
 check_error "drawingarea1:set_font_face" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_font_face\""
 check_error "drawingarea1:set_font_face 1" \
@@ -889,6 +1147,8 @@ check_error "drawingarea1:transform 1 2 3 4 5 6" \
             "ignoring GtkDrawingArea command \"drawingarea1:transform 1 2 3 4 5 6\""
 check_error "drawingarea1:transform 1 2 3 x 5 6 7" \
             "ignoring GtkDrawingArea command \"drawingarea1:transform 1 2 3 x 5 6 7\""
+check_error "drawingarea1:transform 1 2 3 4 5 6 7 8" \
+            "ignoring GtkDrawingArea command \"drawingarea1:transform 1 2 3 4 5 6 7 8\""
 check_error "drawingarea1:translate" \
             "ignoring GtkDrawingArea command \"drawingarea1:translate\""
 check_error "drawingarea1:translate " \
@@ -901,6 +1161,8 @@ check_error "drawingarea1:translate nnn 2 3" \
             "ignoring GtkDrawingArea command \"drawingarea1:translate nnn 2 3\""
 check_error "drawingarea1:translate 1 x 3" \
             "ignoring GtkDrawingArea command \"drawingarea1:translate 1 x 3\""
+check_error "drawingarea1:translate 1 2 3 4" \
+            "ignoring GtkDrawingArea command \"drawingarea1:translate 1 2 3 4\""
 check_error "drawingarea1:scale" \
             "ignoring GtkDrawingArea command \"drawingarea1:scale\""
 check_error "drawingarea1:scale " \
@@ -913,6 +1175,8 @@ check_error "drawingarea1:scale nnn 2 3" \
             "ignoring GtkDrawingArea command \"drawingarea1:scale nnn 2 3\""
 check_error "drawingarea1:scale 1 x 3" \
             "ignoring GtkDrawingArea command \"drawingarea1:scale 1 x 3\""
+check_error "drawingarea1:scale 1 2 3 4" \
+            "ignoring GtkDrawingArea command \"drawingarea1:scale 1 2 3 4\""
 check_error "drawingarea1:rotate" \
             "ignoring GtkDrawingArea command \"drawingarea1:rotate\""
 check_error "drawingarea1:rotate " \
@@ -923,6 +1187,8 @@ check_error "drawingarea1:rotate nnn 2" \
             "ignoring GtkDrawingArea command \"drawingarea1:rotate nnn 2\""
 check_error "drawingarea1:rotate 1 x" \
             "ignoring GtkDrawingArea command \"drawingarea1:rotate 1 x\""
+check_error "drawingarea1:rotate 1 10 10" \
+            "ignoring GtkDrawingArea command \"drawingarea1:rotate 1 10 10\""
 
 echo "_:main_quit" >$FIN
 
@@ -949,6 +1215,7 @@ rm $FERR
 
 
 #exit
+
 echo "
 # BATCH THREE
 #
