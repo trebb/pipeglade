@@ -1195,32 +1195,29 @@ update_class_window(GObject *obj, const char *action,
                     const char *data, const char *whole_msg, GType type)
 {
         GtkWindow *window = GTK_WINDOW(obj);
-        bool result = true;
         char dummy;
         int x, y;
 
+        (void) type;
+        (void) whole_msg;
         if (eql(action, "set_title"))
                 gtk_window_set_title(window, data);
         else if (eql(action, "fullscreen") && sscanf(data, " %c", &dummy) < 1)
                 gtk_window_fullscreen(window);
         else if (eql(action, "unfullscreen") && sscanf(data, " %c", &dummy) < 1)
                 gtk_window_unfullscreen(window);
-        else if (eql(action, "resize")) {
-                if (sscanf(data, "%d %d %c", &x, &y, &dummy) == 2)
-                        gtk_window_resize(window, x, y);
-                else if (sscanf(data, " %c", &dummy) < 1) {
-                        gtk_window_get_default_size(window, &x, &y);
-                        gtk_window_resize(window, x, y);
-                } else
-                        ign_cmd(type, whole_msg);
-        } else if (eql(action, "move")) {
-                if (sscanf(data, "%d %d %c", &x, &y, &dummy) == 2)
-                        gtk_window_move(window, x, y);
-                else
-                        ign_cmd(type, whole_msg);
-        } else
-                result = false;
-        return result;
+        else if (eql(action, "resize") &&
+                 (sscanf(data, "%d %d %c", &x, &y, &dummy) == 2))
+                gtk_window_resize(window, x, y);
+        else if (eql(action, "resize") && sscanf(data, " %c", &dummy) < 1) {
+                gtk_window_get_default_size(window, &x, &y);
+                gtk_window_resize(window, x, y);
+        } else if (eql(action, "move") &&
+                   sscanf(data, "%d %d %c", &x, &y, &dummy) == 2)
+                gtk_window_move(window, x, y);
+        else
+                return false;
+        return true;
 }
 
 static void
@@ -1255,6 +1252,7 @@ update_combo_box_text(GObject *obj, const char *action,
         else if (eql(action, "insert_text")) {
                 char *position = strtok(data1, WHITESPACE);
                 char *text = strtok(NULL, WHITESPACE);
+
                 gtk_combo_box_text_insert_text(combobox,
                                                strtol(position, NULL, 10), text);
         } else
