@@ -1,9 +1,11 @@
 *.core
-gh-pages/
-test.dir/
-pipeglade
+*.gmon
+*.gprof
+*.log
+*fifo
 *~
 \#*#
-*fifo
-*.log
+gh-pages/
 output.pdf
+pipeglade
+test_dir/

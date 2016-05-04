@@ -1218,8 +1218,8 @@ rm $FERR
 
 
 
-exit
-
+#exit
+#
 echo "
 # BATCH THREE
 #
@@ -1337,7 +1337,8 @@ while test ! \( -e $FIN -a -e $FOUT \); do :; done
 
 check_cmd "ps -p `cat $PID_FILE` >/dev/null"
 check 1 "" \
-      "main_apply:force" "main_apply:clicked"
+      "main_apply:force" \
+      "main_apply:clicked"
 check 0 "" \
       "main_cancel:force"
 
@@ -1353,9 +1354,11 @@ rm $PID_FILE
 while test ! \( -e $FIN -a -e $FOUT \); do :; done
 
 check 1 "" \
-      "button1:force" "button1:clicked"
+      "button1:force" \
+      "button1:clicked"
 check 1 "" \
-      "main_ok:force" "main_ok:clicked"
+      "main_ok:force" \
+      "main_ok:clicked"
 
 check_rm $FIN
 check_rm $FOUT

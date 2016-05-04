@@ -128,9 +128,9 @@ show_lib_versions(void)
 static void
 xembed_if(char *xid_s, GObject *main_window)
 {
-        char xid_s2[BUFLEN];
-        Window xid;
         GtkWidget *plug, *body;
+        Window xid;
+        char xid_s2[BUFLEN];
 
         if (xid_s == NULL) {    /* standalone */
                 gtk_widget_show(GTK_WIDGET(main_window));
@@ -259,8 +259,8 @@ find_fifo(const char *n)
 static FILE *
 open_in_fifo(const char *name)
 {
-        int fd;
         FILE *s = NULL;
+        int fd;
 
         if (name == NULL)
                 s = stdin;
@@ -339,8 +339,8 @@ usec_since(struct timespec *start)
 static void
 log_msg(char *msg)
 {
-        static struct timespec start;
         static char *old_msg;
+        static struct timespec start;
 
         if (log_out == NULL)    /* no logging */
                 return;
@@ -369,8 +369,8 @@ log_msg(char *msg)
 static GObject *
 obj_sans_suffix(const char *suffix, const char *name)
 {
-        int str_l;
         char str[BUFLEN + 1] = {'\0'};
+        int str_l;
 
         str_l = suffix - name;
         strncpy(str, name, str_l < BUFLEN ? str_l : BUFLEN);
@@ -383,8 +383,8 @@ obj_sans_suffix(const char *suffix, const char *name)
 static GtkBuilder *
 builder_from_file(char *ui_file)
 {
-        GtkBuilder *b;
         GError *error = NULL;
+        GtkBuilder *b;
 
         b = gtk_builder_new();
         if (gtk_builder_add_from_file(b, ui_file, &error) == 0)
@@ -419,11 +419,11 @@ find_main_window(void)
 static size_t
 read_buf(FILE *s, char **buf, size_t *bufsize)
 {
-        size_t i = 0;
-        int c;
-        fd_set rfds;
-        int ifd = fileno(s);
         bool esc = false;
+        fd_set rfds;
+        int c;
+        int ifd = fileno(s);
+        size_t i = 0;
 
         FD_ZERO(&rfds);
         FD_SET(ifd, &rfds);
@@ -543,8 +543,8 @@ send_tree_cell_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
                       GtkTreeModel *model, const char *path_s,
                       GtkTreeIter *iter, int col, GtkBuildable *obj)
 {
-        GValue value = G_VALUE_INIT;
         GType col_type;
+        GValue value = G_VALUE_INIT;
         char str[BUFLEN], *lc = lc_numeric();
 
         gtk_tree_model_get_value(model, iter, col, &value);
@@ -1037,9 +1037,9 @@ draw(cairo_t *cr, enum cairo_fn op, void *op_args)
                 break;
         }
         case REL_MOVE_FOR: {
-                struct rel_move_for_args *args = op_args;
                 cairo_text_extents_t e;
                 double dx = 0.0, dy = 0.0;
+                struct rel_move_for_args *args = op_args;
 
                 cairo_text_extents(cr, args->text, &e);
                 switch (args->ref) {
@@ -1163,8 +1163,8 @@ static void
 update_calendar(GObject *obj, const char *action,
                 const char *data, const char *whole_msg, GType type)
 {
-        char dummy;
         GtkCalendar *calendar = GTK_CALENDAR(obj);
+        char dummy;
         int year = 0, month = 0, day = 0;
 
         if (eql(action, "select_date") &&
@@ -1195,9 +1195,9 @@ update_class_window(GObject *obj, const char *action,
                     const char *data, const char *whole_msg, GType type)
 {
         GtkWindow *window = GTK_WINDOW(obj);
-        int x, y;
         bool result = true;
         char dummy;
+        int x, y;
 
         if (eql(action, "set_title"))
                 gtk_window_set_title(window, data);
@@ -1208,9 +1208,10 @@ update_class_window(GObject *obj, const char *action,
         else if (eql(action, "resize")) {
                 if (sscanf(data, "%d %d %c", &x, &y, &dummy) == 2)
                         gtk_window_resize(window, x, y);
-                else if (sscanf(data, " %c", &dummy) < 1)
+                else if (sscanf(data, " %c", &dummy) < 1) {
                         gtk_window_get_default_size(window, &x, &y);
-                else
+                        gtk_window_resize(window, x, y);
+                } else
                         ign_cmd(type, whole_msg);
         } else if (eql(action, "move")) {
                 if (sscanf(data, "%d %d %c", &x, &y, &dummy) == 2)
@@ -1242,13 +1243,14 @@ update_combo_box_text(GObject *obj, const char *action,
         GtkComboBoxText *combobox = GTK_COMBO_BOX_TEXT(obj);
         char data1[strlen(data) + 1];
         char dummy;
+        int val;
 
         strcpy(data1, data);
         if (eql(action, "prepend_text"))
                 gtk_combo_box_text_prepend_text(combobox, data1);
         else if (eql(action, "append_text"))
                 gtk_combo_box_text_append_text(combobox, data1);
-        else if (eql(action, "remove") && sscanf(data, " %c", &dummy) < 1)
+        else if (eql(action, "remove") && sscanf(data, "%d %c", &val, &dummy) == 1)
                 gtk_combo_box_text_remove(combobox, strtol(data1, NULL, 10));
         else if (eql(action, "insert_text")) {
                 char *position = strtok(data1, WHITESPACE);
@@ -1324,8 +1326,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 args->angle1 = deg1 * (M_PI / 180.L);
                 args->angle2 = deg2 * (M_PI / 180.L);
         } else if (eql(action, "arc_negative")) {
-                struct arc_args *args;
                 double deg1, deg2;
+                struct arc_args *args;
 
                 if ((args = malloc(sizeof(*args))) == NULL)
                         OOM_ABORT;
@@ -1385,9 +1387,9 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 args->len = len; /* not used */
                 strncpy(args->text, (data + start), len);
         } else if (eql(action, "rel_move_for")) {
-                struct rel_move_for_args *args;
                 char ref_point[2 + 1];
                 int start, len;
+                struct rel_move_for_args *args;
 
                 if (sscanf(data, "%u %2s %n", &op->id, ref_point, &start) < 2)
                         return false;
@@ -1439,10 +1441,10 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         return false;
                 op->op_args = NULL;
         } else if (eql(action, "set_dash")) {
-                struct set_dash_args *args;
-                int d_start, n, i;
-                char data1[strlen(data) + 1];
                 char *next, *end;
+                char data1[strlen(data) + 1];
+                int d_start, n, i;
+                struct set_dash_args *args;
 
                 strcpy(data1, data);
                 if (sscanf(data1, "%u %n", &op->id, &d_start) < 1)
@@ -1463,10 +1465,10 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         args->dashes[i] = strtod(next, &end);
                 }
         } else if (eql(action, "set_font_face")) {
-                struct set_font_face_args *args;
-                int family_start, family_len;
                 char slant[7 + 1];
                 char weight[6 + 1];
+                int family_start, family_len;
+                struct set_font_face_args *args;
 
                 if (sscanf(data, "%u %s %s %n%*s", &op->id, slant, weight, &family_start) != 3)
                         return false;
@@ -1500,8 +1502,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 if (sscanf(data, "%u %lf %c", &op->id, &args->size, &dummy) != 2)
                         return false;
         } else if (eql(action, "set_line_cap")) {
-                struct set_line_cap_args *args;
                 char str[6 + 1];
+                struct set_line_cap_args *args;
 
                 if ((args = malloc(sizeof(*args))) == NULL)
                         OOM_ABORT;
@@ -1518,8 +1520,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 else
                         return false;
         } else if (eql(action, "set_line_join")) {
-                struct set_line_join_args *args;
                 char str[5 + 1];
+                struct set_line_join_args *args;
 
                 if ((args = malloc(sizeof(*args))) == NULL)
                         OOM_ABORT;
@@ -1545,8 +1547,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 if (sscanf(data, "%u %lf %c", &op->id, &args->width, &dummy) != 2)
                         return false;
         } else if (eql(action, "set_source_rgba")) {
-                struct set_source_rgba_args *args;
                 int c_start;
+                struct set_source_rgba_args *args;
 
                 if ((args = malloc(sizeof(*args))) == NULL)
                         OOM_ABORT;
@@ -1556,8 +1558,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         return false;;
                 gdk_rgba_parse(&args->color, data + c_start);
         } else if (eql(action, "transform")) {
-                double xx, yx, xy, yy, x0, y0;
                 char dummy;
+                double xx, yx, xy, yy, x0, y0;
 
                 if (sscanf(data, "%u %lf %lf %lf %lf %lf %lf %c",
                            &op->id, &xx, &yx, &xy, &yy, &x0, &y0, &dummy) == 7) {
@@ -1576,8 +1578,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 } else
                         return false;
         } else if (eql(action, "translate")) {
-                struct transform_args *args;
                 double tx, ty;
+                struct transform_args *args;
 
                 if ((args = malloc(sizeof(*args))) == NULL)
                         OOM_ABORT;
@@ -1587,8 +1589,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         return false;
                 cairo_matrix_init_translate(&args->matrix, tx, ty);
         } else if (eql(action, "scale")) {
-                struct transform_args *args;
                 double sx, sy;
+                struct transform_args *args;
 
                 if ((args = malloc(sizeof(*args))) == NULL)
                         OOM_ABORT;
@@ -1598,8 +1600,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         return false;
                 cairo_matrix_init_scale(&args->matrix, sx, sy);
         } else if (eql(action, "rotate")) {
-                struct transform_args *args;
                 double angle;
+                struct transform_args *args;
 
                 if ((args = malloc(sizeof(*args))) == NULL)
                         OOM_ABORT;
@@ -1647,9 +1649,9 @@ ins_draw_op(GObject *widget, const char *action, const char *data)
 static bool
 rem_draw_op(GObject *widget, const char *data)
 {
+        char dummy;
         struct draw_op *op, *next_op, *prev_op = NULL;
         unsigned int id;
-        char dummy;
 
         if (sscanf(data, "%u %c", &id, &dummy) != 1)
                 return false;
@@ -1673,8 +1675,8 @@ rem_draw_op(GObject *widget, const char *data)
 static gboolean
 refresh_widget(GtkWidget *widget)
 {
-        gint width = gtk_widget_get_allocated_width(widget);
         gint height = gtk_widget_get_allocated_height(widget);
+        gint width = gtk_widget_get_allocated_width(widget);
 
         gtk_widget_queue_draw_area(widget, 0, 0, width, height);
         return G_SOURCE_REMOVE;
@@ -1720,8 +1722,8 @@ update_expander(GObject *obj, const char *action,
                 const char *data, const char *whole_msg, GType type)
 {
         GtkExpander *expander = GTK_EXPANDER(obj);
-        unsigned int val;
         char dummy;
+        unsigned int val;
 
         if (eql(action, "set_expanded") &&
             sscanf(data, "%u %c", &val, &dummy) == 1 && val < 2)
@@ -1798,8 +1800,8 @@ static void
 update_image(GObject *obj, const char *action,
              const char *data, const char *whole_msg, GType type)
 {
-        GtkImage *image = GTK_IMAGE(obj);
         GtkIconSize size;
+        GtkImage *image = GTK_IMAGE(obj);
 
         gtk_image_get_icon_name(image, NULL, &size);
         if (eql(action, "set_from_file"))
@@ -1824,8 +1826,8 @@ static void
 update_notebook(GObject *obj, const char *action,
                 const char *data, const char *whole_msg, GType type)
 {
-        unsigned int val;
         char dummy;
+        unsigned int val;
 
         if (eql(action, "set_current_page") && sscanf(data, "%u %c", &val, &dummy) == 1)
                 gtk_notebook_set_current_page(GTK_NOTEBOOK(obj), val);
@@ -1848,12 +1850,12 @@ static void
 update_print_dialog(GObject *obj, const char *action,
                     const char *data, const char *whole_msg, GType type)
 {
-        GtkPrintUnixDialog *dialog = GTK_PRINT_UNIX_DIALOG(obj);
-        gint response_id;
-        GtkPrinter *printer;
-        GtkPrintSettings *settings;
         GtkPageSetup *page_setup;
         GtkPrintJob *job;
+        GtkPrintSettings *settings;
+        GtkPrintUnixDialog *dialog = GTK_PRINT_UNIX_DIALOG(obj);
+        GtkPrinter *printer;
+        gint response_id;
 
         if (eql(action, "print")) {
                 response_id = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -1888,8 +1890,8 @@ update_progress_bar(GObject *obj, const char *action,
                     const char *data, const char *whole_msg, GType type)
 {
         GtkProgressBar *progressbar = GTK_PROGRESS_BAR(obj);
-        double frac;
         char dummy;
+        double frac;
 
         if (eql(action, "set_text"))
                 gtk_progress_bar_set_text(progressbar, *data == '\0' ? NULL : data);
@@ -1904,8 +1906,8 @@ static void
 update_scale(GObject *obj, const char *action,
              const char *data, const char *whole_msg, GType type)
 {
-        double val;
         char dummy;
+        double val;
 
         if (eql(action, "set_value") && (sscanf(data, "%lf %c", &val, &dummy) == 1))
                 gtk_range_set_value(GTK_RANGE(obj), val);
@@ -1920,8 +1922,8 @@ update_scrolled_window(GObject *obj, const char *action,
         GtkScrolledWindow *window = GTK_SCROLLED_WINDOW(obj);
         GtkAdjustment *hadj = gtk_scrolled_window_get_hadjustment(window);
         GtkAdjustment *vadj = gtk_scrolled_window_get_vadjustment(window);
-        double d0, d1;
         char dummy;
+        double d0, d1;
 
         if (eql(action, "hscroll") && sscanf(data, "%lf %c", &d0, &dummy) == 1)
                 gtk_adjustment_set_value(hadj, d0);
@@ -1965,7 +1967,7 @@ update_size_request(GObject *obj, const char *action,
         (void) type;
         if (sscanf(data, "%d %d %c", &x, &y, &dummy) == 2)
                 gtk_widget_set_size_request(GTK_WIDGET(obj), x, y);
-        else if (sscanf(data, " %c", &dummy) == 0)
+        else if (sscanf(data, " %c", &dummy) < 1)
                 gtk_widget_set_size_request(GTK_WIDGET(obj), -1, -1);
         else
                 ign_cmd(type, whole_msg);
@@ -2225,8 +2227,8 @@ tree_model_set(GtkTreeModel *model, GtkTreeIter *iter, ...)
 static void
 create_subtree(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter)
 {
-        GtkTreePath *path_1;    /* path's predecessor */
         GtkTreeIter iter_1;     /* iter's predecessor */
+        GtkTreePath *path_1;    /* path's predecessor */
 
         if (gtk_tree_model_get_iter(model, iter, path))
                 return;
@@ -2253,11 +2255,11 @@ set_tree_view_cell(GtkTreeModel *model, GtkTreeIter *iter,
                    const char *path_s, int col, const char *new_text)
 {
         GType col_type = gtk_tree_model_get_column_type(model, col);
-        long long int n;
-        double d;
         GtkTreePath *path;
-        char *endptr;
         bool ok = false;
+        char *endptr;
+        double d;
+        long long int n;
 
         path = gtk_tree_path_new_from_string(path_s);
         create_subtree(model, path, iter);
@@ -2316,8 +2318,8 @@ update_tree_view(GObject *obj, const char *action,
                  const char *data, const char *whole_msg, GType type)
 {
         GtkTreeView *view = GTK_TREE_VIEW(obj);
-        GtkTreeModel *model = gtk_tree_view_get_model(view);
         GtkTreeIter iter0, iter1;
+        GtkTreeModel *model = gtk_tree_view_get_model(view);
         GtkTreePath *path = NULL;
         bool iter0_valid, iter1_valid;
         char *tokens, *arg0, *arg1, *arg2;
@@ -2342,20 +2344,22 @@ update_tree_view(GObject *obj, const char *action,
         if (is_path_string(arg1))
                 col = strtol(arg1, NULL, 10);
         if (eql(action, "set") &&
-            col > -1 && col < gtk_tree_model_get_n_columns(model) &&
+            col > -1 &&
+            col < gtk_tree_model_get_n_columns(model) &&
             is_path_string(arg0)) {
                 if (set_tree_view_cell(model, &iter0, arg0, col, arg2) == false)
                         ign_cmd(type, whole_msg);
-        } else if (eql(action, "scroll") && iter0_valid && iter1_valid && arg2 == NULL) {
+        } else if (eql(action, "scroll") && iter0_valid && iter1_valid &&
+                   arg2 == NULL) {
                 path = gtk_tree_path_new_from_string(arg0);
                 gtk_tree_view_scroll_to_cell (view,
                                               path,
                                               gtk_tree_view_get_column(view, col),
                                               0, 0., 0.);
-        } else if (eql(action, "expand") && arg0 == NULL && iter0_valid) {
+        } else if (eql(action, "expand") && iter0_valid && arg1 == NULL) {
                 path = gtk_tree_path_new_from_string(arg0);
                 gtk_tree_view_expand_row(view, path, false);
-        } else if (eql(action, "expand_all") && arg0 == NULL && iter0_valid) {
+        } else if (eql(action, "expand_all") && iter0_valid && arg1 == NULL) {
                 path = gtk_tree_path_new_from_string(arg0);
                 gtk_tree_view_expand_row(view, path, true);
         } else if (eql(action, "expand_all") && arg0 == NULL)
@@ -2371,13 +2375,16 @@ update_tree_view(GObject *obj, const char *action,
         } else if (eql(action, "set_cursor") && arg0 == NULL) {
                 tree_view_set_cursor(view, NULL, NULL);
                 gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(view));
-        } else if (eql(action, "insert_row") && eql(arg0, "end") && arg1 == NULL)
+        } else if (eql(action, "insert_row") &&
+                   eql(arg0, "end") && arg1 == NULL)
                 tree_model_insert_before(model, &iter1, NULL, NULL);
-        else if (eql(action, "insert_row") && iter0_valid && eql(arg1, "as_child"))
+        else if (eql(action, "insert_row") && iter0_valid &&
+                 eql(arg1, "as_child") && arg2 == NULL)
                 tree_model_insert_after(model, &iter1, &iter0, NULL);
         else if (eql(action, "insert_row") && iter0_valid && arg1 == NULL)
                 tree_model_insert_before(model, &iter1, NULL, &iter0);
-        else if (eql(action, "move_row") && iter0_valid && eql(arg1, "end") && arg2 == NULL)
+        else if (eql(action, "move_row") && iter0_valid &&
+                 eql(arg1, "end") && arg2 == NULL)
                 tree_model_move_before(model, &iter0, NULL);
         else if (eql(action, "move_row") && iter0_valid && iter1_valid && arg2 == NULL)
                 tree_model_move_before(model, &iter0, &iter1);
@@ -2734,24 +2741,24 @@ static bool
 tree_view_column_get_renderer_column(const char *ui_file, GtkTreeViewColumn *t_col,
                                      int n, GtkCellRenderer **renderer)
 {
-        xmlDocPtr doc;
-        xmlXPathContextPtr xpath_ctx;
-        xmlXPathObjectPtr xpath_obj;
-        xmlNodeSetPtr nodes;
-        xmlNodePtr cur;
-        int i;
-        xmlChar *xpath, *renderer_name = NULL, *m_col_s = NULL;
+        bool r = false;
         char *xpath_base1 = "//object[@class=\"GtkTreeViewColumn\" and @id=\"";
-        const char *xpath_id = widget_name(GTK_BUILDABLE(t_col));
         char *xpath_base2 = "\"]/child[";
-        size_t xpath_n_len = 3;    /* Big Enough (TM) */
         char *xpath_base3 = "]/object[@class=\"GtkCellRendererText\""
                 " or @class=\"GtkCellRendererToggle\"]/";
+        char *xpath_renderer_id = "/@id";
         char *xpath_text_col = "../attributes/attribute[@name=\"text\""
                 " or @name=\"active\"]";
-        char *xpath_renderer_id = "/@id";
+        const char *xpath_id = widget_name(GTK_BUILDABLE(t_col));
+        int i;
         size_t xpath_len;
-        bool r = false;
+        size_t xpath_n_len = 3;    /* Big Enough (TM) */
+        xmlChar *xpath, *renderer_name = NULL, *m_col_s = NULL;
+        xmlDocPtr doc;
+        xmlNodePtr cur;
+        xmlNodeSetPtr nodes;
+        xmlXPathContextPtr xpath_ctx;
+        xmlXPathObjectPtr xpath_obj;
 
         if ((doc = xmlParseFile(ui_file)) == NULL)
                 return false;
@@ -2833,8 +2840,8 @@ static void
 cb_tree_model_toggle(GtkCellRenderer *renderer, gchar *path_s, gpointer model)
 {
         GtkTreeIter iter;
-        void *col;
         bool toggle_state;
+        void *col;
 
         gtk_tree_model_get_iter_from_string(model, &iter, path_s);
         col = g_object_get_data(G_OBJECT(renderer), "col_number");
@@ -2846,19 +2853,19 @@ cb_tree_model_toggle(GtkCellRenderer *renderer, gchar *path_s, gpointer model)
 static void
 connect_widget_signals(gpointer *obj, char *ui_file)
 {
-        const char *name = NULL;
-        char *suffix = NULL;
         GObject *obj2;
         GType type = G_TYPE_INVALID;
+        char *suffix = NULL;
+        const char *name = NULL;
 
         type = G_TYPE_FROM_INSTANCE(obj);
         if (GTK_IS_BUILDABLE(obj))
                 name = widget_name(GTK_BUILDABLE(obj));
         if (type == GTK_TYPE_TREE_VIEW_COLUMN) {
-                gboolean editable = FALSE;
-                GtkTreeView *view;
-                GtkTreeModel *model;
                 GtkCellRenderer *renderer;
+                GtkTreeModel *model;
+                GtkTreeView *view;
+                gboolean editable = FALSE;
                 int i;
 
                 g_signal_connect(obj, "clicked", G_CALLBACK(cb_simple), "clicked");
@@ -2964,8 +2971,8 @@ connect_widget_signals(gpointer *obj, char *ui_file)
 static void
 add_widget_style_provider(gpointer *obj, void *data)
 {
-        GtkStyleContext *context;
         GtkCssProvider *style_provider;
+        GtkStyleContext *context;
 
         (void) data;
         if (!GTK_IS_WIDGET(obj))
@@ -2992,14 +2999,14 @@ prepare_widgets(char *ui_file)
 int
 main(int argc, char *argv[])
 {
-        char opt;
+        FILE *in = NULL;        /* command input */
+        GObject *main_window = NULL;
+        bool bg = false;
         char *in_fifo = NULL, *out_fifo = NULL;
         char *ui_file = "pipeglade.ui", *log_file = NULL, *err_file = NULL;
         char *xid = NULL;
-        bool bg = false;
+        char opt;
         pthread_t receiver;
-        GObject *main_window = NULL;
-        FILE *in = NULL;        /* command input */
 
         /* Disable runtime GLIB deprecation warnings: */
         setenv("G_ENABLE_DIAGNOSTIC", "0", 0);
