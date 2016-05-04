@@ -4,6 +4,7 @@
   * Add command line option -l for logging duration of pipeglade
   command execution.
   * Add command line option -O for redirecting stderr.
+  * Reject commands with excess arguments.
   * GtkDialog and GtkFileChooserDialog now respond to the commands
   that work for GtkWindow.
   * Toplevel windows report 'name:closed' when closed by the window

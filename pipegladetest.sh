@@ -88,7 +88,7 @@ check_cmd() {
     fi
 }
 
-
+#
 echo "
 # BATCH ONE
 #
@@ -207,7 +207,7 @@ check_rm $FOUT
 
 
 #exit
-
+#
 echo "
 # BATCH TWO
 #
@@ -269,27 +269,31 @@ check_error "nnn:force" \
             "ignoring command \"nnn:force\""
 # Wrong number or kind of arguments for generic actions
 check_error "button1:set_sensitive" \
-            "ignoring command \"button1:set_sensitive\""
+            "ignoring GtkButton command \"button1:set_sensitive\""
 check_error "button1:set_sensitive 2" \
-            "ignoring command \"button1:set_sensitive 2\""
+            "ignoring GtkButton command \"button1:set_sensitive 2\""
 check_error "button1:set_sensitive nnn" \
-            "ignoring command \"button1:set_sensitive nnn\""
+            "ignoring GtkButton command \"button1:set_sensitive nnn\""
 check_error "button1:set_sensitive 0 1" \
-            "ignoring command \"button1:set_sensitive 0 1\""
+            "ignoring GtkButton command \"button1:set_sensitive 0 1\""
 check_error "button1:set_visible" \
-            "ignoring command \"button1:set_visible\""
+            "ignoring GtkButton command \"button1:set_visible\""
 check_error "button1:set_visible 2" \
-            "ignoring command \"button1:set_visible 2\""
+            "ignoring GtkButton command \"button1:set_visible 2\""
 check_error "button1:set_visible nnn" \
-            "ignoring command \"button1:set_visible nnn\""
+            "ignoring GtkButton command \"button1:set_visible nnn\""
 check_error "button1:set_visible 0 1" \
-            "ignoring command \"button1:set_visible 0 1\""
+            "ignoring GtkButton command \"button1:set_visible 0 1\""
 check_error "button1:grab_focus 2" \
-            "ignoring command \"button1:grab_focus 2\""
+            "ignoring GtkButton command \"button1:grab_focus 2\""
+check_error "nnn:set_size_request 100" \
+            "ignoring command \"nnn:set_size_request 100\""
+check_error "nnn:set_size_request 100 100 100" \
+            "ignoring command \"nnn:set_size_request 100 100 100\""
 check_error "button1:force 2" \
-            "ignoring command \"button1:force 2\""
-check_error "button1:main_quit 2" \
-            "ignoring command \"button1:main_quit 2\""
+            "ignoring GtkButton command \"button1:force 2\""
+check_error "_:main_quit 2" \
+            "ignoring command \"_:main_quit 2\""
 # Widget that shouldn't fire callbacks
 check_error "label1:force" \
             "ignoring GtkLabel command \"label1:force\""
@@ -728,7 +732,7 @@ check_error "treeview1:set -1 1 77" \
             "ignoring GtkTreeView command \"treeview1:set -1 1 77\""
 check_error "treeview1:set 1 -1 77" \
             "ignoring GtkTreeView command \"treeview1:set 1 -1 77\""
-# GtkTree set "abc" into numeric column
+# GtkTreeView set "abc" into numeric column
 check_error "treeview1:set 1 1 abc" \
             "ignoring GtkTreeView command \"treeview1:set 1 1 abc\""
 
@@ -860,7 +864,7 @@ check_error "drawingarea1:arc 1 10 10 20 45" \
 check_error "drawingarea1:arc 1 10 10 20 45 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:arc 1 10 10 20 45 nnn\""
 check_error "drawingarea1:arc 1 10 10 20 45 90 7" \
-            "ignoring GtkDrawingArea command \"drawingarea1:arc 1 10 10 20 90 7 nnn\""
+            "ignoring GtkDrawingArea command \"drawingarea1:arc 1 10 10 20 45 90 7\""
 check_error "drawingarea1:arc_negative" \
             "ignoring GtkDrawingArea command \"drawingarea1:arc_negative\""
 check_error "drawingarea1:arc_negative " \
@@ -880,7 +884,7 @@ check_error "drawingarea1:arc_negative 1 10 10 20 45" \
 check_error "drawingarea1:arc_negative 1 10 10 20 45 nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:arc_negative 1 10 10 20 45 nnn\""
 check_error "drawingarea1:arc_negative 1 10 10 20 45 90 7" \
-            "ignoring GtkDrawingArea command \"drawingarea1:arc_negative 1 10 10 20 90 7 nnn\""
+            "ignoring GtkDrawingArea command \"drawingarea1:arc_negative 1 10 10 20 45 90 7\""
 check_error "drawingarea1:curve_to" \
             "ignoring GtkDrawingArea command \"drawingarea1:curve_to\""
 check_error "drawingarea1:curve_to " \
@@ -1085,16 +1089,16 @@ check_error "drawingarea1:set_show_text " \
             "ignoring GtkDrawingArea command \"drawingarea1:set_show_text \""
 check_error "drawingarea1:set_show_text nnn" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_show_text nnn\""
-check_error "drawingarea1:set_font_family" \
-            "ignoring GtkDrawingArea command \"drawingarea1:set_font_family\""
-check_error "drawingarea1:set_font_family " \
-            "ignoring GtkDrawingArea command \"drawingarea1:set_font_family \""
-check_error "drawingarea1:set_font_family nnn" \
-            "ignoring GtkDrawingArea command \"drawingarea1:set_font_family nnn\""
-check_error "drawingarea1:set_font_family 1" \
-            "ignoring GtkDrawingArea command \"drawingarea1:set_font_family 1\""
-check_error "drawingarea1:set_font_family 1 normal" \
-            "ignoring GtkDrawingArea command \"drawingarea1:set_font_family 1 normal\""
+check_error "drawingarea1:set_font_face" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_face\""
+check_error "drawingarea1:set_font_face " \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_face \""
+check_error "drawingarea1:set_font_face nnn" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_face nnn\""
+check_error "drawingarea1:set_font_face 1" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_face 1\""
+check_error "drawingarea1:set_font_face 1 normal" \
+            "ignoring GtkDrawingArea command \"drawingarea1:set_font_face 1 normal\""
 check_error "drawingarea1:set_font_size" \
             "ignoring GtkDrawingArea command \"drawingarea1:set_font_size\""
 check_error "drawingarea1:set_font_size " \
@@ -1214,7 +1218,7 @@ rm $FERR
 
 
 
-#exit
+exit
 
 echo "
 # BATCH THREE

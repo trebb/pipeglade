@@ -79,6 +79,7 @@ static FILE *save;              /* saving user data */
 static FILE *log_out;           /* logging output */
 static GtkBuilder *builder;     /* to be read from .ui file */
 
+
 /*
  * ============================================================
  *  Helper functions
@@ -450,6 +451,7 @@ read_buf(FILE *s, char **buf, size_t *bufsize)
         return i;
 }
 
+
 /*
  * ============================================================
  * Receiving feedback from the GUI
@@ -824,6 +826,7 @@ cb_tree_selection(GtkBuildable *obj, const char *tag)
                                             view);
 }
 
+
 /*
  * ============================================================
  *  cb_draw() maintains a drawing on a GtkDrawingArea; it needs a few
@@ -1139,6 +1142,7 @@ cb_draw(GtkWidget *widget, cairo_t *cr, gpointer data)
         return FALSE;
 }
 
+
 /*
  * ============================================================
  *  Manipulating the GUI
@@ -1159,23 +1163,24 @@ static void
 update_calendar(GObject *obj, const char *action,
                 const char *data, const char *whole_msg, GType type)
 {
+        char dummy;
         GtkCalendar *calendar = GTK_CALENDAR(obj);
         int year = 0, month = 0, day = 0;
 
-        if (eql(action, "select_date")) {
-                sscanf(data, "%d-%d-%d", &year, &month, &day);
+        if (eql(action, "select_date") &&
+            sscanf(data, "%d-%d-%d %c", &year, &month, &day, &dummy) == 3) {
                 if (month > -1 && month <= 11 && day > 0 && day <= 31) {
                         gtk_calendar_select_month(calendar, --month, year);
                         gtk_calendar_select_day(calendar, day);
                 } else
                         ign_cmd(type, whole_msg);
-        } else if (eql(action, "mark_day")) {
-                day = strtol(data, NULL, 10);
+        } else if (eql(action, "mark_day") &&
+                   sscanf(data, "%d %c", &day, &dummy) == 1) {
                 if (day > 0 && day <= 31)
                         gtk_calendar_mark_day(calendar, day);
                 else
                         ign_cmd(type, whole_msg);
-        } else if (eql(action, "clear_marks"))
+        } else if (eql(action, "clear_marks") && sscanf(data, " %c", &dummy) < 1)
                 gtk_calendar_clear_marks(calendar);
         else
                 ign_cmd(type, whole_msg);
@@ -1192,19 +1197,23 @@ update_class_window(GObject *obj, const char *action,
         GtkWindow *window = GTK_WINDOW(obj);
         int x, y;
         bool result = true;
+        char dummy;
 
         if (eql(action, "set_title"))
                 gtk_window_set_title(window, data);
-        else if (eql(action, "fullscreen"))
+        else if (eql(action, "fullscreen") && sscanf(data, " %c", &dummy) < 1)
                 gtk_window_fullscreen(window);
-        else if (eql(action, "unfullscreen"))
+        else if (eql(action, "unfullscreen") && sscanf(data, " %c", &dummy) < 1)
                 gtk_window_unfullscreen(window);
         else if (eql(action, "resize")) {
-                if (sscanf(data, "%d %d", &x, &y) != 2)
+                if (sscanf(data, "%d %d %c", &x, &y, &dummy) == 2)
+                        gtk_window_resize(window, x, y);
+                else if (sscanf(data, " %c", &dummy) < 1)
                         gtk_window_get_default_size(window, &x, &y);
-                gtk_window_resize(window, x, y);
+                else
+                        ign_cmd(type, whole_msg);
         } else if (eql(action, "move")) {
-                if (sscanf(data, "%d %d", &x, &y) == 2)
+                if (sscanf(data, "%d %d %c", &x, &y, &dummy) == 2)
                         gtk_window_move(window, x, y);
                 else
                         ign_cmd(type, whole_msg);
@@ -1232,13 +1241,14 @@ update_combo_box_text(GObject *obj, const char *action,
 {
         GtkComboBoxText *combobox = GTK_COMBO_BOX_TEXT(obj);
         char data1[strlen(data) + 1];
+        char dummy;
 
         strcpy(data1, data);
         if (eql(action, "prepend_text"))
                 gtk_combo_box_text_prepend_text(combobox, data1);
         else if (eql(action, "append_text"))
                 gtk_combo_box_text_append_text(combobox, data1);
-        else if (eql(action, "remove"))
+        else if (eql(action, "remove") && sscanf(data, " %c", &dummy) < 1)
                 gtk_combo_box_text_remove(combobox, strtol(data1, NULL, 10));
         else if (eql(action, "insert_text")) {
                 char *position = strtok(data1, WHITESPACE);
@@ -1262,6 +1272,8 @@ update_combo_box_text(GObject *obj, const char *action,
 static bool
 set_draw_op(struct draw_op *op, const char *action, const char *data)
 {
+        char dummy;
+
         if (eql(action, "line_to")) {
                 struct move_to_args *args;
 
@@ -1269,7 +1281,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = LINE_TO;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf", &op->id, &args->x, &args->y) != 3)
+                if (sscanf(data, "%u %lf %lf %c", &op->id, &args->x, &args->y, &dummy) != 3)
                         return false;
         } else if (eql(action, "rel_line_to")) {
                 struct move_to_args *args;
@@ -1278,7 +1290,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = REL_LINE_TO;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf", &op->id, &args->x, &args->y) != 3)
+                if (sscanf(data, "%u %lf %lf %c", &op->id, &args->x, &args->y, &dummy) != 3)
                         return false;
         } else if (eql(action, "move_to")) {
                 struct move_to_args *args;
@@ -1287,7 +1299,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = MOVE_TO;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf", &op->id, &args->x, &args->y) != 3)
+                if (sscanf(data, "%u %lf %lf %c", &op->id, &args->x, &args->y, &dummy) != 3)
                         return false;
         } else if (eql(action, "rel_move_to")) {
                 struct move_to_args *args;
@@ -1296,7 +1308,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = REL_MOVE_TO;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf", &op->id, &args->x, &args->y) != 3)
+                if (sscanf(data, "%u %lf %lf %c", &op->id, &args->x, &args->y, &dummy) != 3)
                         return false;
         } else if (eql(action, "arc")) {
                 struct arc_args *args;
@@ -1306,8 +1318,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = ARC;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %lf %lf %lf", &op->id,
-                           &args->x, &args->y, &args->radius, &deg1, &deg2) != 6)
+                if (sscanf(data, "%u %lf %lf %lf %lf %lf %c", &op->id,
+                           &args->x, &args->y, &args->radius, &deg1, &deg2, &dummy) != 6)
                         return false;
                 args->angle1 = deg1 * (M_PI / 180.L);
                 args->angle2 = deg2 * (M_PI / 180.L);
@@ -1319,8 +1331,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = ARC_NEGATIVE;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %lf %lf %lf", &op->id,
-                           &args->x, &args->y, &args->radius, &deg1, &deg2) != 6)
+                if (sscanf(data, "%u %lf %lf %lf %lf %lf %c", &op->id,
+                           &args->x, &args->y, &args->radius, &deg1, &deg2, &dummy) != 6)
                         return false;
                 args->angle1 = deg1 * (M_PI / 180.L);
                 args->angle2 = deg2 * (M_PI / 180.L);
@@ -1331,8 +1343,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = CURVE_TO;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %lf %lf %lf %lf", &op->id,
-                           &args->x1, &args->y1, &args->x2, &args->y2, &args->x3, &args->y3) != 7)
+                if (sscanf(data, "%u %lf %lf %lf %lf %lf %lf %c", &op->id,
+                           &args->x1, &args->y1, &args->x2, &args->y2, &args->x3, &args->y3, &dummy) != 7)
                         return false;
         } else if (eql(action, "rel_curve_to")) {
                 struct curve_to_args *args;
@@ -1341,8 +1353,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = REL_CURVE_TO;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %lf %lf %lf %lf", &op->id,
-                           &args->x1, &args->y1, &args->x2, &args->y2, &args->x3, &args->y3) != 7)
+                if (sscanf(data, "%u %lf %lf %lf %lf %lf %lf %c", &op->id,
+                           &args->x1, &args->y1, &args->x2, &args->y2, &args->x3, &args->y3, &dummy) != 7)
                         return false;
         } else if (eql(action, "rectangle")) {
                 struct rectangle_args *args;
@@ -1351,12 +1363,12 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = RECTANGLE;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %lf %lf", &op->id,
-                           &args->x, &args->y, &args->width, &args->height) != 5)
+                if (sscanf(data, "%u %lf %lf %lf %lf %c", &op->id,
+                           &args->x, &args->y, &args->width, &args->height, &dummy) != 5)
                         return false;
         } else if (eql(action, "close_path")) {
                 op->op = CLOSE_PATH;
-                if (sscanf(data, "%u", &op->id) != 1)
+                if (sscanf(data, "%u %c", &op->id, &dummy) != 1)
                         return false;
                 op->op_args = NULL;
         } else if (eql(action, "show_text")) {
@@ -1408,22 +1420,22 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 strncpy(args->text, (data + start), len);
         } else if (eql(action, "stroke")) {
                 op->op = STROKE;
-                if (sscanf(data, "%u", &op->id) != 1)
+                if (sscanf(data, "%u %s", &op->id, &dummy) != 1)
                         return false;
                 op->op_args = NULL;
         } else if (eql(action, "stroke_preserve")) {
                 op->op = STROKE_PRESERVE;
-                if (sscanf(data, "%u", &op->id) != 1)
+                if (sscanf(data, "%u %c", &op->id, &dummy) != 1)
                         return false;
                 op->op_args = NULL;
         } else if (eql(action, "fill")) {
                 op->op = FILL;
-                if (sscanf(data, "%u", &op->id) != 1)
+                if (sscanf(data, "%u %c", &op->id, &dummy) != 1)
                         return false;
                 op->op_args = NULL;
         } else if (eql(action, "fill_preserve")) {
                 op->op = FILL_PRESERVE;
-                if (sscanf(data, "%u", &op->id) != 1)
+                if (sscanf(data, "%u %c", &op->id, &dummy) != 1)
                         return false;
                 op->op_args = NULL;
         } else if (eql(action, "set_dash")) {
@@ -1485,7 +1497,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = SET_FONT_SIZE;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf", &op->id, &args->size) != 2)
+                if (sscanf(data, "%u %lf %c", &op->id, &args->size, &dummy) != 2)
                         return false;
         } else if (eql(action, "set_line_cap")) {
                 struct set_line_cap_args *args;
@@ -1495,7 +1507,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = SET_LINE_CAP;
                 op->op_args = args;
-                if (sscanf(data, "%u %6s", &op->id, str) != 2)
+                if (sscanf(data, "%u %6s %c", &op->id, str, &dummy) != 2)
                         return false;
                 if (eql(str, "butt"))
                         args->line_cap = CAIRO_LINE_CAP_BUTT;
@@ -1513,7 +1525,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = SET_LINE_JOIN;
                 op->op_args = args;
-                if (sscanf(data, "%u %5s", &op->id, str) != 2)
+                if (sscanf(data, "%u %5s %c", &op->id, str, &dummy) != 2)
                         return false;
                 if (eql(str, "miter"))
                         args->line_join = CAIRO_LINE_JOIN_MITER;
@@ -1530,7 +1542,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = SET_LINE_WIDTH;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf", &op->id, &args->width) != 2)
+                if (sscanf(data, "%u %lf %c", &op->id, &args->width, &dummy) != 2)
                         return false;
         } else if (eql(action, "set_source_rgba")) {
                 struct set_source_rgba_args *args;
@@ -1547,8 +1559,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 double xx, yx, xy, yy, x0, y0;
                 char dummy;
 
-                if (sscanf(data, "%u %lf %lf %lf %lf %lf %lf",
-                           &op->id, &xx, &yx, &xy, &yy, &x0, &y0) == 7) {
+                if (sscanf(data, "%u %lf %lf %lf %lf %lf %lf %c",
+                           &op->id, &xx, &yx, &xy, &yy, &x0, &y0, &dummy) == 7) {
                         struct transform_args *args;
 
                         if ((args = malloc(sizeof(*args))) == NULL)
@@ -1558,7 +1570,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         cairo_matrix_init(&args->matrix, xx, yx, xy, yy, x0, y0);
                 } else if (sscanf(data, "%u, %c", &op->id, &dummy))
                         return false;
-                else if (sscanf(data, "%u", &op->id) == 1) {
+                else if (sscanf(data, "%u %c", &op->id, &dummy) == 1) {
                         op->op = RESET_CTM;
                         op->op_args = NULL;
                 } else
@@ -1571,7 +1583,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = TRANSFORM;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf", &op->id, &tx, &ty) != 3)
+                if (sscanf(data, "%u %lf %lf %c", &op->id, &tx, &ty, &dummy) != 3)
                         return false;
                 cairo_matrix_init_translate(&args->matrix, tx, ty);
         } else if (eql(action, "scale")) {
@@ -1582,7 +1594,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = TRANSFORM;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf", &op->id, &sx, &sy) != 3)
+                if (sscanf(data, "%u %lf %lf %c", &op->id, &sx, &sy, &dummy) != 3)
                         return false;
                 cairo_matrix_init_scale(&args->matrix, sx, sy);
         } else if (eql(action, "rotate")) {
@@ -1593,7 +1605,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = TRANSFORM;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf", &op->id, &angle) != 2)
+                if (sscanf(data, "%u %lf %c", &op->id, &angle, &dummy) != 2)
                         return false;
                 cairo_matrix_init_rotate(&args->matrix, angle * (M_PI / 180.L));
         } else
@@ -1637,8 +1649,9 @@ rem_draw_op(GObject *widget, const char *data)
 {
         struct draw_op *op, *next_op, *prev_op = NULL;
         unsigned int id;
+        char dummy;
 
-        if (sscanf(data, "%u", &id) != 1)
+        if (sscanf(data, "%u %c", &id, &dummy) != 1)
                 return false;
         op = g_object_get_data(widget, "draw_ops");
         while (op != NULL) {
@@ -1707,9 +1720,12 @@ update_expander(GObject *obj, const char *action,
                 const char *data, const char *whole_msg, GType type)
 {
         GtkExpander *expander = GTK_EXPANDER(obj);
+        unsigned int val;
+        char dummy;
 
-        if (eql(action, "set_expanded"))
-                gtk_expander_set_expanded(expander, strtol(data, NULL, 10));
+        if (eql(action, "set_expanded") &&
+            sscanf(data, "%u %c", &val, &dummy) == 1 && val < 2)
+                gtk_expander_set_expanded(expander, val);
         else if (eql(action, "set_label"))
                 gtk_expander_set_label(expander, data);
         else
@@ -1745,9 +1761,12 @@ static void
 update_focus(GObject *obj, const char *action,
              const char *data, const char *whole_msg, GType type)
 {
+        char dummy;
+
         (void) action;
         (void) data;
-        if (gtk_widget_get_can_focus(GTK_WIDGET(obj)))
+        if (sscanf(data, " %c", &dummy) < 1 &&
+            gtk_widget_get_can_focus(GTK_WIDGET(obj)))
                 gtk_widget_grab_focus(GTK_WIDGET(obj));
         else
                 ign_cmd(type, whole_msg);
@@ -1805,8 +1824,11 @@ static void
 update_notebook(GObject *obj, const char *action,
                 const char *data, const char *whole_msg, GType type)
 {
-        if (eql(action, "set_current_page"))
-                gtk_notebook_set_current_page(GTK_NOTEBOOK(obj), strtol(data, NULL, 10));
+        unsigned int val;
+        char dummy;
+
+        if (eql(action, "set_current_page") && sscanf(data, "%u %c", &val, &dummy) == 1)
+                gtk_notebook_set_current_page(GTK_NOTEBOOK(obj), val);
         else
                 ign_cmd(type, whole_msg);
 }
@@ -1867,10 +1889,12 @@ update_progress_bar(GObject *obj, const char *action,
 {
         GtkProgressBar *progressbar = GTK_PROGRESS_BAR(obj);
         double frac;
+        char dummy;
 
         if (eql(action, "set_text"))
                 gtk_progress_bar_set_text(progressbar, *data == '\0' ? NULL : data);
-        else if (eql(action, "set_fraction") && (sscanf(data, "%lf", &frac) == 1))
+        else if (eql(action, "set_fraction") &&
+                 (sscanf(data, "%lf %c", &frac, &dummy) == 1))
                 gtk_progress_bar_set_fraction(progressbar, frac);
         else
                 ign_cmd(type, whole_msg);
@@ -1881,8 +1905,9 @@ update_scale(GObject *obj, const char *action,
              const char *data, const char *whole_msg, GType type)
 {
         double val;
+        char dummy;
 
-        if (eql(action, "set_value") && (sscanf(data, "%lf", &val) == 1))
+        if (eql(action, "set_value") && (sscanf(data, "%lf %c", &val, &dummy) == 1))
                 gtk_range_set_value(GTK_RANGE(obj), val);
         else
                 ign_cmd(type, whole_msg);
@@ -1896,16 +1921,17 @@ update_scrolled_window(GObject *obj, const char *action,
         GtkAdjustment *hadj = gtk_scrolled_window_get_hadjustment(window);
         GtkAdjustment *vadj = gtk_scrolled_window_get_vadjustment(window);
         double d0, d1;
+        char dummy;
 
-        if (eql(action, "hscroll") && sscanf(data, "%lf", &d0) == 1)
+        if (eql(action, "hscroll") && sscanf(data, "%lf %c", &d0, &dummy) == 1)
                 gtk_adjustment_set_value(hadj, d0);
-        else if (eql(action, "vscroll") && sscanf(data, "%lf", &d0) == 1)
+        else if (eql(action, "vscroll") && sscanf(data, "%lf %c", &d0, &dummy) == 1)
                 gtk_adjustment_set_value(vadj, d0);
         else if (eql(action, "hscroll_to_range") &&
-                 sscanf(data, "%lf %lf", &d0, &d1) == 2)
+                 sscanf(data, "%lf %lf %c", &d0, &d1, &dummy) == 2)
                 gtk_adjustment_clamp_page(hadj, d0, d1);
         else if (eql(action, "vscroll_to_range") &&
-                 sscanf(data, "%lf %lf", &d0, &d1) == 2)
+                 sscanf(data, "%lf %lf %c", &d0, &d1, &dummy) == 2)
                 gtk_adjustment_clamp_page(vadj, d0, d1);
         else
                 ign_cmd(type, whole_msg);
@@ -1915,25 +1941,34 @@ static void
 update_sensitivity(GObject *obj, const char *action,
                    const char *data, const char *whole_msg, GType type)
 {
+        char dummy;
+        unsigned int val;
+
         (void) action;
         (void) whole_msg;
         (void) type;
-        gtk_widget_set_sensitive(GTK_WIDGET(obj), strtol(data, NULL, 10));
+        if (sscanf(data, "%u %c", &val, &dummy) == 1 && val < 2)
+                gtk_widget_set_sensitive(GTK_WIDGET(obj), val);
+        else
+                ign_cmd(type, whole_msg);
 }
 
 static void
 update_size_request(GObject *obj, const char *action,
                     const char *data, const char *whole_msg, GType type)
 {
+        char dummy;
         int x, y;
 
         (void) action;
         (void) whole_msg;
         (void) type;
-        if (sscanf(data, "%d %d", &x, &y) == 2)
+        if (sscanf(data, "%d %d %c", &x, &y, &dummy) == 2)
                 gtk_widget_set_size_request(GTK_WIDGET(obj), x, y);
-        else
+        else if (sscanf(data, " %c", &dummy) == 0)
                 gtk_widget_set_size_request(GTK_WIDGET(obj), -1, -1);
+        else
+                ign_cmd(type, whole_msg);
 }
 
 static void
@@ -1942,10 +1977,10 @@ update_socket(GObject *obj, const char *action,
 {
         GtkSocket *socket = GTK_SOCKET(obj);
         Window id;
-        char str[BUFLEN];
+        char str[BUFLEN], dummy;
 
         (void) data;
-        if (eql(action, "id")) {
+        if (eql(action, "id") && sscanf(data, " %c", &dummy) < 1) {
                 id = gtk_socket_get_id(socket);
                 snprintf(str, BUFLEN, "%lu", id);
                 send_msg(GTK_BUILDABLE(socket), "id", str, NULL);
@@ -1958,11 +1993,12 @@ update_spinner(GObject *obj, const char *action,
                const char *data, const char *whole_msg, GType type)
 {
         GtkSpinner *spinner = GTK_SPINNER(obj);
+        char dummy;
 
         (void) data;
-        if (eql(action, "start"))
+        if (eql(action, "start") && sscanf(data, " %c", &dummy) < 1)
                 gtk_spinner_start(spinner);
-        else if (eql(action, "stop"))
+        else if (eql(action, "stop") && sscanf(data, " %c", &dummy) < 1)
                 gtk_spinner_stop(spinner);
         else
                 ign_cmd(type, whole_msg);
@@ -1973,36 +2009,32 @@ update_statusbar(GObject *obj, const char *action,
                  const char *data, const char *whole_msg, GType type)
 {
         GtkStatusbar *statusbar = GTK_STATUSBAR(obj);
-        char *ctx_msg, *msg;
-        size_t ctx_len;
+        char *ctx_msg, dummy;
+        const char *msg;
+        int ctx_len, t;
 
         if ((ctx_msg = malloc(strlen(data) + 1)) == NULL)
                 OOM_ABORT;
-        strcpy(ctx_msg, data);
-        ctx_len = strcspn(ctx_msg, WHITESPACE);
-        if (ctx_len > 0) {
-                ctx_msg[ctx_len] = '\0';
-                msg = ctx_msg + ctx_len + 1;
-        } else
-                msg = ctx_msg + strlen(ctx_msg);
+        t = sscanf(data, "%s %n%c", ctx_msg, &ctx_len, &dummy);
+        msg = data + ctx_len;
         if (eql(action, "push"))
                 gtk_statusbar_push(statusbar,
                                    gtk_statusbar_get_context_id(statusbar, "0"),
                                     data);
-        else if (eql(action, "push_id"))
+        else if (eql(action, "push_id") && t >= 1)
                 gtk_statusbar_push(statusbar,
                                    gtk_statusbar_get_context_id(statusbar, ctx_msg),
                                    msg);
-        else if (eql(action, "pop"))
+        else if (eql(action, "pop") && t < 1)
                 gtk_statusbar_pop(statusbar,
                                   gtk_statusbar_get_context_id(statusbar, "0"));
-        else if (eql(action, "pop_id"))
+        else if (eql(action, "pop_id") && t == 1)
                 gtk_statusbar_pop(statusbar,
                                   gtk_statusbar_get_context_id(statusbar, ctx_msg));
-        else if (eql(action, "remove_all"))
+        else if (eql(action, "remove_all") && t < 1)
                 gtk_statusbar_remove_all(statusbar,
                                          gtk_statusbar_get_context_id(statusbar, "0"));
-        else if (eql(action, "remove_all_id"))
+        else if (eql(action, "remove_all_id") && t == 1)
                 gtk_statusbar_remove_all(statusbar,
                                          gtk_statusbar_get_context_id(statusbar, ctx_msg));
         else
@@ -2014,8 +2046,12 @@ static void
 update_switch(GObject *obj, const char *action,
               const char *data, const char *whole_msg, GType type)
 {
-        if (eql(action, "set_active"))
-                gtk_switch_set_active(GTK_SWITCH(obj), strtol(data, NULL, 10));
+        char dummy;
+        unsigned int val;
+
+        if (eql(action, "set_active") &&
+            sscanf(data, "%u %c", &val, &dummy) == 1 && val < 2)
+                gtk_switch_set_active(GTK_SWITCH(obj), val);
         else
                 ign_cmd(type, whole_msg);
 }
@@ -2027,25 +2063,29 @@ update_text_view(GObject *obj, const char *action,
         GtkTextView *view = GTK_TEXT_VIEW(obj);
         GtkTextBuffer *textbuf = gtk_text_view_get_buffer(view);
         GtkTextIter a, b;
+        char dummy;
+        int val;
 
         if (eql(action, "set_text"))
                 gtk_text_buffer_set_text(textbuf, data, -1);
-        else if (eql(action, "delete")) {
+        else if (eql(action, "delete") && sscanf(data, " %c", &dummy) < 1) {
                 gtk_text_buffer_get_bounds(textbuf, &a, &b);
                 gtk_text_buffer_delete(textbuf, &a, &b);
         } else if (eql(action, "insert_at_cursor"))
                 gtk_text_buffer_insert_at_cursor(textbuf, data, -1);
-        else if (eql(action, "place_cursor")) {
-                if (eql(data, "end"))
-                        gtk_text_buffer_get_end_iter(textbuf, &a);
-                else    /* numeric offset */
-                        gtk_text_buffer_get_iter_at_offset(textbuf, &a,
-                                                           strtol(data, NULL, 10));
+        else if (eql(action, "place_cursor") && eql(data, "end")) {
+                gtk_text_buffer_get_end_iter(textbuf, &a);
                 gtk_text_buffer_place_cursor(textbuf, &a);
-        } else if (eql(action, "place_cursor_at_line")) {
-                gtk_text_buffer_get_iter_at_line(textbuf, &a, strtol(data, NULL, 10));
+        } else if (eql(action, "place_cursor") &&
+                   sscanf(data, "%d %c", &val, &dummy) == 1) {
+                gtk_text_buffer_get_iter_at_offset(textbuf, &a, val);
                 gtk_text_buffer_place_cursor(textbuf, &a);
-        } else if (eql(action, "scroll_to_cursor"))
+        } else if (eql(action, "place_cursor_at_line") &&
+                   sscanf(data, "%d %c", &val, &dummy) == 1) {
+                gtk_text_buffer_get_iter_at_line(textbuf, &a, val);
+                gtk_text_buffer_place_cursor(textbuf, &a);
+        } else if (eql(action, "scroll_to_cursor") &&
+                   sscanf(data, " %c", &dummy) < 1)
                 gtk_text_view_scroll_to_mark(view, gtk_text_buffer_get_insert(textbuf),
                                              0., 0, 0., 0.);
         else if (eql(action, "save") && data != NULL &&
@@ -2062,10 +2102,15 @@ static void
 update_toggle_button(GObject *obj, const char *action,
                      const char *data, const char *whole_msg, GType type)
 {
+        char dummy;
+        unsigned int val;
+
         if (eql(action, "set_label"))
                 gtk_button_set_label(GTK_BUTTON(obj), data);
-        else if (eql(action, "set_active"))
-                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), strtol(data, NULL, 10));
+        else if (eql(action, "set_active") &&
+                 sscanf(data, "%u %c", &val, &dummy) == 1 &&
+                 val < 2)
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), val);
         else
                 ign_cmd(type, whole_msg);
 }
@@ -2301,42 +2346,42 @@ update_tree_view(GObject *obj, const char *action,
             is_path_string(arg0)) {
                 if (set_tree_view_cell(model, &iter0, arg0, col, arg2) == false)
                         ign_cmd(type, whole_msg);
-        } else if (eql(action, "scroll") && iter0_valid && iter1_valid) {
+        } else if (eql(action, "scroll") && iter0_valid && iter1_valid && arg2 == NULL) {
                 path = gtk_tree_path_new_from_string(arg0);
                 gtk_tree_view_scroll_to_cell (view,
                                               path,
                                               gtk_tree_view_get_column(view, col),
                                               0, 0., 0.);
-        } else if (eql(action, "expand") && iter0_valid) {
+        } else if (eql(action, "expand") && arg0 == NULL && iter0_valid) {
                 path = gtk_tree_path_new_from_string(arg0);
                 gtk_tree_view_expand_row(view, path, false);
-        } else if (eql(action, "expand_all") && iter0_valid) {
+        } else if (eql(action, "expand_all") && arg0 == NULL && iter0_valid) {
                 path = gtk_tree_path_new_from_string(arg0);
                 gtk_tree_view_expand_row(view, path, true);
         } else if (eql(action, "expand_all") && arg0 == NULL)
                 gtk_tree_view_expand_all(view);
-        else if (eql(action, "collapse") && iter0_valid) {
+        else if (eql(action, "collapse") && iter0_valid && arg1 == NULL) {
                 path = gtk_tree_path_new_from_string(arg0);
                 gtk_tree_view_collapse_row(view, path);
         } else if (eql(action, "collapse") && arg0 == NULL)
                 gtk_tree_view_collapse_all(view);
-        else if (eql(action, "set_cursor") && iter0_valid) {
+        else if (eql(action, "set_cursor") && iter0_valid && arg1 == NULL) {
                 path = gtk_tree_path_new_from_string(arg0);
                 tree_view_set_cursor(view, path, NULL);
         } else if (eql(action, "set_cursor") && arg0 == NULL) {
                 tree_view_set_cursor(view, NULL, NULL);
                 gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(view));
-        } else if (eql(action, "insert_row") && eql(arg0, "end"))
+        } else if (eql(action, "insert_row") && eql(arg0, "end") && arg1 == NULL)
                 tree_model_insert_before(model, &iter1, NULL, NULL);
         else if (eql(action, "insert_row") && iter0_valid && eql(arg1, "as_child"))
                 tree_model_insert_after(model, &iter1, &iter0, NULL);
-        else if (eql(action, "insert_row") && iter0_valid)
+        else if (eql(action, "insert_row") && iter0_valid && arg1 == NULL)
                 tree_model_insert_before(model, &iter1, NULL, &iter0);
-        else if (eql(action, "move_row") && iter0_valid && eql(arg1, "end"))
+        else if (eql(action, "move_row") && iter0_valid && eql(arg1, "end") && arg2 == NULL)
                 tree_model_move_before(model, &iter0, NULL);
-        else if (eql(action, "move_row") && iter0_valid && iter1_valid)
+        else if (eql(action, "move_row") && iter0_valid && iter1_valid && arg2 == NULL)
                 tree_model_move_before(model, &iter0, &iter1);
-        else if (eql(action, "remove_row") && iter0_valid)
+        else if (eql(action, "remove_row") && iter0_valid && arg1 == NULL)
                 tree_model_remove(model, &iter0);
         else if (eql(action, "clear") && arg0 == NULL) {
                 tree_view_set_cursor(view, NULL, NULL);
@@ -2356,10 +2401,16 @@ static void
 update_visibility(GObject *obj, const char *action,
                   const char *data, const char *whole_msg, GType type)
 {
+        char dummy;
+        unsigned int val;
+
         (void) action;
         (void) whole_msg;
         (void) type;
-        gtk_widget_set_visible(GTK_WIDGET(obj), strtol(data, NULL, 10));
+        if (sscanf(data, "%u %c", &val, &dummy) == 1 && val < 2)
+                gtk_widget_set_visible(GTK_WIDGET(obj), val);
+        else
+                ign_cmd(type, whole_msg);
 }
 
 /*
@@ -2409,9 +2460,11 @@ static void
 fake_ui_activity(GObject *obj, const char *action,
                  const char *data, const char *whole_msg, GType type)
 {
+        char dummy;
+
         (void) action;
         (void) data;
-        if (!GTK_IS_WIDGET(obj))
+        if (!GTK_IS_WIDGET(obj) || sscanf(data, " %c", &dummy) > 0)
                 ign_cmd(type, whole_msg);
         else if (GTK_IS_ENTRY(obj) || GTK_IS_SPIN_BUTTON(obj))
                 cb_editable(GTK_BUILDABLE(obj), "text");
@@ -2432,12 +2485,17 @@ static void
 main_quit(GObject *obj, const char *action,
           const char *data, const char *whole_msg, GType type)
 {
+        char dummy;
+
         (void) obj;
         (void) action;
         (void) data;
         (void) whole_msg;
         (void) type;
-        gtk_main_quit();
+        if (sscanf(data, " %c", &dummy) < 1)
+                gtk_main_quit();
+        else
+                ign_cmd(type, whole_msg);
 }
 
 /*
@@ -2559,11 +2617,11 @@ digest_msg(FILE *cmd)
                 ud->msg_tokens[name_end] = ud->msg_tokens[action_end] = '\0';
                 name = ud->msg_tokens + name_start;
                 ud->action = ud->msg_tokens + action_start;
+                ud->data = ud->msg_tokens + data_start;
                 if (eql(ud->action, "main_quit")) {
                         ud->fn = main_quit;
                         goto exec;
                 }
-                ud->data = ud->msg_tokens + data_start;
                 if (eql(ud->action, "load") && strlen(ud->data) > 0 &&
                     (load = fopen(ud->data, "r")) != NULL &&
                     remember_loading_file(ud->data)) {
@@ -2659,6 +2717,7 @@ digest_msg(FILE *cmd)
         return NULL;
 }
 
+
 /*
  * ============================================================
  *  Initialization
