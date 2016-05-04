@@ -510,7 +510,7 @@ pixels if specified, or to the default size.
 .Pp
 .Qq Ar id Ns Cm :move Ar x y
 moves the dialog window to position
-.Ar x , y .
+.Pq Ar x , y .
 .Pp
 .Qq Ar id Ns Cm :fullscreen
 and
@@ -648,7 +648,7 @@ resets the dash pattern to a line with arbitrary on/off portions.
 .Qq Ar id Ns Cm :set_dash Ar n
 resets the dash pattern to a solid line.
 .Pp
-.Qo Ar id Ns Cm :set_font_family Ar n Brq Cm normal | italic | oblique
+.Qo Ar id Ns Cm :set_font_face Ar n Brq Cm normal | italic | oblique
 .Brq Cm normal | bold
 .Bq Cm family
 .Qc
@@ -853,7 +853,7 @@ pixels if specified, or to the default size.
 .Pp
 .Qq Ar id Ns Cm :move Ar x y
 moves the dialog window to position
-.Ar x , y .
+.Pq Ar x , y .
 .Pp
 .Qq Ar id Ns Cm :fullscreen
 and
@@ -1007,13 +1007,13 @@ to the left or top edge of the
 .Cm GtkScrolledWindow ,
 respectively.
 .Pp
-.Qq Ar id Ns Cm :hscroll_to_range Ar pos_0 pos_1
+.Qq Ar id Ns Cm :hscroll_to_range Ar pos0 pos1
 and
-.Qq Ar id Ns Cm :vscroll_to_range Ar pos_0 pos_1
+.Qq Ar id Ns Cm :vscroll_to_range Ar pos0 pos1
 scroll, if necessary, the range between
-.Ar pos_0
+.Ar pos0
 and
-.Ar pos_1
+.Ar pos1
 into the
 .Cm GtkScrolledWindow .
 If the range is greater than the window, the initial part of the range
@@ -1326,7 +1326,7 @@ pixels if specified, or to the default size.
 .Pp
 .Qq Ar id Ns Cm :move Ar x y
 moves the window to position
-.Ar x , y .
+.Pq Ar x , y .
 .Pp
 .Qq Ar id Ns Cm :fullscreen
 and
