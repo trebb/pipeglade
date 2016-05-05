@@ -88,7 +88,7 @@ check_cmd() {
     fi
 }
 
-#
+
 echo "
 # BATCH ONE
 #
@@ -516,6 +516,30 @@ check_error "scale1:set_value nnn" \
             "ignoring GtkScale command \"scale1:set_value nnn\""
 check_error "scale1:set_value 10 10" \
             "ignoring GtkScale command \"scale1:set_value 10 10\""
+check_error "scale1:set_fill_level nnn" \
+            "ignoring GtkScale command \"scale1:set_fill_level nnn\""
+check_error "scale1:set_fill_level 10 10" \
+            "ignoring GtkScale command \"scale1:set_fill_level 10 10\""
+check_error "scale1:set_range" \
+            "ignoring GtkScale command \"scale1:set_range\""
+check_error "scale1:set_range " \
+            "ignoring GtkScale command \"scale1:set_range \""
+check_error "scale1:set_range 10" \
+            "ignoring GtkScale command \"scale1:set_range 10\""
+check_error "scale1:set_range x 10" \
+            "ignoring GtkScale command \"scale1:set_range x 10\""
+check_error "scale1:set_range 10 10 10" \
+            "ignoring GtkScale command \"scale1:set_range 10 10 10\""
+check_error "scale1:set_increments" \
+            "ignoring GtkScale command \"scale1:set_increments\""
+check_error "scale1:set_increments " \
+            "ignoring GtkScale command \"scale1:set_increments \""
+check_error "scale1:set_increments 10" \
+            "ignoring GtkScale command \"scale1:set_increments 10\""
+check_error "scale1:set_increments x 10" \
+            "ignoring GtkScale command \"scale1:set_increments x 10\""
+check_error "scale1:set_increments 10 10 10" \
+            "ignoring GtkScale command \"scale1:set_increments 10 10 10\""
 # GtkProgressBar
 check_error "progressbar1:nnn" \
             "ignoring GtkProgressBar command \"progressbar1:nnn\""
@@ -1219,7 +1243,7 @@ rm $FERR
 
 
 #exit
-#
+
 echo "
 # BATCH THREE
 #
@@ -1966,9 +1990,17 @@ check_cmd "cmp $DIR/$FILE1 $DIR/$FILE4"
 check_cmd "cmp $DIR/$FILE2 $DIR/$FILE3"
 rm -rf $DIR
 sleep .5
-check 1 "" \
-      "scale1:set_value 10\n scale1:force" \
+check 2 "" \
+      "scale1:set_value 10\n scale1:set_increments 5 20\n scale1:force" \
+      "scale1:value 10.000000" \
       "scale1:value 10.000000"
+check 2 "" \
+      "scale1:set_range 20 22\n scale1:set_value 10\n scale1:set_value 100" \
+      "scale1:value 20.000000" \
+      "scale1:value 22.000000"
+check 1 "" \
+      "scale1:set_fill_level\n scale1:set_fill_level 20.5\n scale1:set_value 21.3" \
+      "scale1:value 21.300000"
 check 6 "" \
       "open_dialog:set_filename q.png\n file:force\n open_dialog_invoke:force\n open_dialog_apply:force\n open_dialog_ok:force" \
       "file:active _File" \

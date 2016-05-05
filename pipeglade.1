@@ -19,7 +19,7 @@
 .\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 .\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.Dd April 29, 2016
+.Dd May 05, 2016
 .Dt PIPEGLADE 1 PRM
 .Os BSD
 .Sh NAME
@@ -992,8 +992,22 @@ otherwise.
 .Qq Ar id Ns Cm :set_value Ar x
 moves the slider to value
 .Ar x .
+.Pp
+.Qq Ar id Ns Cm :set_fill_level Bq Ar x
+moves the fill level indicator to value
+.Ar x .
+Default is hiding the fill level indicator.
+.Pp
+.Qq Ar id Ns Cm :set_range Ar min max
+changes the range.
+.Pp
+.Qq Ar id Ns Cm :set_increments Ar step page
+sets the steps the slider moves while pressing the arrow keys or
+.Ql Page_Up Ns
+.Pf / Ql Page_Down ,
+respectively.
 .It Feedback
-.Qq Ar id Ns Cm \&:value Ar floating_point_text
+.Qq Ar id Ns Cm \&:value Ar number
 .El
 .Ss GtkScrolledWindow
 .Bl -tag -width "commands "

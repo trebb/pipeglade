@@ -1904,11 +1904,25 @@ static void
 update_scale(GObject *obj, const char *action,
              const char *data, const char *whole_msg, GType type)
 {
+        GtkRange *rng = GTK_RANGE(obj);
         char dummy;
-        double val;
+        double val1, val2;
 
-        if (eql(action, "set_value") && (sscanf(data, "%lf %c", &val, &dummy) == 1))
-                gtk_range_set_value(GTK_RANGE(obj), val);
+        if (eql(action, "set_value") && (sscanf(data, "%lf %c", &val1, &dummy) == 1))
+                gtk_range_set_value(rng, val1);
+        else if (eql(action, "set_fill_level") &&
+                 (sscanf(data, "%lf %c", &val1, &dummy) == 1)) {
+                gtk_range_set_fill_level(rng, val1);
+                gtk_range_set_show_fill_level(rng, TRUE);
+        } else if (eql(action, "set_fill_level") &&
+                   (sscanf(data, " %c", &dummy) < 1))
+                gtk_range_set_show_fill_level(rng, FALSE);
+        else if (eql(action, "set_range") &&
+                 (sscanf(data, "%lf %lf %c", &val1, &val2, &dummy) == 2))
+                gtk_range_set_range(rng, val1, val2);
+        else if (eql(action, "set_increments") &&
+                 (sscanf(data, "%lf %lf %c", &val1, &val2, &dummy) == 2))
+                gtk_range_set_increments(rng, val1, val2);
         else
                 ign_cmd(type, whole_msg);
 }
