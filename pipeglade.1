@@ -1002,7 +1002,7 @@ Default is hiding the fill level indicator.
 changes the range.
 .Pp
 .Qq Ar id Ns Cm :set_increments Ar step page
-sets the steps the slider moves while pressing the arrow keys or
+sets the steps the slider moves while pressing arrow keys and
 .Ql Page_Up Ns
 .Pf / Ql Page_Down ,
 respectively.
@@ -1079,6 +1079,17 @@ removed them from the
 .Qq Ar id Ns Cm :set_text Ar string
 sets the selected value to
 .Ar string .
+.Pp
+.Qq Ar id Ns Cm :set_range Ar min max
+changes the range.
+.Pp
+.Qq Ar id Ns Cm :set_increments Ar step page
+sets the steps the value changes while pressing arrow keys/left mouse
+button, and
+.Ql Page_Up Ns
+.Pf / Ql Page_Down Ns
+/middle mouse button,
+respectively.
 .It Feedback
 .Qq Ar id Ns Cm \&:text Ar text
 .El

@@ -800,6 +800,16 @@ cb_simple(GtkBuildable *obj, const char *tag)
 }
 
 static void
+cb_spin_button(GtkBuildable *obj, const char *tag)
+{
+        char str[BUFLEN], *lc = lc_numeric();
+
+        snprintf(str, BUFLEN, "%f", gtk_spin_button_get_value(GTK_SPIN_BUTTON(obj)));
+        send_msg(obj, tag, str, NULL);
+        lc_numeric_free(lc);
+}
+
+static void
 cb_switch(GtkBuildable *obj, void *pspec, void *user_data)
 {
         (void) pspec;
@@ -817,13 +827,13 @@ cb_toggle_button(GtkBuildable *obj, const char *tag)
 static void
 cb_tree_selection(GtkBuildable *obj, const char *tag)
 {
-        GtkTreeView *view;
+        GtkTreeSelection *sel = GTK_TREE_SELECTION(obj);
+        GtkTreeView *view = gtk_tree_selection_get_tree_view(sel);
 
-        view = gtk_tree_selection_get_tree_view(GTK_TREE_SELECTION(obj));
+
         send_msg(GTK_BUILDABLE(view), tag, NULL);
-        gtk_tree_selection_selected_foreach(GTK_TREE_SELECTION(obj),
-                                            (GtkTreeSelectionForeachFunc) send_tree_row_msg,
-                                            view);
+        gtk_tree_selection_selected_foreach(
+                sel, (GtkTreeSelectionForeachFunc) send_tree_row_msg, view);
 }
 
 
@@ -1207,7 +1217,7 @@ update_class_window(GObject *obj, const char *action,
         else if (eql(action, "unfullscreen") && sscanf(data, " %c", &dummy) < 1)
                 gtk_window_unfullscreen(window);
         else if (eql(action, "resize") &&
-                 (sscanf(data, "%d %d %c", &x, &y, &dummy) == 2))
+                 sscanf(data, "%d %d %c", &x, &y, &dummy) == 2)
                 gtk_window_resize(window, x, y);
         else if (eql(action, "resize") && sscanf(data, " %c", &dummy) < 1) {
                 gtk_window_get_default_size(window, &x, &y);
@@ -1827,7 +1837,8 @@ update_notebook(GObject *obj, const char *action,
         char dummy;
         unsigned int val;
 
-        if (eql(action, "set_current_page") && sscanf(data, "%u %c", &val, &dummy) == 1)
+        if (eql(action, "set_current_page") &&
+            sscanf(data, "%u %c", &val, &dummy) == 1)
                 gtk_notebook_set_current_page(GTK_NOTEBOOK(obj), val);
         else
                 ign_cmd(type, whole_msg);
@@ -1894,7 +1905,7 @@ update_progress_bar(GObject *obj, const char *action,
         if (eql(action, "set_text"))
                 gtk_progress_bar_set_text(progressbar, *data == '\0' ? NULL : data);
         else if (eql(action, "set_fraction") &&
-                 (sscanf(data, "%lf %c", &frac, &dummy) == 1))
+                 sscanf(data, "%lf %c", &frac, &dummy) == 1)
                 gtk_progress_bar_set_fraction(progressbar, frac);
         else
                 ign_cmd(type, whole_msg);
@@ -1904,25 +1915,25 @@ static void
 update_scale(GObject *obj, const char *action,
              const char *data, const char *whole_msg, GType type)
 {
-        GtkRange *rng = GTK_RANGE(obj);
+        GtkRange *range = GTK_RANGE(obj);
         char dummy;
         double val1, val2;
 
-        if (eql(action, "set_value") && (sscanf(data, "%lf %c", &val1, &dummy) == 1))
-                gtk_range_set_value(rng, val1);
+        if (eql(action, "set_value") && sscanf(data, "%lf %c", &val1, &dummy) == 1)
+                gtk_range_set_value(range, val1);
         else if (eql(action, "set_fill_level") &&
-                 (sscanf(data, "%lf %c", &val1, &dummy) == 1)) {
-                gtk_range_set_fill_level(rng, val1);
-                gtk_range_set_show_fill_level(rng, TRUE);
+                 sscanf(data, "%lf %c", &val1, &dummy) == 1) {
+                gtk_range_set_fill_level(range, val1);
+                gtk_range_set_show_fill_level(range, TRUE);
         } else if (eql(action, "set_fill_level") &&
-                   (sscanf(data, " %c", &dummy) < 1))
-                gtk_range_set_show_fill_level(rng, FALSE);
+                   sscanf(data, " %c", &dummy) < 1)
+                gtk_range_set_show_fill_level(range, FALSE);
         else if (eql(action, "set_range") &&
-                 (sscanf(data, "%lf %lf %c", &val1, &val2, &dummy) == 2))
-                gtk_range_set_range(rng, val1, val2);
+                 sscanf(data, "%lf %lf %c", &val1, &val2, &dummy) == 2)
+                gtk_range_set_range(range, val1, val2);
         else if (eql(action, "set_increments") &&
-                 (sscanf(data, "%lf %lf %c", &val1, &val2, &dummy) == 2))
-                gtk_range_set_increments(rng, val1, val2);
+                 sscanf(data, "%lf %lf %c", &val1, &val2, &dummy) == 2)
+                gtk_range_set_increments(range, val1, val2);
         else
                 ign_cmd(type, whole_msg);
 }
@@ -2003,6 +2014,27 @@ update_socket(GObject *obj, const char *action,
 }
 
 static void
+update_spin_button(GObject *obj, const char *action,
+                   const char *data, const char *whole_msg, GType type)
+{
+        GtkSpinButton *spinbutton = GTK_SPIN_BUTTON(obj);
+        char dummy;
+        double val1, val2;
+
+        if (eql(action, "set_text") && /* TODO: rename to "set_value" */
+            sscanf(data, "%lf %c", &val1, &dummy) == 1)
+                gtk_spin_button_set_value(spinbutton, val1);
+        else if (eql(action, "set_range") &&
+                 sscanf(data, "%lf %lf %c", &val1, &val2, &dummy) == 2)
+                gtk_spin_button_set_range(spinbutton, val1, val2);
+        else if (eql(action, "set_increments") &&
+                 sscanf(data, "%lf %lf %c", &val1, &val2, &dummy) == 2)
+                gtk_spin_button_set_increments(spinbutton, val1, val2);
+        else
+                ign_cmd(type, whole_msg);
+}
+
+static void
 update_spinner(GObject *obj, const char *action,
                const char *data, const char *whole_msg, GType type)
 {
@@ -2027,6 +2059,7 @@ update_statusbar(GObject *obj, const char *action,
         const char *msg;
         int ctx_len, t;
 
+        /* TODO: remove "push", "pop", "remove_all"; rename "push_id" to "push", etc. */
         if ((ctx_msg = malloc(strlen(data) + 1)) == NULL)
                 OOM_ABORT;
         t = sscanf(data, "%s %n%c", ctx_msg, &ctx_len, &dummy);
@@ -2485,10 +2518,12 @@ fake_ui_activity(GObject *obj, const char *action,
         (void) data;
         if (!GTK_IS_WIDGET(obj) || sscanf(data, " %c", &dummy) > 0)
                 ign_cmd(type, whole_msg);
-        else if (GTK_IS_ENTRY(obj) || GTK_IS_SPIN_BUTTON(obj))
-                cb_editable(GTK_BUILDABLE(obj), "text");
+        else if (GTK_IS_SPIN_BUTTON(obj))
+                cb_spin_button(GTK_BUILDABLE(obj), "text"); /* TODO: rename to "value" */
         else if (GTK_IS_SCALE(obj))
                 cb_range(GTK_BUILDABLE(obj), "value");
+        else if (GTK_IS_ENTRY(obj))
+                cb_editable(GTK_BUILDABLE(obj), "text");
         else if (GTK_IS_CALENDAR(obj))
                 cb_calendar(GTK_BUILDABLE(obj), "clicked");
         else if (GTK_IS_FILE_CHOOSER_BUTTON(obj))
@@ -2708,9 +2743,10 @@ digest_msg(FILE *cmd)
                          ud->type == GTK_TYPE_RADIO_BUTTON ||
                          ud->type == GTK_TYPE_CHECK_BUTTON)
                         ud->fn = update_toggle_button;
-                else if (ud->type == GTK_TYPE_SPIN_BUTTON ||
-                         ud->type == GTK_TYPE_ENTRY)
+                else if (ud->type == GTK_TYPE_ENTRY)
                         ud->fn = update_entry;
+                else if (ud->type == GTK_TYPE_SPIN_BUTTON)
+                        ud->fn = update_spin_button;
                 else if (ud->type == GTK_TYPE_SCALE)
                         ud->fn = update_scale;
                 else if (ud->type == GTK_TYPE_PROGRESS_BAR)
@@ -2954,8 +2990,10 @@ connect_widget_signals(gpointer *obj, char *ui_file)
                 g_signal_connect(obj, "notify::active", G_CALLBACK(cb_switch), NULL);
         else if (type == GTK_TYPE_TOGGLE_BUTTON || type == GTK_TYPE_RADIO_BUTTON || type == GTK_TYPE_CHECK_BUTTON)
                 g_signal_connect(obj, "toggled", G_CALLBACK(cb_toggle_button), NULL);
-        else if (type == GTK_TYPE_SPIN_BUTTON || type == GTK_TYPE_ENTRY)
+        else if (type == GTK_TYPE_ENTRY)
                 g_signal_connect(obj, "changed", G_CALLBACK(cb_editable), "text");
+        else if (type == GTK_TYPE_SPIN_BUTTON)
+                g_signal_connect(obj, "value_changed", G_CALLBACK(cb_spin_button), "text"); /* TODO: rename to "value" */
         else if (type == GTK_TYPE_SCALE)
                 g_signal_connect(obj, "value-changed", G_CALLBACK(cb_range), "value");
         else if (type == GTK_TYPE_CALENDAR) {

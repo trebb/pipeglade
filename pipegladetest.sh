@@ -207,7 +207,7 @@ check_rm $FOUT
 
 
 #exit
-#
+
 echo "
 # BATCH TWO
 #
@@ -455,6 +455,30 @@ check_error "radiobutton1:set_active 0 1" \
 # GtkSpinButton
 check_error "spinbutton1:nnn" \
             "ignoring GtkSpinButton command \"spinbutton1:nnn\""
+check_error "spinbutton1:set_text" \
+            "ignoring GtkSpinButton command \"spinbutton1:set_text\""
+check_error "spinbutton1:set_text " \
+            "ignoring GtkSpinButton command \"spinbutton1:set_text \""
+check_error "spinbutton1:set_text nnn" \
+            "ignoring GtkSpinButton command \"spinbutton1:set_text nnn\""
+check_error "spinbutton1:set_text 10 10" \
+            "ignoring GtkSpinButton command \"spinbutton1:set_text 10 10\""
+check_error "spinbutton1:set_range" \
+            "ignoring GtkSpinButton command \"spinbutton1:set_range\""
+check_error "spinbutton1:set_range " \
+            "ignoring GtkSpinButton command \"spinbutton1:set_range \""
+check_error "spinbutton1:set_range 10 nnn" \
+            "ignoring GtkSpinButton command \"spinbutton1:set_range 10 nnn\""
+check_error "spinbutton1:set_range 10 20 10" \
+            "ignoring GtkSpinButton command \"spinbutton1:set_range 10 20 10\""
+check_error "spinbutton1:set_increments" \
+            "ignoring GtkSpinButton command \"spinbutton1:set_increments\""
+check_error "spinbutton1:set_increments " \
+            "ignoring GtkSpinButton command \"spinbutton1:set_increments \""
+check_error "spinbutton1:set_increments 10 nnn" \
+            "ignoring GtkSpinButton command \"spinbutton1:set_increments 10 nnn\""
+check_error "spinbutton1:set_increments 10 20 10" \
+            "ignoring GtkSpinButton command \"spinbutton1:set_increments 10 20 10\""
 # GtkDialog
 check_error "dialog1:resize 100" \
             "ignoring GtkDialog command \"dialog1:resize 100\""
@@ -1485,9 +1509,10 @@ check 1 "" \
 check 1 "" \
       "entry1:force" \
       "entry1:text GGGG"
-check 1 "" \
-      "spinbutton1:set_text 33.0" \
-      "spinbutton1:text 33.0"
+check 2 "" \
+      "spinbutton1:set_text 33.0\n spinbutton1:set_range 50 60\n" \
+      "spinbutton1:text 33.0" \
+      "spinbutton1:text 50.0"
 check 2 "" \
       "radiobutton2:set_active 1" \
       "radiobutton1:0" \
@@ -2085,19 +2110,19 @@ check 1 "Select \"AVERAGE\" from the combobox" \
 check 1 "Select the second entry from the combobox" \
       "comboboxtext1:remove 0" \
       "comboboxtext1_entry:text def"
-check 2 "Click the \"+\" of the spinbutton" \
-      "" \
+check 2 "Left-click the \"+\" of the spinbutton" \
+      "spinbutton1:set_range 0 100\n spinbutton1:set_text 33" \
       "spinbutton1:text 33.00" \
       "spinbutton1:text 34.00"
-check 1 "Click the \"+\" of the spinbutton again" \
-      "" \
-      "spinbutton1:text 35.00"
-check 1 "Click the \"+\" of the spinbutton once again" \
-      "" \
+check 1 "Left-click the \"+\" of the spinbutton again" \
+      "spinbutton1:set_increments 2 4" \
       "spinbutton1:text 36.00"
+check 1 "Middle-click the \"+\" of the spinbutton" \
+      "" \
+      "spinbutton1:text 40.00"
 check 1 "" \
       "spinbutton1:force" \
-      "spinbutton1:text 36.00"
+      "spinbutton1:text 40.00"
 check 1 "Using the file chooser button (now labelled \"etc\"), select \"File System\" (= \"/\")" \
       "filechooserbutton1:set_filename /etc/" \
       "filechooserbutton1:file /"

@@ -18,6 +18,8 @@
   * Add GtkDrawingArea command rel_move_for supporting text placement
   with respect to center, upper left corner, etc., of the text.
   * Support coordinate transformation in GtkDrawingArea.
+  * Add GtkScale and GtkSpinButton commands set_range, set_increments,
+  and (GtkScale only) set_fill_level.
   * Command execution time improved by a factor of about 20.
   * Avoid silly precision on mouse coordinates emitted from GtkEventBox.
   * Floating point format in commands and messages is now independent
