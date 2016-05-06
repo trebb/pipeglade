@@ -902,8 +902,8 @@ enum draw_op_policy {
 struct draw_op {
         struct draw_op *next;
         struct draw_op *prev;
-        unsigned int id;
-        unsigned int before;
+        unsigned long long int id;
+        unsigned long long int before;
         enum draw_op_policy policy;
         enum cairo_fn op;
         void *op_args;
@@ -1301,13 +1301,13 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
         enum draw_op_stat result = SUCCESS;
         int args_start = 0;
 
-        if (sscanf(data, "=%u %n", &op->id, &args_start) == 1) {
+        if (sscanf(data, "=%llu %n", &op->id, &args_start) == 1) {
                 op->policy = REPLACE;
                 result = NEED_REDRAW;
-        } else if (sscanf(data, "%u<%u %n", &op->id, &op->before, &args_start) == 2) {
+        } else if (sscanf(data, "%llu<%llu %n", &op->id, &op->before, &args_start) == 2) {
                 op->policy = BEFORE;
                 result = NEED_REDRAW;
-        } else if (sscanf(data, "%u %n", &op->id, &args_start) == 1)
+        } else if (sscanf(data, "%llu %n", &op->id, &args_start) == 1)
                 op->policy = APPEND;
         else
                 return FAILURE;
@@ -1725,9 +1725,9 @@ rem_draw_op(GObject *widget, const char *data)
 {
         char dummy;
         struct draw_op *op, *next_op, *prev_op = NULL;
-        unsigned int id;
+        unsigned long long int id;
 
-        if (sscanf(data, "%u %c", &id, &dummy) != 1)
+        if (sscanf(data, "%llu %c", &id, &dummy) != 1)
                 return FAILURE;
         op = g_object_get_data(widget, "draw_ops");
         while (op != NULL) {
