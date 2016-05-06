@@ -523,7 +523,9 @@ if the
 window was closed by the window manager.
 .El
 .Ss GtkDrawingArea
-Drawing commands expect a context parameter of the form
+Drawing commands
+.Pq except Cm :save
+expect a context parameter of the form
 .Bro Ar n Ns | Ns Cm = Ns Ar n Ns | Ns Ar n Ns Cm < Ns Ar m Brc
 where
 .Ar n
@@ -647,6 +649,11 @@ from the
 rotates the user space axes by
 .Ar angle
 .Pq in degrees .
+.Pp
+.Qq Ar id Ns Cm :save Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes the content of the
+.Cm GtkDrawingArea
+to an image file of the specified type.
 .Pp
 .Qq Ar id Ns Cm :scale Bro Ar n Ns | Ns Cm = Ns Ar n Ns | Ns Ar n Ns Cm < Ns Ar m Brc Ar sx sy
 scales the user space axes by

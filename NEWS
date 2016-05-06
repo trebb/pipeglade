@@ -12,15 +12,17 @@
   * GtkStatusbar commands take non-whitespace strings as context id,
   not just integers.
   * Add missing GtkStatusbar command remove_all_id.
+  * Support saving GtkDrawingAreas into image files (eps, ps, pdf,
+  svg).
+  * Support coordinate transformation in GtkDrawingArea.
+  * New ability for GtkDrawingArea commands to insert themselves at
+  arbitrary positions in the current list of drawing operations, not
+  just at the end.
   * Remove GtkDrawingArea command refresh; refreshing happens
   automatically.
   * Add GtkDrawingArea command set_font_face.
   * Add GtkDrawingArea command rel_move_for supporting text placement
   with respect to center, upper left corner, etc., of the text.
-  * Support coordinate transformation in GtkDrawingArea.
-  * New ability for GtkDrawingArea commands to insert themselves at
-  arbitrary positions in the current list of drawing operations, not
-  just at the end.
   * Add GtkScale and GtkSpinButton commands set_range, set_increments,
   and (GtkScale only) set_fill_level.
   * Command execution time improved by a factor of about 20.

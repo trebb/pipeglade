@@ -1,7 +1,12 @@
 *.core
+*.eps?
 *.gmon
 *.gprof
 *.log
+*.pdf
+*.ps
+*.svg
+*.txt
 *fifo
 *~
 \#*#

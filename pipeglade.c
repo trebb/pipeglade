@@ -21,6 +21,9 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <cairo-pdf.h>
+#include <cairo-ps.h>
+#include <cairo-svg.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <gtk/gtk.h>
@@ -361,6 +364,12 @@ log_msg(char *msg)
         } else
                 ABORT;
         clock_gettime(CLOCK_MONOTONIC, &start);
+}
+
+static bool
+has_suffix(const char *s, const char *suffix)
+{
+        return eql(suffix, s + strlen(s) - strlen(suffix));
 }
 
 /*
@@ -1756,17 +1765,49 @@ refresh_widget(GtkWidget *widget)
         return G_SOURCE_REMOVE;
 }
 
+/*
+ * Write the drawing from the GtkDrawingArea widget in an appropriate
+ * format to file
+ */
+static enum draw_op_stat
+save_drawing(GtkWidget *widget, const char *fn)
+{
+        cairo_surface_t *sur;
+        cairo_t *cr;
+        int height = gtk_widget_get_allocated_height(widget);
+        int width = gtk_widget_get_allocated_width(widget);
+
+        if (has_suffix(fn, ".epsf") || has_suffix(fn, ".eps")) {
+                sur = cairo_ps_surface_create(fn, width, height);
+                cairo_ps_surface_set_eps(sur, TRUE);
+        } else if (has_suffix(fn, ".pdf"))
+                sur = cairo_pdf_surface_create(fn, width, height);
+        else if (has_suffix(fn, ".ps"))
+                sur = cairo_ps_surface_create(fn, width, height);
+        else if (has_suffix(fn, ".svg"))
+                sur = cairo_svg_surface_create(fn, width, height);
+        else
+                return FAILURE;
+        cr = cairo_create(sur);
+        cb_draw(widget, cr, NULL);
+        cairo_destroy(cr);
+        cairo_surface_destroy(sur);
+        return SUCCESS;
+}
+
 static void
 update_drawing_area(GObject *obj, const char *action,
                     const char *data, const char *whole_msg, GType type)
 {
-        enum draw_op_stat dos;
+        enum draw_op_stat dost;
 
         if (eql(action, "remove"))
-                dos = rem_draw_op(obj, data);
+                dost = rem_draw_op(obj, data);
+        else if (eql(action, "save"))
+                dost = save_drawing(GTK_WIDGET(obj), data);
         else
-                dos = ins_draw_op(obj, action, data);
-        switch (dos) {
+                dost = ins_draw_op(obj, action, data);
+        switch (dost) {
         case NEED_REDRAW:
                 gdk_threads_add_idle_full(G_PRIORITY_LOW,
                                           (GSourceFunc) refresh_widget,
@@ -2012,7 +2053,7 @@ update_scale(GObject *obj, const char *action,
 
 static void
 update_scrolled_window(GObject *obj, const char *action,
-             const char *data, const char *whole_msg, GType type)
+                       const char *data, const char *whole_msg, GType type)
 {
         GtkScrolledWindow *window = GTK_SCROLLED_WINDOW(obj);
         GtkAdjustment *hadj = gtk_scrolled_window_get_hadjustment(window);
@@ -2139,7 +2180,7 @@ update_statusbar(GObject *obj, const char *action,
         if (eql(action, "push"))
                 gtk_statusbar_push(statusbar,
                                    gtk_statusbar_get_context_id(statusbar, "0"),
-                                    data);
+                                   data);
         else if (eql(action, "push_id") && t >= 1)
                 gtk_statusbar_push(statusbar,
                                    gtk_statusbar_get_context_id(statusbar, ctx_msg),
