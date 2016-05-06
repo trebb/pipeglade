@@ -1502,12 +1502,12 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         args->dashes[i] = strtod(next, &end);
                 }
         } else if (eql(action, "set_font_face")) {
-                char slant[7 + 1];
-                char weight[6 + 1];
+                char slant[7 + 1];  /* "oblique" */
+                char weight[6 + 1]; /* "normal" */
                 int family_start, family_len;
                 struct set_font_face_args *args;
 
-                if (sscanf(raw_args, "%s %s %n%*s", slant, weight, &family_start) != 2)
+                if (sscanf(raw_args, "%7s %6s %n%*s", slant, weight, &family_start) != 2)
                         return FAILURE;
                 family_len = strlen(raw_args + family_start) + 1;
                 if ((args = malloc(sizeof(*args) + family_len * sizeof(args->family[0]))) == NULL)
@@ -1539,7 +1539,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 if (sscanf(raw_args, "%lf %c", &args->size, &dummy) != 1)
                         return FAILURE;
         } else if (eql(action, "set_line_cap")) {
-                char str[6 + 1];
+                char str[6 + 1]; /* "square" */
                 struct set_line_cap_args *args;
 
                 if ((args = malloc(sizeof(*args))) == NULL)
@@ -1557,7 +1557,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 else
                         return FAILURE;
         } else if (eql(action, "set_line_join")) {
-                char str[5 + 1];
+                char str[5 + 1]; /* "miter" */
                 struct set_line_join_args *args;
 
                 if ((args = malloc(sizeof(*args))) == NULL)
@@ -2227,8 +2227,7 @@ update_toggle_button(GObject *obj, const char *action,
         if (eql(action, "set_label"))
                 gtk_button_set_label(GTK_BUTTON(obj), data);
         else if (eql(action, "set_active") &&
-                 sscanf(data, "%u %c", &val, &dummy) == 1 &&
-                 val < 2)
+                 sscanf(data, "%u %c", &val, &dummy) == 1 && val < 2)
                 gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), val);
         else
                 ign_cmd(type, whole_msg);
