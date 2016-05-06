@@ -890,6 +890,12 @@ enum ref_point {
         W,
 };
 
+enum draw_op_policy {
+        APPEND,
+        BEFORE,
+        REPLACE,
+};
+
 /*
  * One single element of a drawing
  */
@@ -897,6 +903,8 @@ struct draw_op {
         struct draw_op *next;
         struct draw_op *prev;
         unsigned int id;
+        unsigned int before;
+        enum draw_op_policy policy;
         enum cairo_fn op;
         void *op_args;
 };
@@ -1275,15 +1283,35 @@ update_combo_box_text(GObject *obj, const char *action,
  * few helper functions.
  */
 
+enum draw_op_stat {
+        FAILURE,
+        SUCCESS,
+        NEED_REDRAW,
+};
+
 /*
  * Fill structure *op with the drawing operation according to action
  * and with the appropriate set of arguments
  */
-static bool
+static enum draw_op_stat
 set_draw_op(struct draw_op *op, const char *action, const char *data)
 {
         char dummy;
+        const char *raw_args = data;
+        enum draw_op_stat result = SUCCESS;
+        int args_start = 0;
 
+        if (sscanf(data, "=%u %n", &op->id, &args_start) == 1) {
+                op->policy = REPLACE;
+                result = NEED_REDRAW;
+        } else if (sscanf(data, "%u<%u %n", &op->id, &op->before, &args_start) == 2) {
+                op->policy = BEFORE;
+                result = NEED_REDRAW;
+        } else if (sscanf(data, "%u %n", &op->id, &args_start) == 1)
+                op->policy = APPEND;
+        else
+                return FAILURE;
+        raw_args += args_start;
         if (eql(action, "line_to")) {
                 struct move_to_args *args;
 
@@ -1291,8 +1319,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = LINE_TO;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %c", &op->id, &args->x, &args->y, &dummy) != 3)
-                        return false;
+                if (sscanf(raw_args, "%lf %lf %c", &args->x, &args->y, &dummy) != 2)
+                        return FAILURE;
         } else if (eql(action, "rel_line_to")) {
                 struct move_to_args *args;
 
@@ -1300,8 +1328,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = REL_LINE_TO;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %c", &op->id, &args->x, &args->y, &dummy) != 3)
-                        return false;
+                if (sscanf(raw_args, "%lf %lf %c", &args->x, &args->y, &dummy) != 2)
+                        return FAILURE;
         } else if (eql(action, "move_to")) {
                 struct move_to_args *args;
 
@@ -1309,8 +1337,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = MOVE_TO;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %c", &op->id, &args->x, &args->y, &dummy) != 3)
-                        return false;
+                if (sscanf(raw_args, "%lf %lf %c", &args->x, &args->y, &dummy) != 2)
+                        return FAILURE;
         } else if (eql(action, "rel_move_to")) {
                 struct move_to_args *args;
 
@@ -1318,8 +1346,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = REL_MOVE_TO;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %c", &op->id, &args->x, &args->y, &dummy) != 3)
-                        return false;
+                if (sscanf(raw_args, "%lf %lf %c", &args->x, &args->y, &dummy) != 2)
+                        return FAILURE;
         } else if (eql(action, "arc")) {
                 struct arc_args *args;
                 double deg1, deg2;
@@ -1328,9 +1356,9 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = ARC;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %lf %lf %lf %c", &op->id,
-                           &args->x, &args->y, &args->radius, &deg1, &deg2, &dummy) != 6)
-                        return false;
+                if (sscanf(raw_args, "%lf %lf %lf %lf %lf %c",
+                           &args->x, &args->y, &args->radius, &deg1, &deg2, &dummy) != 5)
+                        return FAILURE;
                 args->angle1 = deg1 * (M_PI / 180.L);
                 args->angle2 = deg2 * (M_PI / 180.L);
         } else if (eql(action, "arc_negative")) {
@@ -1341,9 +1369,9 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = ARC_NEGATIVE;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %lf %lf %lf %c", &op->id,
-                           &args->x, &args->y, &args->radius, &deg1, &deg2, &dummy) != 6)
-                        return false;
+                if (sscanf(raw_args, "%lf %lf %lf %lf %lf %c",
+                           &args->x, &args->y, &args->radius, &deg1, &deg2, &dummy) != 5)
+                        return FAILURE;
                 args->angle1 = deg1 * (M_PI / 180.L);
                 args->angle2 = deg2 * (M_PI / 180.L);
         } else if (eql(action, "curve_to")) {
@@ -1353,9 +1381,9 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = CURVE_TO;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %lf %lf %lf %lf %c", &op->id,
-                           &args->x1, &args->y1, &args->x2, &args->y2, &args->x3, &args->y3, &dummy) != 7)
-                        return false;
+                if (sscanf(raw_args, "%lf %lf %lf %lf %lf %lf %c",
+                           &args->x1, &args->y1, &args->x2, &args->y2, &args->x3, &args->y3, &dummy) != 6)
+                        return FAILURE;
         } else if (eql(action, "rel_curve_to")) {
                 struct curve_to_args *args;
 
@@ -1363,9 +1391,9 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = REL_CURVE_TO;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %lf %lf %lf %lf %c", &op->id,
-                           &args->x1, &args->y1, &args->x2, &args->y2, &args->x3, &args->y3, &dummy) != 7)
-                        return false;
+                if (sscanf(raw_args, "%lf %lf %lf %lf %lf %lf %c",
+                           &args->x1, &args->y1, &args->x2, &args->y2, &args->x3, &args->y3, &dummy) != 6)
+                        return FAILURE;
         } else if (eql(action, "rectangle")) {
                 struct rectangle_args *args;
 
@@ -1373,35 +1401,34 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = RECTANGLE;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %lf %lf %c", &op->id,
-                           &args->x, &args->y, &args->width, &args->height, &dummy) != 5)
-                        return false;
+                if (sscanf(raw_args, "%lf %lf %lf %lf %c",
+                           &args->x, &args->y, &args->width, &args->height, &dummy) != 4)
+                        return FAILURE;
         } else if (eql(action, "close_path")) {
                 op->op = CLOSE_PATH;
-                if (sscanf(data, "%u %c", &op->id, &dummy) != 1)
-                        return false;
+                if (sscanf(raw_args, " %c", &dummy) > 0)
+                        return FAILURE;
                 op->op_args = NULL;
         } else if (eql(action, "show_text")) {
                 struct show_text_args *args;
-                int start, len;
+                int len;
 
-                if (sscanf(data, "%u %n", &op->id, &start) < 1)
-                        return false;
-                len = strlen(data + start) + 1;
+                len = strlen(raw_args) + 1;
                 if ((args = malloc(sizeof(*args) + len * sizeof(args->text[0]))) == NULL)
                         OOM_ABORT;
                 op->op = SHOW_TEXT;
                 op->op_args = args;
                 args->len = len; /* not used */
-                strncpy(args->text, (data + start), len);
+                strncpy(args->text, raw_args, len);
+                result = NEED_REDRAW;
         } else if (eql(action, "rel_move_for")) {
                 char ref_point[2 + 1];
                 int start, len;
                 struct rel_move_for_args *args;
 
-                if (sscanf(data, "%u %2s %n", &op->id, ref_point, &start) < 2)
-                        return false;
-                len = strlen(data + start) + 1;
+                if (sscanf(raw_args, "%2s %n", ref_point, &start) < 1)
+                        return FAILURE;
+                len = strlen(raw_args + start) + 1;
                 if ((args = malloc(sizeof(*args) + len * sizeof(args->text[0]))) == NULL)
                         OOM_ABORT;
                 if (eql(ref_point, "c"))
@@ -1423,41 +1450,43 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 else if (eql(ref_point, "w"))
                         args->ref = W;
                 else
-                        return false;
+                        return FAILURE;
                 op->op = REL_MOVE_FOR;
                 op->op_args = args;
                 args->len = len; /* not used */
-                strncpy(args->text, (data + start), len);
+                strncpy(args->text, (raw_args + start), len);
         } else if (eql(action, "stroke")) {
                 op->op = STROKE;
-                if (sscanf(data, "%u %s", &op->id, &dummy) != 1)
-                        return false;
+                if (sscanf(raw_args, " %c", &dummy) > 0)
+                        return FAILURE;
                 op->op_args = NULL;
+                result = NEED_REDRAW;
         } else if (eql(action, "stroke_preserve")) {
                 op->op = STROKE_PRESERVE;
-                if (sscanf(data, "%u %c", &op->id, &dummy) != 1)
-                        return false;
+                if (sscanf(raw_args, " %c", &dummy) > 0)
+                        return FAILURE;
                 op->op_args = NULL;
+                result = NEED_REDRAW;
         } else if (eql(action, "fill")) {
                 op->op = FILL;
-                if (sscanf(data, "%u %c", &op->id, &dummy) != 1)
-                        return false;
+                if (sscanf(raw_args, " %c", &dummy) > 0)
+                        return FAILURE;
                 op->op_args = NULL;
+                result = NEED_REDRAW;
         } else if (eql(action, "fill_preserve")) {
                 op->op = FILL_PRESERVE;
-                if (sscanf(data, "%u %c", &op->id, &dummy) != 1)
-                        return false;
+                if (sscanf(raw_args, " %c", &dummy) > 0)
+                        return FAILURE;
                 op->op_args = NULL;
+                result = NEED_REDRAW;
         } else if (eql(action, "set_dash")) {
                 char *next, *end;
-                char data1[strlen(data) + 1];
-                int d_start, n, i;
+                char data1[strlen(raw_args) + 1];
+                int n, i;
                 struct set_dash_args *args;
 
-                strcpy(data1, data);
-                if (sscanf(data1, "%u %n", &op->id, &d_start) < 1)
-                        return false;
-                next = end = data1 + d_start;
+                strcpy(data1, raw_args);
+                next = end = data1;
                 n = -1;
                 do {
                         n++;
@@ -1469,7 +1498,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 op->op = SET_DASH;
                 op->op_args = args;
                 args->num_dashes = n;
-                for (i = 0, next = data1 + d_start; i < n; i++, next = end) {
+                for (i = 0, next = data1; i < n; i++, next = end) {
                         args->dashes[i] = strtod(next, &end);
                 }
         } else if (eql(action, "set_font_face")) {
@@ -1478,14 +1507,14 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 int family_start, family_len;
                 struct set_font_face_args *args;
 
-                if (sscanf(data, "%u %s %s %n%*s", &op->id, slant, weight, &family_start) != 3)
-                        return false;
-                family_len = strlen(data + family_start) + 1;
+                if (sscanf(raw_args, "%s %s %n%*s", slant, weight, &family_start) != 2)
+                        return FAILURE;
+                family_len = strlen(raw_args + family_start) + 1;
                 if ((args = malloc(sizeof(*args) + family_len * sizeof(args->family[0]))) == NULL)
                         OOM_ABORT;
                 op->op = SET_FONT_FACE;
                 op->op_args = args;
-                strncpy(args->family, data + family_start, family_len);
+                strncpy(args->family, raw_args + family_start, family_len);
                 if (eql(slant, "normal"))
                         args->slant = CAIRO_FONT_SLANT_NORMAL;
                 else if (eql(slant, "italic"))
@@ -1493,13 +1522,13 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 else if (eql(slant, "oblique"))
                         args->slant = CAIRO_FONT_SLANT_OBLIQUE;
                 else
-                        return false;
+                        return FAILURE;
                 if (eql(weight, "normal"))
                         args->weight = CAIRO_FONT_WEIGHT_NORMAL;
                 else if (eql(weight, "bold"))
                         args->weight = CAIRO_FONT_WEIGHT_BOLD;
                 else
-                        return false;
+                        return FAILURE;
         } else if (eql(action, "set_font_size")) {
                 struct set_font_size_args *args;
 
@@ -1507,8 +1536,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = SET_FONT_SIZE;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %c", &op->id, &args->size, &dummy) != 2)
-                        return false;
+                if (sscanf(raw_args, "%lf %c", &args->size, &dummy) != 1)
+                        return FAILURE;
         } else if (eql(action, "set_line_cap")) {
                 char str[6 + 1];
                 struct set_line_cap_args *args;
@@ -1517,8 +1546,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = SET_LINE_CAP;
                 op->op_args = args;
-                if (sscanf(data, "%u %6s %c", &op->id, str, &dummy) != 2)
-                        return false;
+                if (sscanf(raw_args, "%6s %c", str, &dummy) != 1)
+                        return FAILURE;
                 if (eql(str, "butt"))
                         args->line_cap = CAIRO_LINE_CAP_BUTT;
                 else if (eql(str, "round"))
@@ -1526,7 +1555,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 else if (eql(str, "square"))
                         args->line_cap = CAIRO_LINE_CAP_SQUARE;
                 else
-                        return false;
+                        return FAILURE;
         } else if (eql(action, "set_line_join")) {
                 char str[5 + 1];
                 struct set_line_join_args *args;
@@ -1535,8 +1564,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = SET_LINE_JOIN;
                 op->op_args = args;
-                if (sscanf(data, "%u %5s %c", &op->id, str, &dummy) != 2)
-                        return false;
+                if (sscanf(raw_args, "%5s %c", str, &dummy) != 1)
+                        return FAILURE;
                 if (eql(str, "miter"))
                         args->line_join = CAIRO_LINE_JOIN_MITER;
                 else if (eql(str, "round"))
@@ -1544,7 +1573,7 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                 else if (eql(str, "bevel"))
                         args->line_join = CAIRO_LINE_JOIN_BEVEL;
                 else
-                        return false;
+                        return FAILURE;
         } else if (eql(action, "set_line_width")) {
                 struct set_line_width_args *args;
 
@@ -1552,25 +1581,22 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = SET_LINE_WIDTH;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %c", &op->id, &args->width, &dummy) != 2)
-                        return false;
+                if (sscanf(raw_args, "%lf %c", &args->width, &dummy) != 1)
+                        return FAILURE;
         } else if (eql(action, "set_source_rgba")) {
-                int c_start;
                 struct set_source_rgba_args *args;
 
                 if ((args = malloc(sizeof(*args))) == NULL)
                         OOM_ABORT;
                 op->op = SET_SOURCE_RGBA;
                 op->op_args = args;
-                if ((sscanf(data, "%u %n", &op->id, &c_start) < 1))
-                        return false;;
-                gdk_rgba_parse(&args->color, data + c_start);
+                gdk_rgba_parse(&args->color, raw_args);
         } else if (eql(action, "transform")) {
                 char dummy;
                 double xx, yx, xy, yy, x0, y0;
 
-                if (sscanf(data, "%u %lf %lf %lf %lf %lf %lf %c",
-                           &op->id, &xx, &yx, &xy, &yy, &x0, &y0, &dummy) == 7) {
+                if (sscanf(raw_args, "%lf %lf %lf %lf %lf %lf %c",
+                           &xx, &yx, &xy, &yy, &x0, &y0, &dummy) == 6) {
                         struct transform_args *args;
 
                         if ((args = malloc(sizeof(*args))) == NULL)
@@ -1578,13 +1604,11 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         op->op_args = args;
                         op->op = TRANSFORM;
                         cairo_matrix_init(&args->matrix, xx, yx, xy, yy, x0, y0);
-                } else if (sscanf(data, "%u, %c", &op->id, &dummy))
-                        return false;
-                else if (sscanf(data, "%u %c", &op->id, &dummy) == 1) {
+                } else if (sscanf(raw_args, " %c", &dummy) < 1) {
                         op->op = RESET_CTM;
                         op->op_args = NULL;
                 } else
-                        return false;
+                        return FAILURE;
         } else if (eql(action, "translate")) {
                 double tx, ty;
                 struct transform_args *args;
@@ -1593,8 +1617,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = TRANSFORM;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %c", &op->id, &tx, &ty, &dummy) != 3)
-                        return false;
+                if (sscanf(raw_args, "%lf %lf %c", &tx, &ty, &dummy) != 2)
+                        return FAILURE;
                 cairo_matrix_init_translate(&args->matrix, tx, ty);
         } else if (eql(action, "scale")) {
                 double sx, sy;
@@ -1604,8 +1628,8 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = TRANSFORM;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %lf %c", &op->id, &sx, &sy, &dummy) != 3)
-                        return false;
+                if (sscanf(raw_args, "%lf %lf %c", &sx, &sy, &dummy) != 2)
+                        return FAILURE;
                 cairo_matrix_init_scale(&args->matrix, sx, sy);
         } else if (eql(action, "rotate")) {
                 double angle;
@@ -1615,46 +1639,88 @@ set_draw_op(struct draw_op *op, const char *action, const char *data)
                         OOM_ABORT;
                 op->op = TRANSFORM;
                 op->op_args = args;
-                if (sscanf(data, "%u %lf %c", &op->id, &angle, &dummy) != 2)
-                        return false;
+                if (sscanf(raw_args, "%lf %c", &angle, &dummy) != 1)
+                        return FAILURE;
                 cairo_matrix_init_rotate(&args->matrix, angle * (M_PI / 180.L));
         } else
-                return false;
-        return true;
+                return FAILURE;
+        return result;
 }
 
 /*
- * Append another element to widget's "draw_ops" list
+ * Add another element to widget's "draw_ops" list
  */
-static bool
+static enum draw_op_stat
 ins_draw_op(GObject *widget, const char *action, const char *data)
 {
-        struct draw_op *op, *draw_ops, *last_op;
+        enum draw_op_stat result;
+        struct draw_op *new_op = NULL, *draw_ops = NULL, *prev_op = NULL;
 
-        if ((op = malloc(sizeof(*op))) == NULL)
+        if ((new_op = malloc(sizeof(*new_op))) == NULL)
                 OOM_ABORT;
-        op->op_args = NULL;
-        op->next = NULL;
-        if (!set_draw_op(op, action, data)) {
-                free(op->op_args);
-                free(op);
-                return false;
+        new_op->op_args = NULL;
+        new_op->next = NULL;
+        if ((result = set_draw_op(new_op, action, data)) == FAILURE) {
+                free(new_op->op_args);
+                free(new_op);
+                return FAILURE;
         }
-        if ((draw_ops = g_object_get_data(widget, "draw_ops")) == NULL)
-                g_object_set_data(widget, "draw_ops", op);
-        else {
-                for (last_op = draw_ops;
-                     last_op->next != NULL;
-                     last_op = last_op->next);
-                last_op->next = op;
-        }
-        return true;
+        switch (new_op->policy) {
+        case APPEND:
+                if ((draw_ops = g_object_get_data(widget, "draw_ops")) == NULL)
+                        g_object_set_data(widget, "draw_ops", new_op);
+                else {
+                        for (prev_op = draw_ops;
+                             prev_op->next != NULL;
+                             prev_op = prev_op->next);
+                        prev_op->next = new_op;
+                }
+                break;
+        case BEFORE:
+                for (prev_op = NULL, draw_ops = g_object_get_data(widget, "draw_ops");
+                     draw_ops != NULL && draw_ops->id != new_op->before;
+                     prev_op = draw_ops, draw_ops = draw_ops->next);
+                if (prev_op == NULL) { /* prepend a new first element */
+                        g_object_set_data(widget, "draw_ops", new_op);
+                        new_op->next = draw_ops;
+                } else if (draw_ops == NULL) /* append */
+                        prev_op->next = new_op;
+                else {          /* insert */
+                        new_op->next = draw_ops;
+                        prev_op->next = new_op;
+                }
+                break;
+        case REPLACE:
+                for (prev_op = NULL, draw_ops = g_object_get_data(widget, "draw_ops");
+                     draw_ops != NULL && draw_ops->id != new_op->id;
+                     prev_op = draw_ops, draw_ops = draw_ops->next);
+                if (draw_ops == NULL && prev_op == NULL) /* start a new list */
+                        g_object_set_data(widget, "draw_ops", new_op);
+                else if (prev_op == NULL) { /* replace the first element */
+                        g_object_set_data(widget, "draw_ops", new_op);
+                        new_op->next = draw_ops->next;
+                        free(draw_ops->op_args);
+                        free(draw_ops);
+                } else if (draw_ops == NULL) /* append */
+                        prev_op->next = new_op;
+                else {          /* replace some other element */
+                        new_op->next = draw_ops->next;
+                        prev_op->next = new_op;
+                        free(draw_ops->op_args);
+                        free(draw_ops);
+                }
+                break;
+        default:
+                ABORT;
+                break;
+        }               
+        return result;
 }
 
 /*
  * Remove all elements with the given id from widget's "draw_ops" list
  */
-static bool
+static enum draw_op_stat
 rem_draw_op(GObject *widget, const char *data)
 {
         char dummy;
@@ -1662,7 +1728,7 @@ rem_draw_op(GObject *widget, const char *data)
         unsigned int id;
 
         if (sscanf(data, "%u %c", &id, &dummy) != 1)
-                return false;
+                return FAILURE;
         op = g_object_get_data(widget, "draw_ops");
         while (op != NULL) {
                 next_op = op->next;
@@ -1677,7 +1743,7 @@ rem_draw_op(GObject *widget, const char *data)
                         prev_op = op;
                 op = next_op;
         }
-        return true;
+        return NEED_REDRAW;
 }
 
 static gboolean
@@ -1694,21 +1760,27 @@ static void
 update_drawing_area(GObject *obj, const char *action,
                     const char *data, const char *whole_msg, GType type)
 {
-        if (eql(action, "remove")) {
-                if (!rem_draw_op(obj, data))
-                        ign_cmd(type, whole_msg);
-        } else if (ins_draw_op(obj, action, data));
+        enum draw_op_stat dos;
+
+        if (eql(action, "remove"))
+                dos = rem_draw_op(obj, data);
         else
-                ign_cmd(type, whole_msg);
-        if (eql(action, "stroke") ||
-            eql(action, "stroke_preserve") ||
-            eql(action, "fill") ||
-            eql(action, "fill_preserve") ||
-            eql(action, "show_text") ||
-            eql(action, "remove"))
+                dos = ins_draw_op(obj, action, data);
+        switch (dos) {
+        case NEED_REDRAW:
                 gdk_threads_add_idle_full(G_PRIORITY_LOW,
                                           (GSourceFunc) refresh_widget,
                                           GTK_WIDGET(obj), NULL);
+                break;
+        case FAILURE:
+                ign_cmd(type, whole_msg);
+                break;
+        case SUCCESS:
+                break;
+        default:
+                ABORT;
+                break;
+        }
 }
 
 static void
