@@ -369,7 +369,11 @@ log_msg(char *msg)
 static bool
 has_suffix(const char *s, const char *suffix)
 {
-        return eql(suffix, s + strlen(s) - strlen(suffix));
+        int s_suf = strlen(s) - strlen(suffix);
+
+        if (s_suf < 0)
+                return false;
+        return eql(suffix, s + s_suf);
 }
 
 /*

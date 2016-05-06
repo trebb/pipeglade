@@ -1251,6 +1251,8 @@ check_error "drawingarea1:save" \
             "ignoring GtkDrawingArea command \"drawingarea1:save\""
 check_error "drawingarea1:save " \
             "ignoring GtkDrawingArea command \"drawingarea1:save \""
+check_error "drawingarea1:save x" \
+            "ignoring GtkDrawingArea command \"drawingarea1:save x\""
 check_error "drawingarea1:save x.yz" \
             "ignoring GtkDrawingArea command \"drawingarea1:save x.yz\""
 check_error "drawingarea1:save x.pdf 2" \
@@ -2320,7 +2322,7 @@ check_cmd "file -b $EPSF_FILE | grep -qe EPS"
 check_cmd "file -b $PS_FILE | grep -qe PostScript"
 check_cmd "file -b $SVG_FILE | grep -qe SVG"
 check 0 "" \
-      "image2:set_from_file $SVG_FILE"
+      "notebook1:set_current_page 0\n image2:set_from_file $SVG_FILE"
 
 check 2 "Hit Backspace, Enter" \
       "eventbox1:grab_focus" \
