@@ -189,11 +189,16 @@ mkdir -p $DIR
 check_call "./pipeglade -O" 1 \
            "argument" ""
 check_call "./pipeglade -O $DIR" 1 \
-           "" "couldn't redirect stderr to"
+           "" "redirecting stderr to"
 check_call "./pipeglade -l $DIR" 1 \
            "opening log file" ""
 check_call "./pipeglade -l" 1 \
            "argument" ""
+# assuming we can't adjust permissions of /dev/null:
+check_call "./pipeglade -O /dev/null" 1 \
+           "" "setting permissions of /dev/null:"
+check_call "./pipeglade -l /dev/null" 1 \
+           "setting permissions of /dev/null:" ""
 check_call "./pipeglade yyy" 1 \
            "illegal parameter 'yyy'" ""
 check_call "./pipeglade --display nnn" 1 \
@@ -1365,8 +1370,8 @@ check_rm $FIN
 
 # check if stdout remains line buffered even if directed to file
 ./pipeglade -i $FIN >$OUT_FILE &
-# wait for $FIN to appear
-while test ! \( -e $FIN \); do :; done
+# wait for $FIN and $OUT_FILE to appear
+while test ! \( -e $FIN -a -e $OUT_FILE \); do :; done
 echo "button1:force" >$FIN
 check_cmd "grep -qe 'button1:clicked' $OUT_FILE"
 echo "_:main_quit" >$FIN
@@ -1374,7 +1379,7 @@ rm -f $OUT_FILE
 
 
 ./pipeglade -i $FIN -o $FOUT -b >$PID_FILE
-check_cmd "kill `cat $PID_FILE`"
+check_cmd "kill `cat $PID_FILE /dev/null` 2&>/dev/null"
 rm $FIN $FOUT
 
 
@@ -1438,19 +1443,28 @@ check_rm $FOUT
 
 mkfifo -m 777 $FIN
 mkfifo -m 777 $FOUT
-./pipeglade -i $FIN -o $FOUT -b
+touch $ERR_FILE $LOG
+chmod 777 $ERR_FILE $LOG
+./pipeglade -i $FIN -o $FOUT -b -O $ERR_FILE -l $LOG
 check_cmd "$STAT_CMD $FIN | grep '600$'"
 check_cmd "$STAT_CMD $FOUT | grep '600$'"
+check_cmd "$STAT_CMD $ERR_FILE | grep '600$'"
+check_cmd "$STAT_CMD $LOG | grep '600$'"
 echo -e "_:main_quit" > $FIN
 check_rm $FIN
 check_rm $FOUT
+rm -f $ERR_FILE $LOG
 
-./pipeglade -i $FIN -o $FOUT -b
+
+./pipeglade -i $FIN -o $FOUT -b -O $ERR_FILE -l $LOG
 check_cmd "$STAT_CMD $FIN | grep '600$'"
 check_cmd "$STAT_CMD $FOUT | grep '600$'"
+check_cmd "$STAT_CMD $ERR_FILE | grep '600$'"
+check_cmd "$STAT_CMD $LOG | grep '600$'"
 echo -e "_:main_quit" > $FIN
 check_rm $FIN
 check_rm $FOUT
+rm -f $ERR_FILE $LOG
 
 
 echo "####	# Initial line to check if -l option appends" >$LOG

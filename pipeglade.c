@@ -161,10 +161,16 @@ xembed_if(char *xid_s, GObject *main_window)
 static void
 redirect_stderr(const char *name)
 {
-        if (name && (freopen(name, "a", stderr)) == NULL)
+        if (name == NULL)
+                return;
+        if (freopen(name, "a", stderr) == NULL)
                 /* complaining on stdout since stderr is closed now */
-                bye(EXIT_FAILURE, stdout, "couldn't redirect stderr to %s: %s\n",
+                bye(EXIT_FAILURE, stdout, "redirecting stderr to %s: %s\n",
                     name, strerror(errno));
+        if (fchmod(fileno(stderr), 0600) < 0)
+                bye(EXIT_FAILURE, stdout, "setting permissions of %s: %s\n",
+                    name, strerror(errno));
+                return;
 }
 
 /*
@@ -190,7 +196,7 @@ go_bg_if(bool bg, FILE *in, FILE *out, char *err_file)
         close(fileno(stdin));   /* making certain not-so-smart     */
         close(fileno(stdout));  /* system/run-shell commands happy */
         if (err_file == NULL)
-                redirect_stderr("/dev/null");
+                freopen("/dev/null", "w", stderr);
 }
 
 /*
@@ -306,10 +312,15 @@ open_log(const char *name)
 {
         FILE *s = NULL;
 
+        if (name == NULL)
+                return NULL;
         if (eql(name, "-"))
-                s = stderr;
-        else if (name && (s = fopen(name, "a")) == NULL)
+                return stderr;
+        if ((s = fopen(name, "a")) == NULL)
                 bye(EXIT_FAILURE, stderr, "opening log file %s: %s\n",
+                    name, strerror(errno));
+        if (fchmod(fileno(s), 0600) < 0)
+                bye(EXIT_FAILURE, stderr, "setting permissions of %s: %s\n",
                     name, strerror(errno));
         return s;
 }

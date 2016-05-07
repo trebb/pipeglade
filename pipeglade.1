@@ -19,7 +19,7 @@
 .\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 .\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.Dd May 06, 2016
+.Dd May 07, 2016
 .Dt PIPEGLADE 1 PRM
 .Os BSD
 .Sh NAME
@@ -59,7 +59,9 @@ see
 .It Fl i Ar in-fifo
 Creates a named pipe
 .Ar in-fifo
-if necessary, and uses it for command input.
+if necessary, sets its permissions to
+.Li 0600 ,
+and uses it for command input.
 .Pp
 A command is a line of text.
 Its format is
@@ -98,7 +100,9 @@ Default command input is
 .It Fl o Ar out-fifo
 Creates a named pipe
 .Ar out-fifo
-if necessary, and uses it for output of feedback messages from the
+if necessary, sets its permissions to
+.Li 0600 ,
+and uses it for output of feedback messages from the
 graphical user interface.
 .Pp
 A feedback message is a line of text; its format is
@@ -129,7 +133,7 @@ It is an error if option
 is used and not both
 .Fl i Ar in-fifo
 and
-.Fl o Ar out_fifo
+.Fl o Ar out-fifo
 are specified.
 .It Fl u Ar builder-file
 Displays the graphical user interface
@@ -148,18 +152,21 @@ Embeds the main window into the XEmbed socket
 .Ar parent-xid
 of another process.
 .It Fl l Ar log-file
-For each command, append to
-.Ar log-file
-a line of
+Appends for each command a line of
 .Qq Ar time activity
-where
+to
+.Ar log-file ,
 .Ar time
-is the number of microseconds elapsed during
+being the number of microseconds elapsed during
 .Ar activity .
 .Ar time
 and
 .Ar activity
 are separated by a tab character.
+Permissions of
+.Ar log-file
+are set to
+.Li 0600 .
 A
 .Ar log-file
 name of
@@ -168,9 +175,13 @@ means
 .Va stderr .
 .It Fl O Ar err-file
 Redirects
-.Va stderr
-to
+.Va stderr ,
+appending its output to
 .Ar err-file .
+Permissions of
+.Ar err-file
+are set to
+.Li 0600 .
 .It Fl -display Ar X-server
 Uses the display on
 .Ar X-server
