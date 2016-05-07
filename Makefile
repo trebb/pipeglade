@@ -75,7 +75,7 @@ MANPAGE_DATE != grep "^\.Dd " pipeglade.1
 MANPAGE_TODAY != date '+.Dd %B %e, %Y' | awk '{print $$1, $$2, $$3, $$4}'
 
 # Prepare the www directory
-gh-pages: gh-pages/index.html gh-pages/pipeglade.1.html gh-pages/clock.png
+gh-pages: gh-pages/index.html gh-pages/pipeglade.1.html gh-pages/clock.svg
 
 gh-pages/index.html gh-pages/pipeglade.1.html: pipeglade.1 www-template/index.html Makefile
 	mkdir -p gh-pages
@@ -98,6 +98,10 @@ gh-pages/clock.png: clock.sh clock.ui pipeglade
 	./clock.sh&
 	sleep 1
 	import -frame -window pipeglade-clock gh-pages/clock.png
+
+gh-pages/clock.svg: clock.sh clock.ui pipeglade
+	mkdir -p gh-pages
+	./clock.sh gh-pages/clock.svg
 
 # Create a new git tag only if there is a NEWS headline in the format
 # 1.2.3 (2015-03-22)
