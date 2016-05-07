@@ -1407,10 +1407,10 @@ and clicking the
 will be reported on the terminal.
 Typing
 .Pp
-.Dl label1:set_text Button Label
+.Dl label1:set_text The Button
 .Pp
 will change the text shown on the label into
-.Ql Button Label .
+.Ql The Button .
 .Ss One-Shot File Dialog
 Suppose the interface in
 .Pa ./simple_open.ui
@@ -1454,9 +1454,7 @@ The following shell script fragment sets up
 for continuous communication with another program,
 .Pa main_prog :
 .Bd -literal -offset indent
-pipeglade -i in.fifo -o out.fifo &
-# wait for in.fifo and out.fifo to appear
-while test ! \e( -e in.fifo -a -e out.fifo \e); do :; done
+pipeglade -i in.fifo -o out.fifo -b
 main_prog <out.fifo >in.fifo
 .Ed
 .Sh SEE ALSO

@@ -5,12 +5,9 @@ export LC_ALL=C
 FIN=to-g.fifo
 FOUT=from-g.fifo
 
-rm -f $FIN $FOUT
+rm -f $FIN $FOUT                # in case these aren't fifos
 
-./pipeglade -i $FIN -o $FOUT &
-
-# wait for $FIN and $FOUT to appear
-while test ! \( -e $FIN -a -e $FOUT \); do :; done
+./pipeglade -i $FIN -o $FOUT -b
 
 while test -e $FIN -a -e $FOUT; do
     read line <$FOUT

@@ -246,7 +246,6 @@ check_error() {
 
 read r 2< $FERR &
 ./pipeglade -i $FIN 2> $FERR &
-
 # wait for $FIN to appear
 while test ! \( -e $FIN \); do :; done
 
@@ -1268,7 +1267,6 @@ check_rm $FIN
 ## Logging to stderr
 read r 2< $FERR &
 ./pipeglade -i $FIN 2> $FERR -l - &
-
 # wait for $FIN to appear
 while test ! \( -e $FIN \); do :; done
 
@@ -1331,9 +1329,7 @@ check() {
 
 
 # Being impervious to locale
-LC_ALL=de_DE.UTF-8 ./pipeglade -i $FIN -o $FOUT -O $ERR_FILE &
-# wait for $FIN and $FOUT to appear
-while test ! \( -e $FIN -a -e $FOUT -a $ERR_FILE \); do :; done
+LC_ALL=de_DE.UTF-8 ./pipeglade -i $FIN -o $FOUT -O $ERR_FILE -b
 check 0 "" \
       "drawingarea1:transform 1 1.5 1 1 1 1 1"
 check 0 "" \
@@ -1354,9 +1350,7 @@ rm $ERR_FILE
 
 
 # Logging to stderr while redirecting stderr
-./pipeglade -i $FIN -o $FOUT -O $ERR_FILE -l - &
-# wait for $FIN and $FOUT to appear
-while test ! \( -e $FIN -a -e $FOUT \); do :; done
+./pipeglade -i $FIN -o $FOUT -O $ERR_FILE -l - -b
 check 0 "" \
       "# Comment"
 check 0 "" \
@@ -1376,7 +1370,7 @@ while test ! \( -e $FIN \); do :; done
 echo "button1:force" >$FIN
 check_cmd "grep -qe 'button1:clicked' $OUT_FILE"
 echo "_:main_quit" >$FIN
-#rm -f $OUT_FILE
+rm -f $OUT_FILE
 
 
 ./pipeglade -i $FIN -o $FOUT -b >$PID_FILE
@@ -1384,11 +1378,7 @@ check_cmd "kill `cat $PID_FILE`"
 rm $FIN $FOUT
 
 
-./pipeglade --display ${DISPLAY-:0} -i $FIN -o $FOUT &
-
-# wait for $FIN and $FOUT to appear
-while test ! \( -e $FIN -a -e $FOUT \); do :; done
-
+./pipeglade --display ${DISPLAY-:0} -i $FIN -o $FOUT -b
 check 0 "" \
       "# checking --display $DISPLAY\n _:main_quit"
 
@@ -1397,10 +1387,6 @@ check_rm $FOUT
 
 
 ./pipeglade -u simple_dialog.ui -i $FIN -o $FOUT -b >$PID_FILE
-
-# wait for $FIN and $FOUT to appear
-while test ! \( -e $FIN -a -e $FOUT \); do :; done
-
 check_cmd "ps -p `cat $PID_FILE` >/dev/null"
 check 1 "" \
       "main_apply:force" \
@@ -1414,11 +1400,7 @@ check_cmd "! ps -p `cat $PID_FILE` >/dev/null"
 rm $PID_FILE
 
 
-./pipeglade -u simple_dialog.ui -i $FIN -o $FOUT &
-
-# wait for $FIN and $FOUT to appear
-while test ! \( -e $FIN -a -e $FOUT \); do :; done
-
+./pipeglade -u simple_dialog.ui -i $FIN -o $FOUT -b
 check 1 "" \
       "button1:force" \
       "button1:clicked"
@@ -1430,11 +1412,7 @@ check_rm $FIN
 check_rm $FOUT
 
 
-./pipeglade -u simple_open.ui -i $FIN -o $FOUT &
-
-# wait for $FIN and $FOUT to appear
-while test ! \( -e $FIN -a -e $FOUT \); do :; done
-
+./pipeglade -u simple_open.ui -i $FIN -o $FOUT -b
 check 3 "" \
       "main_apply:force" \
       "main_apply:clicked" \
@@ -1447,11 +1425,7 @@ check_rm $FIN
 check_rm $FOUT
 
 
-./pipeglade -u simple_open.ui -i $FIN -o $FOUT &
-
-# wait for $FIN and $FOUT to appear
-while test ! \( -e $FIN -a -e $FOUT \); do :; done
-
+./pipeglade -u simple_open.ui -i $FIN -o $FOUT -b
 check 2 "" \
       "main_ok:force" \
       "main_ok:clicked" \
@@ -1464,18 +1438,14 @@ check_rm $FOUT
 
 mkfifo -m 777 $FIN
 mkfifo -m 777 $FOUT
-./pipeglade -i $FIN -o $FOUT &
+./pipeglade -i $FIN -o $FOUT -b
 check_cmd "$STAT_CMD $FIN | grep '600$'"
 check_cmd "$STAT_CMD $FOUT | grep '600$'"
 echo -e "_:main_quit" > $FIN
 check_rm $FIN
 check_rm $FOUT
 
-./pipeglade -i $FIN -o $FOUT &
-
-# wait for $FIN and $FOUT to appear
-while test ! \( -e $FIN -a -e $FOUT \); do :; done
-
+./pipeglade -i $FIN -o $FOUT -b
 check_cmd "$STAT_CMD $FIN | grep '600$'"
 check_cmd "$STAT_CMD $FOUT | grep '600$'"
 echo -e "_:main_quit" > $FIN
@@ -1484,11 +1454,7 @@ check_rm $FOUT
 
 
 echo "####	# Initial line to check if -l option appends" >$LOG
-LC_NUMERIC=de_DE.UTF-8 ./pipeglade -i $FIN -o $FOUT -l $LOG &
-
-# wait for $FIN and $FOUT to appear
-while test ! \( -e $FIN -a -e $FOUT \); do :; done
-
+LC_NUMERIC=de_DE.UTF-8 ./pipeglade -i $FIN -o $FOUT -l $LOG -b
 check 0 "" \
       "socket1:id"
 read XID <$FOUT
