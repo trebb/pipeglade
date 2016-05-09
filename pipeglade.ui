@@ -96,7 +96,7 @@
         <col id="7">0</col>
         <col id="8">0</col>
         <col id="9" translatable="yes">abc</col>
-        <col id="10" translatable="yes">xxx</col>
+        <col id="10" translatable="yes">magenta</col>
       </row>
       <row>
         <col id="0">True</col>
@@ -110,7 +110,7 @@
         <col id="8">0</col>
         <col id="9" translatable="yes">def
 </col>
-        <col id="10" translatable="yes">yyy</col>
+        <col id="10" translatable="yes">blue</col>
       </row>
       <row>
         <col id="0">False</col>
@@ -123,7 +123,7 @@
         <col id="7">0</col>
         <col id="8">0</col>
         <col id="9" translatable="yes">ghi</col>
-        <col id="10" translatable="yes">zzz</col>
+        <col id="10" translatable="yes">cyan</col>
       </row>
       <row>
         <col id="0">False</col>
@@ -136,7 +136,7 @@
         <col id="7">0</col>
         <col id="8">0</col>
         <col id="9" translatable="yes">jkl</col>
-        <col id="10" translatable="yes">ZZZ</col>
+        <col id="10" translatable="yes">green</col>
       </row>
     </data>
   </object>
@@ -744,9 +744,20 @@ selection</property>
                           </attributes>
                         </child>
                         <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext2"/>
+                          <object class="GtkCellRendererText" id="cellrenderertext2">
+                            <property name="editable">True</property>
+                          </object>
                           <attributes>
                             <attribute name="text">9</attribute>
+                          </attributes>
+                        </child>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext28">
+                            <property name="editable">True</property>
+                          </object>
+                          <attributes>
+                            <attribute name="foreground">10</attribute>
+                            <attribute name="text">10</attribute>
                           </attributes>
                         </child>
                       </object>

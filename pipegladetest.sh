@@ -1562,7 +1562,7 @@ check 12 "" \
       "treeview1:gfloat 2 7 3.141000" \
       "treeview1:gdouble 2 8 3.141000" \
       "treeview1:gchararray 2 9 TEXT" \
-      "treeview1:gchararray 2 10 zzz"
+      "treeview1:gchararray 2 10 cyan"
 mkdir -p $DIR
 check 0 "" \
       "treeview1:save $DIR/$FILE1"
@@ -1584,7 +1584,7 @@ check 12 "" \
       "treeview1:gfloat 4 7 3.141000" \
       "treeview1:gdouble 4 8 3.141000" \
       "treeview1:gchararray 4 9 TEXT" \
-      "treeview1:gchararray 4 10 zzz"
+      "treeview1:gchararray 4 10 cyan"
 check 1 "" \
       "treeview1:set_cursor" \
       "treeview1:clicked"
@@ -1601,7 +1601,7 @@ check 12 "" \
       "treeview1:gfloat 0 7 3.141000" \
       "treeview1:gdouble 0 8 3.141000" \
       "treeview1:gchararray 0 9 TEXT" \
-      "treeview1:gchararray 0 10 zzz"
+      "treeview1:gchararray 0 10 cyan"
 check 1 "" \
       "treeview1:set_cursor" \
       "treeview1:clicked"
@@ -1618,7 +1618,7 @@ check 12 "" \
       "treeview1:gfloat 1 7 3.141000" \
       "treeview1:gdouble 1 8 3.141000" \
       "treeview1:gchararray 1 9 TEXT" \
-      "treeview1:gchararray 1 10 zzz"
+      "treeview1:gchararray 1 10 cyan"
 check 1 "" \
       "treeview1:set_cursor" \
       "treeview1:clicked"
@@ -1635,7 +1635,7 @@ check 12 "" \
       "treeview1:gfloat 6 7 3.141000" \
       "treeview1:gdouble 6 8 3.141000" \
       "treeview1:gchararray 6 9 TEXT" \
-      "treeview1:gchararray 6 10 zzz"
+      "treeview1:gchararray 6 10 cyan"
 check 1 "" \
       "treeview1:set_cursor" \
       "treeview1:clicked"
@@ -1652,7 +1652,7 @@ check 12 "" \
       "treeview1:gfloat 4 7 3.141000" \
       "treeview1:gdouble 4 8 3.141000" \
       "treeview1:gchararray 4 9 TEXT" \
-      "treeview1:gchararray 4 10 zzz"
+      "treeview1:gchararray 4 10 cyan"
 check 1 "" \
       "treeview1:set_cursor" \
       "treeview1:clicked"
@@ -1669,7 +1669,7 @@ check 12 "Click the 66% (move_row)" \
       "treeview1:gfloat 3 7 3.141000" \
       "treeview1:gdouble 3 8 3.141000" \
       "treeview1:gchararray 3 9 TEXT" \
-      "treeview1:gchararray 3 10 zzz"
+      "treeview1:gchararray 3 10 cyan"
 check 24 "" \
       "treeview1:remove_row 3" \
       "treeview1:clicked" \
@@ -1683,7 +1683,7 @@ check 24 "" \
       "treeview1:gfloat 3 7 0.000000" \
       "treeview1:gdouble 3 8 0.000000" \
       "treeview1:gchararray 3 9 abc" \
-      "treeview1:gchararray 3 10 xxx" \
+      "treeview1:gchararray 3 10 magenta" \
       "treeview1:clicked" \
       "treeview1:gboolean 3 0 0" \
       "treeview1:gint 3 1 0" \
@@ -1695,7 +1695,7 @@ check 24 "" \
       "treeview1:gfloat 3 7 0.000000" \
       "treeview1:gdouble 3 8 0.000000" \
       "treeview1:gchararray 3 9 abc" \
-      "treeview1:gchararray 3 10 xxx"
+      "treeview1:gchararray 3 10 magenta"
 check 1 "Click column col4 in the lowest line visible in the scrolled area and type 444 <Enter> (scroll)" \
       "treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:insert_row 2\n treeview1:scroll 24 0" \
       "treeview1:gint 24 1 444"
@@ -1712,7 +1712,7 @@ check 12 "Click column col3 in the highest line visible in the scrolled area (sc
       "treeview1:gfloat 1 7 0.000000" \
       "treeview1:gdouble 1 8 0.000000" \
       "treeview1:gchararray 1 9 jkl" \
-      "treeview1:gchararray 1 10 ZZZ"
+      "treeview1:gchararray 1 10 green"
 
 check 1 "Click the header of column \"col3\"" \
       "" \
