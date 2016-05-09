@@ -1737,7 +1737,7 @@ ins_draw_op(GObject *widget, const char *action, const char *data)
         default:
                 ABORT;
                 break;
-        }               
+        }
         return result;
 }
 
@@ -2943,14 +2943,12 @@ tree_view_column_get_renderer_column(const char *ui_file, GtkTreeViewColumn *t_c
         }
         xpath_len = 2 * (strlen(xpath_base1) + strlen(xpath_id) +
                          strlen(xpath_base2) + xpath_n_len +
-                         strlen(xpath_base3))
-                + 1             /* "|" */
-                + strlen(xpath_text_col) + strlen(xpath_renderer_id)
-                + 1;            /* '\0' */
-        if ((xpath = malloc(xpath_len)) == NULL) {
-                xmlFreeDoc(doc);
-                return false;
-        }
+                         strlen(xpath_base3)) +
+                sizeof('|') +
+                strlen(xpath_text_col) + strlen(xpath_renderer_id) +
+                sizeof('\0');
+        if ((xpath = malloc(xpath_len)) == NULL)
+                OOM_ABORT;
         snprintf((char *) xpath, xpath_len, "%s%s%s%d%s%s|%s%s%s%d%s%s",
                  xpath_base1, xpath_id, xpath_base2, n, xpath_base3, xpath_text_col,
                  xpath_base1, xpath_id, xpath_base2, n, xpath_base3, xpath_renderer_id);
@@ -2996,32 +2994,32 @@ tree_view_column_get_renderer_column(const char *ui_file, GtkTreeViewColumn *t_c
  */
 static void
 cb_tree_model_edit(GtkCellRenderer *renderer, const gchar *path_s,
-                   const gchar *new_text, gpointer model)
+                   const gchar *new_text, gpointer view)
 {
         GtkTreeIter iter;
-        GtkTreeView *view;
-        void *col;
+        GtkTreeModel *model = gtk_tree_view_get_model(view);
+        int col = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(renderer),
+                                                    "col_number"));
 
         gtk_tree_model_get_iter_from_string(model, &iter, path_s);
-        view = g_object_get_data(G_OBJECT(renderer), "tree_view");
-        col = g_object_get_data(G_OBJECT(renderer), "col_number");
-        set_tree_view_cell(model, &iter, path_s, GPOINTER_TO_INT(col),
+        set_tree_view_cell(model, &iter, path_s, col,
                            new_text);
-        send_tree_cell_msg_by(send_msg, model, path_s, &iter, GPOINTER_TO_INT(col),
+        send_tree_cell_msg_by(send_msg, model, path_s, &iter, col,
                               GTK_BUILDABLE(view));
 }
 
 static void
-cb_tree_model_toggle(GtkCellRenderer *renderer, gchar *path_s, gpointer model)
+cb_tree_model_toggle(GtkCellRenderer *renderer, gchar *path_s, gpointer view)
 {
         GtkTreeIter iter;
+        GtkTreeModel *model = gtk_tree_view_get_model(view);
         bool toggle_state;
-        void *col;
+        int col = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(renderer),
+                                                    "col_number"));
 
         gtk_tree_model_get_iter_from_string(model, &iter, path_s);
-        col = g_object_get_data(G_OBJECT(renderer), "col_number");
         gtk_tree_model_get(model, &iter, col, &toggle_state, -1);
-        set_tree_view_cell(model, &iter, path_s, GPOINTER_TO_INT(col),
+        set_tree_view_cell(model, &iter, path_s, col,
                            toggle_state? "0" : "1");
 }
 
@@ -3037,27 +3035,31 @@ connect_widget_signals(gpointer *obj, char *ui_file)
         if (GTK_IS_BUILDABLE(obj))
                 name = widget_name(GTK_BUILDABLE(obj));
         if (type == GTK_TYPE_TREE_VIEW_COLUMN) {
-                GtkCellRenderer *renderer;
-                GtkTreeModel *model;
-                GtkTreeView *view;
-                gboolean editable = FALSE;
-                int i;
+                GList *cells = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(obj));
+                GtkTreeViewColumn *tv_col = GTK_TREE_VIEW_COLUMN(obj);
+                unsigned int i, n_cells = g_list_length(cells);
 
+                g_list_free(cells);
                 g_signal_connect(obj, "clicked", G_CALLBACK(cb_simple), "clicked");
-                view = GTK_TREE_VIEW(gtk_tree_view_column_get_tree_view(GTK_TREE_VIEW_COLUMN(obj)));
-                model = gtk_tree_view_get_model(view);
-                for (i = 1;; i++) {
-                        if (!tree_view_column_get_renderer_column(ui_file, GTK_TREE_VIEW_COLUMN(obj), i, &renderer))
-                                break;
-                        g_object_set_data(G_OBJECT(renderer), "tree_view", view);
+                for (i = 1; i <= n_cells; i++) {
+                        GtkCellRenderer *renderer;
+                        GtkTreeView *view = GTK_TREE_VIEW(
+                                gtk_tree_view_column_get_tree_view(tv_col));
+                        gboolean editable = FALSE;
+
+                        if (!tree_view_column_get_renderer_column(ui_file, tv_col,
+                                                                  i, &renderer))
+                                continue;
                         if (GTK_IS_CELL_RENDERER_TEXT(renderer)) {
                                 g_object_get(renderer, "editable", &editable, NULL);
                                 if (editable)
-                                        g_signal_connect(renderer, "edited", G_CALLBACK(cb_tree_model_edit), model);
+                                        g_signal_connect(renderer, "edited",
+                                                         G_CALLBACK(cb_tree_model_edit), view);
                         } else if (GTK_IS_CELL_RENDERER_TOGGLE(renderer)) {
                                 g_object_get(renderer, "activatable", &editable, NULL);
                                 if (editable)
-                                        g_signal_connect(renderer, "toggled", G_CALLBACK(cb_tree_model_toggle), model);
+                                        g_signal_connect(renderer, "toggled",
+                                                         G_CALLBACK(cb_tree_model_toggle), view);
                         }
                 }
         } else if (type == GTK_TYPE_BUTTON) {
