@@ -1963,10 +1963,11 @@ update_notebook(GObject *obj, const char *action,
                 const char *data, const char *whole_msg, GType type)
 {
         char dummy;
-        unsigned int val;
+        int val, n_pages = gtk_notebook_get_n_pages(GTK_NOTEBOOK(obj));
 
         if (eql(action, "set_current_page") &&
-            sscanf(data, "%u %c", &val, &dummy) == 1)
+            sscanf(data, "%d %c", &val, &dummy) == 1 &&
+            val >= 0 && val < n_pages)
                 gtk_notebook_set_current_page(GTK_NOTEBOOK(obj), val);
         else
                 ign_cmd(type, whole_msg);
