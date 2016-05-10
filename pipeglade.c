@@ -2403,7 +2403,8 @@ create_subtree(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter)
         GtkTreeIter iter_1;     /* iter's predecessor */
         GtkTreePath *path_1;    /* path's predecessor */
 
-        if (gtk_tree_model_get_iter(model, iter, path))
+        if (gtk_tree_path_get_depth(path) > 0 &&
+            gtk_tree_model_get_iter(model, iter, path))
                 return;
         path_1 = gtk_tree_path_copy(path);
         if (gtk_tree_path_prev(path_1)) { /* need an older sibling */
