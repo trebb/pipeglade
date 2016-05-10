@@ -1,5 +1,6 @@
 *.core
-*.eps?
+*.eps
+*.epsf
 *.gmon
 *.gprof
 *.log
