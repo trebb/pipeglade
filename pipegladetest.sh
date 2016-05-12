@@ -169,9 +169,9 @@ if test $AUTOMATIC; then
                "unable to embed into XEmbed socket 99999999999999999" ""
     touch $BAD_FIFO
     check_call "./pipeglade -i $BAD_FIFO" 1 \
-               "making fifo" ""
+               "using pre-existing fifo" ""
     check_call "./pipeglade -o $BAD_FIFO" 1 \
-               "making fifo" ""
+               "using pre-existing fifo" ""
     rm $BAD_FIFO
     check_call "./pipeglade -b" 1 \
                "parameter -b requires both -i and -o"
@@ -346,8 +346,8 @@ if test $AUTOMATIC; then
     check_error "_:load nonexistent.txt" \
                 "ignoring command \"_:load nonexistent.txt\""
     for i in $WEIRD_PATHS; do
-        check_error "_:load $i" \
-                    "ignoring command \"_:load $i\""
+        check_error "_:load nonexistent/${i}QqQ" \
+                    "ignoring command \"_:load nonexistent/${i}QqQ\""
     done
     # _:load junk
     mkdir -p $DIR
@@ -365,8 +365,8 @@ if test $AUTOMATIC; then
                 "ignoring command \"_:load $DIR/$FILE1\""
     for i in $WEIRD_PATHS; do
         cat >$i <<< "_:load $i"
-        check_error "_:load $DIR/$i" \
-                    "ignoring command \"_:load $DIR/$i\""
+        check_error "_:load $i" \
+                    "ignoring command \"_:load $i\""
     done
     cat >$DIR/$FILE1 <<< "_:load $DIR/$FILE2"
     cat >$DIR/$FILE2 <<< "_:load $DIR/$FILE1"
@@ -1511,7 +1511,7 @@ check() {
     while (( i<$N )); do
         read r <$FOUT
         if test "$r" != ""; then
-            if grep -qe "${4:0:300}" <<< ${r:0:300}; then
+            if grep -qFe "${4:0:300}" <<< ${r:0:300}; then
                 count_ok
                 echo " $OK  ($i)  ${r:0:300}"
             else
@@ -1539,7 +1539,7 @@ if test $AUTOMATIC; then
           "progressbar1:set_fraction .5"
     check 1 "" \
           "scale1:set_value .5" \
-          "scale1:value 0\.50"
+          "scale1:value 0.50"
     sleep .5
     check 0 "" \
           "_:main_quit"
@@ -2288,6 +2288,18 @@ if test $AUTOMATIC; then
           "nonexistent_invoke:force" \
           "nonexistent_invoke:active nonexistent"
 
+    # _:load
+    mkdir -p $DIR
+    for i in $WEIRD_PATHS; do
+        cat >$i <<< "entry1:set_text RsT${i}UVwX"
+    done
+    for i in $WEIRD_PATHS; do
+        check 1 "" \
+              "_:load $i" \
+              "entry1:text RsT${i}UVwX"
+        rm -f $i
+    done
+
 fi
 
 if test $INTERACTIVE; then
@@ -2678,7 +2690,7 @@ if test $AUTOMATIC; then
     unset -v BIG_STRING
     unset -v BIG_NUM
     unset -v WEIRD_PATH
-    echo -e 'g/_:main_quit/d\ng/:load /d\nwq' | ed -s $LOG
+    echo -e "g/_:main_quit/d\ng|$FILE6|d\nwq" | ed -s $LOG
     for i in {1..50}; do
         grep "^ " $LOG | cut -f2-
     done >$BIG_INPUT
