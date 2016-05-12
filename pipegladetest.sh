@@ -1712,9 +1712,6 @@ if test $AUTOMATIC; then
     check 1 "" \
           "entry1:force" \
           "entry1:text GGGG"
-    check 1 "" \
-          "spinbutton1:set_text $BIG_NUM" \
-          "spinbutton1:text 100"
     check 2 "" \
           "spinbutton1:set_text 33.0\n spinbutton1:set_range 50 60\n" \
           "spinbutton1:text 33.0" \
