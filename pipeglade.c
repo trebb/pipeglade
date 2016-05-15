@@ -2421,13 +2421,11 @@ set_tree_view_cell(GtkTreeModel *model, GtkTreeIter *iter,
         GType col_type = gtk_tree_model_get_column_type(model, col);
         GtkTreePath *path;
         bool ok = false;
-        char *endptr;
+        char dummy;
         double d;
         long long int n;
 
         path = gtk_tree_path_new_from_string(path_s);
-        create_subtree(model, path, iter);
-        gtk_tree_path_free(path);
         switch (col_type) {
         case G_TYPE_BOOLEAN:
         case G_TYPE_INT:
@@ -2436,25 +2434,24 @@ set_tree_view_cell(GtkTreeModel *model, GtkTreeIter *iter,
         case G_TYPE_UINT:
         case G_TYPE_ULONG:
         case G_TYPE_UINT64:
-                errno = 0;
-                endptr = NULL;
-                n = strtoll(new_text, &endptr, 10);
-                if (!errno && endptr != new_text) {
+                if (new_text != NULL &&
+                    sscanf(new_text, "%lld %c", &n, &dummy) == 1) {
+                        create_subtree(model, path, iter);
                         tree_model_set(model, iter, col, n, -1);
                         ok = true;
                 }
                 break;
         case G_TYPE_FLOAT:
         case G_TYPE_DOUBLE:
-                errno = 0;
-                endptr = NULL;
-                d = strtod(new_text, &endptr);
-                if (!errno && endptr != new_text) {
+                if (new_text != NULL &&
+                    sscanf(new_text, "%lf %c", &d, &dummy) == 1) {
+                        create_subtree(model, path, iter);
                         tree_model_set(model, iter, col, d, -1);
                         ok = true;
                 }
                 break;
         case G_TYPE_STRING:
+                create_subtree(model, path, iter);
                 tree_model_set(model, iter, col, new_text, -1);
                 ok = true;
                 break;
@@ -2464,6 +2461,7 @@ set_tree_view_cell(GtkTreeModel *model, GtkTreeIter *iter,
                 ok = true;
                 break;
         }
+        gtk_tree_path_free(path);
         return ok;
 }
 

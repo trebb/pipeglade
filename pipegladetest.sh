@@ -901,11 +901,25 @@ if test $AUTOMATIC; then
                 "ignoring GtkTreeView command \"treeview1:set -1 1 77\""
     check_error "treeview1:set 1 -1 77" \
                 "ignoring GtkTreeView command \"treeview1:set 1 -1 77\""
-    # GtkTreeView set "abc" into numeric column
+    # GtkTreeView set junk into numeric columns
     check_error "treeview1:set 1 1 abc" \
                 "ignoring GtkTreeView command \"treeview1:set 1 1 abc\""
     check_error "treeview1:set 1 1 $BIG_STRING" \
                 "ignoring GtkTreeView command \"treeview1:set 1 1 $BIG_STRING\""
+    check_error "treeview1:set 1 1" \
+                "ignoring GtkTreeView command \"treeview1:set 1 1\""
+    check_error "treeview1:set 1 1 555.5" \
+                "ignoring GtkTreeView command \"treeview1:set 1 1 555.5\""
+    check_error "treeview1:set 1 1 555 5" \
+                "ignoring GtkTreeView command \"treeview1:set 1 1 555 5\""
+    check_error "treeview1:set 1 7 abc" \
+                "ignoring GtkTreeView command \"treeview1:set 1 7 abc\""
+    check_error "treeview1:set 1 7 $BIG_STRING" \
+                "ignoring GtkTreeView command \"treeview1:set 1 7 $BIG_STRING\""
+    check_error "treeview1:set 1 7" \
+                "ignoring GtkTreeView command \"treeview1:set 1 7\""
+    check_error "treeview1:set 1 7 555 5" \
+                "ignoring GtkTreeView command \"treeview1:set 1 7 555 5\""
 
     # GtkTreeViewColumn
     check_error "treeviewcolumn3:nnn" \
