@@ -62,20 +62,20 @@
                           "-V]\n"
 
 #define ABORT                                           \
-        {                                               \
+        do {                                            \
                 fprintf(stderr,                         \
                         "In %s (%s:%d): ",              \
                         __func__, __FILE__, __LINE__);  \
                 abort();                                \
-        }
+        } while (0)
 
 #define OOM_ABORT                                               \
-        {                                                       \
+        do {                                                    \
                 fprintf(stderr,                                 \
                         "Out of memory in %s (%s:%d): ",        \
                         __func__, __FILE__, __LINE__);          \
                 abort();                                        \
-        }
+        } while (0)
 
 
 /*
@@ -318,7 +318,7 @@ rm_unless(FILE *forbidden, FILE *s, char *name)
         if (s == forbidden)
                 return;
         fclose(s);
-        unlink(name);
+        remove(name);
 }
 
 /*
@@ -2841,8 +2841,8 @@ digest_msg(struct info *args)
         for (;;) {
                 FILE *cmd = args->instr;
                 struct ui_data *ud = NULL;
-                char first_char = '\0',
-                        *id;    /* widget id */
+                char first_char = '\0';
+                char *id;       /* widget id */
                 size_t msg_size = 32;
                 int id_start = 0, id_end = 0;
                 int action_start = 0, action_end = 0;
@@ -2864,12 +2864,13 @@ digest_msg(struct info *args)
                         log_msg(args->logstr, ud->msg);
                 if ((ud->msg_tokens = malloc(strlen(ud->msg) + 1)) == NULL)
                         OOM_ABORT;
-                strcpy(ud->msg_tokens, ud->msg);
                 sscanf(ud->msg, " %c", &first_char);
-                if (strlen(ud->msg) == 0 || first_char == '#') { /* comment */
+                if (data_start == 0 ||   /* empty line */
+                    first_char == '#') { /* comment */
                         ud->fn = update_nothing;
                         goto exec;
                 }
+                strcpy(ud->msg_tokens, ud->msg);
                 sscanf(ud->msg_tokens,
                        " %n%*[0-9a-zA-Z_]%n:%n%*[0-9a-zA-Z_]%n%*1[ \t]%n",
                        &id_start, &id_end, &action_start, &action_end, &data_start);
