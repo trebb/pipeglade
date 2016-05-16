@@ -77,11 +77,6 @@
                 abort();                                        \
         }
 
-static FILE *out;               /* UI feedback messages */
-static FILE *save;              /* saving user data */
-static FILE *log_out;           /* logging output */
-static GtkBuilder *builder;     /* to be read from .ui file */
-
 
 /*
  * ============================================================
@@ -170,7 +165,8 @@ redirect_stderr(const char *name)
         if (fchmod(fileno(stderr), 0600) < 0)
                 bye(EXIT_FAILURE, stdout, "setting permissions of %s: %s\n",
                     name, strerror(errno));
-                return;
+        setvbuf(stderr, NULL, _IOLBF, 0);
+        return;
 }
 
 /*
@@ -227,7 +223,8 @@ lc_numeric_free(char *lc)
 }
 
 /*
- * Print a warning about a malformed command to stderr
+ * Print a warning about a malformed command to stderr.  Runs inside
+ * gtk_main().
  */
 static void
 ign_cmd(GType type, const char *msg)
@@ -269,7 +266,7 @@ find_fifo(const char *n, struct stat *sb)
 }
 
 static FILE *
-open_fifo(const char *name, const char *mode, FILE *fallback)
+open_fifo(const char *name, const char *fmode, FILE *fallback, int bmode)
 {
         FILE *s = NULL;
         int fd;
@@ -285,11 +282,11 @@ open_fifo(const char *name, const char *mode, FILE *fallback)
                       sb1.st_mode == sb2.st_mode &&
                       sb1.st_ino == sb2.st_ino &&
                       sb1.st_dev == sb2.st_dev &&
-                      (s = fdopen(fd, mode)) != NULL))
+                      (s = fdopen(fd, fmode)) != NULL))
                         bye(EXIT_FAILURE, stderr, "opening fifo %s (%s): %s\n",
-                            name, mode, strerror(errno));
+                            name, fmode, strerror(errno));
         }
-        setvbuf(s, NULL, _IONBF, 0);
+        setvbuf(s, NULL, bmode, 0);
         return s;
 }
 
@@ -341,24 +338,21 @@ usec_since(struct timespec *start)
  * Write log file
  */
 static void
-log_msg(char *msg)
+log_msg(FILE *l, char *msg)
 {
         static char *old_msg;
         static struct timespec start;
 
-        if (log_out == NULL)    /* no logging */
+        if (l == NULL)    /* no logging */
                 return;
         if (msg == NULL && old_msg == NULL)
-                fprintf(log_out,
-                        "##########\t##### (New Pipeglade session) #####\n");
+                fprintf(l, "##########\t##### (New Pipeglade session) #####\n");
         else if (msg == NULL && old_msg != NULL) { /* command done; start idle */
-                fprintf(log_out,
-                        "%10ld\t%s\n", usec_since(&start), old_msg);
+                fprintf(l, "%10ld\t%s\n", usec_since(&start), old_msg);
                 free(old_msg);
                 old_msg = NULL;
         } else if (msg != NULL && old_msg == NULL) { /* idle done; start command */
-                fprintf(log_out,
-                        "%10ld\t### (Idle) ###\n", usec_since(&start));
+                fprintf(l, "%10ld\t### (Idle) ###\n", usec_since(&start));
                 if ((old_msg = malloc(strlen(msg) + 1)) == NULL)
                         OOM_ABORT;
                 strcpy(old_msg, msg);
@@ -381,7 +375,7 @@ has_suffix(const char *s, const char *suffix)
  * Remove suffix from name; find the object named like this
  */
 static GObject *
-obj_sans_suffix(const char *suffix, const char *name)
+obj_sans_suffix(GtkBuilder *builder, const char *suffix, const char *name)
 {
         char str[BUFLEN + 1] = {'\0'};
         int str_l;
@@ -416,7 +410,7 @@ widget_name(GtkBuildable *obj)
  * Get the main window; give up on errors
  */
 static GObject *
-find_main_window(void)
+find_main_window(GtkBuilder *builder)
 {
         GObject *mw;
 
@@ -505,58 +499,90 @@ send_msg_to(FILE* o, GtkBuildable *obj, const char *tag, va_list ap)
 }
 
 /*
- * Send GUI feedback to global stream "out".  The message format is
+ * Send GUI feedback to stream o.  The message format is
  * "<origin>:<tag> <data ...>".  The variadic arguments are strings;
  * last argument must be NULL.
  */
 static void
-send_msg(GtkBuildable *obj, const char *tag, ...)
+send_msg(FILE *o, GtkBuildable *obj, const char *tag, ...)
 {
         va_list ap;
 
         va_start(ap, tag);
-        send_msg_to(out, obj, tag, ap);
+        send_msg_to(o, obj, tag, ap);
         va_end(ap);
 }
 
 /*
- * Send message from GUI to global stream "save".  The message format
- * is "<origin>:<tag> <data ...>".  The variadic arguments are strings;
- * last argument must be NULL.
+ * Send message from GUI to stream o.  The message format is
+ * "<origin>:set <data ...>", which happens to be a legal command.
+ * The variadic arguments are strings; last argument must be NULL.
  */
 static void
-save_msg(GtkBuildable *obj, const char *tag, ...)
+send_msg_as_cmd(FILE *o, GtkBuildable *obj, const char *tag, ...)
 {
         va_list ap;
 
         va_start(ap, tag);
-        send_msg_to(save, obj, tag, ap);
+        send_msg_to(o, obj, "set", ap);
         va_end(ap);
 }
 
 /*
- * Send message from GUI to global stream "save".  The message format
- * is "<origin>:set <data ...>".  The variadic arguments are strings;
- * last argument must be NULL.
+ * Stuff to pass around
  */
-static void
-save_action_set_msg(GtkBuildable *obj, const char *tag, ...)
-{
-        va_list ap;
+struct info {
+        FILE *outstr;           /* UI feedback messages */
+        FILE *instr;            /* command input */
+        FILE *logstr;           /* logging output */
+        GtkBuilder *builder;    /* to be read from .ui file */
+        GObject *obj;
+        GtkTreeModel *model;
+        char *txt;
+};
 
-        va_start(ap, tag);
-        send_msg_to(save, obj, "set", ap);
-        va_end(ap);
+/*
+ * Return pointer to a newly allocated struct info
+ */
+struct info *
+info_new_full(FILE *stream, GObject *obj, GtkTreeModel *model, char *txt)
+{
+        struct info *a;
+
+        if ((a = malloc(sizeof(struct info))) == NULL)
+                OOM_ABORT;
+        a->outstr = stream;
+        a->instr = NULL;
+        a->logstr = NULL;
+        a->builder = NULL;
+        a->obj = obj;
+        a->model = model;
+        a->txt = txt;
+        return a;
+}
+
+struct info *
+info_txt_new(FILE *stream, char *txt)
+{
+        return info_new_full(stream, NULL, NULL, txt);
+}
+
+struct info *
+info_obj_new(FILE *stream, GObject *obj, GtkTreeModel *model)
+{
+        return info_new_full(stream, obj, model, NULL);
 }
 
 /*
  * Use msg_sender() to send a message describing a particular cell
  */
 static void
-send_tree_cell_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
-                      GtkTreeModel *model, const char *path_s,
-                      GtkTreeIter *iter, int col, GtkBuildable *obj)
+send_tree_cell_msg_by(void msg_sender(FILE *, GtkBuildable *, const char *, ...),
+                      const char *path_s,
+                      GtkTreeIter *iter, int col, struct info *a)
 {
+        GtkBuildable *obj = GTK_BUILDABLE(a->obj);
+        GtkTreeModel *model = a->model;
         GType col_type;
         GValue value = G_VALUE_INIT;
         char str[BUFLEN], *lc = lc_numeric();
@@ -566,43 +592,43 @@ send_tree_cell_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
         switch (col_type) {
         case G_TYPE_INT:
                 snprintf(str, BUFLEN, " %d %d", col, g_value_get_int(&value));
-                msg_sender(obj, "gint", path_s, str, NULL);
+                msg_sender(a->outstr, obj, "gint", path_s, str, NULL);
                 break;
         case G_TYPE_LONG:
                 snprintf(str, BUFLEN, " %d %ld", col, g_value_get_long(&value));
-                msg_sender(obj, "glong", path_s, str, NULL);
+                msg_sender(a->outstr, obj, "glong", path_s, str, NULL);
                 break;
         case G_TYPE_INT64:
                 snprintf(str, BUFLEN, " %d %" PRId64, col, g_value_get_int64(&value));
-                msg_sender(obj, "gint64", path_s, str, NULL);
+                msg_sender(a->outstr, obj, "gint64", path_s, str, NULL);
                 break;
         case G_TYPE_UINT:
                 snprintf(str, BUFLEN, " %d %u", col, g_value_get_uint(&value));
-                msg_sender(obj, "guint", path_s, str, NULL);
+                msg_sender(a->outstr, obj, "guint", path_s, str, NULL);
                 break;
         case G_TYPE_ULONG:
                 snprintf(str, BUFLEN, " %d %lu", col, g_value_get_ulong(&value));
-                msg_sender(obj, "gulong", path_s, str, NULL);
+                msg_sender(a->outstr, obj, "gulong", path_s, str, NULL);
                 break;
         case G_TYPE_UINT64:
                 snprintf(str, BUFLEN, " %d %" PRIu64, col, g_value_get_uint64(&value));
-                msg_sender(obj, "guint64", path_s, str, NULL);
+                msg_sender(a->outstr, obj, "guint64", path_s, str, NULL);
                 break;
         case G_TYPE_BOOLEAN:
                 snprintf(str, BUFLEN, " %d %d", col, g_value_get_boolean(&value));
-                msg_sender(obj, "gboolean", path_s, str, NULL);
+                msg_sender(a->outstr, obj, "gboolean", path_s, str, NULL);
                 break;
         case G_TYPE_FLOAT:
                 snprintf(str, BUFLEN, " %d %f", col, g_value_get_float(&value));
-                msg_sender(obj, "gfloat", path_s, str, NULL);
+                msg_sender(a->outstr, obj, "gfloat", path_s, str, NULL);
                 break;
         case G_TYPE_DOUBLE:
                 snprintf(str, BUFLEN, " %d %f", col, g_value_get_double(&value));
-                msg_sender(obj, "gdouble", path_s, str, NULL);
+                msg_sender(a->outstr, obj, "gdouble", path_s, str, NULL);
                 break;
         case G_TYPE_STRING:
                 snprintf(str, BUFLEN, " %d ", col);
-                msg_sender(obj, "gchararray", path_s, str, g_value_get_string(&value), NULL);
+                msg_sender(a->outstr, obj, "gchararray", path_s, str, g_value_get_string(&value), NULL);
                 break;
         default:
                 fprintf(stderr, "column %d not implemented: %s\n", col, G_VALUE_TYPE_NAME(&value));
@@ -616,14 +642,13 @@ send_tree_cell_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
  * Use msg_sender() to send one message per column for a single row
  */
 static void
-send_tree_row_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
-                     GtkTreeModel *model, char *path_s,
-                     GtkTreeIter *iter, GtkBuildable *obj)
+send_tree_row_msg_by(void msg_sender(FILE *, GtkBuildable *, const char *, ...),
+                     char *path_s, GtkTreeIter *iter, struct info *args)
 {
         int col;
 
-        for (col = 0; col < gtk_tree_model_get_n_columns(model); col++)
-                send_tree_cell_msg_by(msg_sender, model, path_s, iter, col, obj);
+        for (col = 0; col < gtk_tree_model_get_n_columns(args->model); col++)
+                send_tree_cell_msg_by(msg_sender, path_s, iter, col, args);
 }
 
 /*
@@ -632,11 +657,12 @@ send_tree_row_msg_by(void msg_sender(GtkBuildable *, const char *, ...),
  */
 static gboolean
 send_tree_row_msg(GtkTreeModel *model,
-                  GtkTreePath *path, GtkTreeIter *iter, GtkBuildable *obj)
+                  GtkTreePath *path, GtkTreeIter *iter, struct info *args)
 {
         char *path_s = gtk_tree_path_to_string(path);
 
-        send_tree_row_msg_by(send_msg, model, path_s, iter, obj);
+        args->model = model;
+        send_tree_row_msg_by(send_msg, path_s, iter, args);
         g_free(path_s);
         return FALSE;
 }
@@ -648,40 +674,40 @@ send_tree_row_msg(GtkTreeModel *model,
  */
 static gboolean
 save_tree_row_msg(GtkTreeModel *model,
-                  GtkTreePath *path, GtkTreeIter *iter, GtkBuildable *obj)
+                  GtkTreePath *path, GtkTreeIter *iter, struct info *args)
 {
         char *path_s = gtk_tree_path_to_string(path);
 
-        (void) path;
-        send_tree_row_msg_by(save_action_set_msg, model, path_s, iter, obj);
+        args->model = model;
+        send_tree_row_msg_by(send_msg_as_cmd, path_s, iter, args);
         g_free(path_s);
         return FALSE;
 }
 
 static void
-cb_calendar(GtkBuildable *obj, const char *tag)
+cb_calendar(GtkBuildable *obj, struct info *a)
 {
         char str[BUFLEN];
         unsigned int year = 0, month = 0, day = 0;
 
         gtk_calendar_get_date(GTK_CALENDAR(obj), &year, &month, &day);
         snprintf(str, BUFLEN, "%04u-%02u-%02u", year, ++month, day);
-        send_msg(obj, tag, str, NULL);
+        send_msg(a->outstr, obj, a->txt, str, NULL);
 }
 
 static void
-cb_color_button(GtkBuildable *obj, const char *tag)
+cb_color_button(GtkBuildable *obj, struct info *a)
 {
         GdkRGBA color;
 
         gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(obj), &color);
-        send_msg(obj, tag, gdk_rgba_to_string(&color), NULL);
+        send_msg(a->outstr, obj, a->txt, gdk_rgba_to_string(&color), NULL);
 }
 
 static void
-cb_editable(GtkBuildable *obj, const char *tag)
+cb_editable(GtkBuildable *obj, struct info *a)
 {
-        send_msg(obj, tag, gtk_entry_get_text(GTK_ENTRY(obj)), NULL);
+        send_msg(a->outstr, obj, a->txt, gtk_entry_get_text(GTK_ENTRY(obj)), NULL);
 }
 
 /*
@@ -689,13 +715,13 @@ cb_editable(GtkBuildable *obj, const char *tag)
  * in a GtkEventBox
  */
 static bool
-cb_event_box_button(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
+cb_event_box_button(GtkBuildable *obj, GdkEvent *e, struct info *a)
 {
         char data[BUFLEN], *lc = lc_numeric();
 
         snprintf(data, BUFLEN, "%d %.1lf %.1lf",
                  e->button.button, e->button.x, e->button.y);
-        send_msg(obj, user_data, data, NULL);
+        send_msg(a->outstr, obj, a->txt, data, NULL);
         lc_numeric_free(lc);
         return true;
 }
@@ -705,9 +731,9 @@ cb_event_box_button(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
  * a GtkEventBox is focused
  */
 static bool
-cb_event_box_key(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
+cb_event_box_key(GtkBuildable *obj, GdkEvent *e, struct info *a)
 {
-        send_msg(obj, user_data, gdk_keyval_name(e->key.keyval), NULL);
+        send_msg(a->outstr, obj, a->txt, gdk_keyval_name(e->key.keyval), NULL);
         return true;
 }
 
@@ -716,12 +742,12 @@ cb_event_box_key(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
  * GtkEventBox
  */
 static bool
-cb_event_box_motion(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
+cb_event_box_motion(GtkBuildable *obj, GdkEvent *e, struct info *a)
 {
         char data[BUFLEN], *lc = lc_numeric();
 
         snprintf(data, BUFLEN, "%.1lf %.1lf", e->button.x, e->button.y);
-        send_msg(obj, user_data, data, NULL);
+        send_msg(a->outstr, obj, a->txt, data, NULL);
         lc_numeric_free(lc);
         return true;
 }
@@ -730,38 +756,41 @@ cb_event_box_motion(GtkBuildable *obj, GdkEvent *e, gpointer user_data)
  * Callback that only sends "name:tag" and returns false
  */
 static bool
-cb_event_simple(GtkBuildable *obj, GdkEvent *e, const char *tag)
+cb_event_simple(GtkBuildable *obj, GdkEvent *e, struct info *a)
 {
         (void) e;
-        send_msg(obj, tag, NULL);
+        send_msg(a->outstr, obj, a->txt, NULL);
         return false;
 }
 
 static void
-cb_file_chooser_button(GtkBuildable *obj, const char *tag)
+cb_file_chooser_button(GtkBuildable *obj, struct info *a)
 {
-        send_msg(obj, tag, gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(obj)), NULL);
+        send_msg(a->outstr, obj, a->txt,
+                 gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(obj)), NULL);
 }
 
 static void
-cb_font_button(GtkBuildable *obj, const char *tag)
+cb_font_button(GtkBuildable *obj, struct info *a)
 {
-        send_msg(obj, tag, gtk_font_button_get_font_name(GTK_FONT_BUTTON(obj)), NULL);
+        send_msg(a->outstr, obj, a->txt,
+                 gtk_font_button_get_font_name(GTK_FONT_BUTTON(obj)), NULL);
 }
 
 static void
-cb_menu_item(GtkBuildable *obj, const char *tag)
+cb_menu_item(GtkBuildable *obj, struct info *a)
 {
-        send_msg(obj, tag, gtk_menu_item_get_label(GTK_MENU_ITEM(obj)), NULL);
+        send_msg(a->outstr, obj, a->txt,
+                 gtk_menu_item_get_label(GTK_MENU_ITEM(obj)), NULL);
 }
 
 static void
-cb_range(GtkBuildable *obj, const char *tag)
+cb_range(GtkBuildable *obj, struct info *a)
 {
         char str[BUFLEN], *lc = lc_numeric();
 
         snprintf(str, BUFLEN, "%f", gtk_range_get_value(GTK_RANGE(obj)));
-        send_msg(obj, tag, str, NULL);
+        send_msg(a->outstr, obj, a->txt, str, NULL);
         lc_numeric_free(lc);
 }
 
@@ -769,12 +798,14 @@ cb_range(GtkBuildable *obj, const char *tag)
  * Callback that sends user's selection from a file dialog
  */
 static void
-cb_send_file_chooser_dialog_selection(gpointer user_data)
+cb_send_file_chooser_dialog_selection(struct info *a)
 {
-        send_msg(user_data, "file",
-                 gtk_file_chooser_get_filename(user_data), NULL);
-        send_msg(user_data, "folder",
-                 gtk_file_chooser_get_current_folder(user_data), NULL);
+        send_msg(a->outstr, GTK_BUILDABLE(a->obj), "file",
+                 gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(a->obj)),
+                 NULL);
+        send_msg(a->outstr, GTK_BUILDABLE(a->obj), "folder",
+                 gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(a->obj)),
+                 NULL);
 }
 
 /*
@@ -782,12 +813,14 @@ cb_send_file_chooser_dialog_selection(gpointer user_data)
  * passed in user_data
  */
 static void
-cb_send_text(GtkBuildable *obj, gpointer user_data)
+cb_send_text(GtkBuildable *obj, struct info *ar)
 {
         GtkTextIter a, b;
 
-        gtk_text_buffer_get_bounds(user_data, &a, &b);
-        send_msg(obj, "text", gtk_text_buffer_get_text(user_data, &a, &b, TRUE), NULL);
+        gtk_text_buffer_get_bounds(GTK_TEXT_BUFFER(ar->obj), &a, &b);
+        send_msg(ar->outstr, obj, "text",
+                 gtk_text_buffer_get_text(GTK_TEXT_BUFFER(ar->obj), &a, &b, TRUE),
+                 NULL);
 }
 
 /*
@@ -795,59 +828,63 @@ cb_send_text(GtkBuildable *obj, gpointer user_data)
  * buffer which was passed in user_data
  */
 static void
-cb_send_text_selection(GtkBuildable *obj, gpointer user_data)
+cb_send_text_selection(GtkBuildable *obj, struct info *ar)
 {
         GtkTextIter a, b;
 
-        gtk_text_buffer_get_selection_bounds(user_data, &a, &b);
-        send_msg(obj, "text", gtk_text_buffer_get_text(user_data, &a, &b, TRUE), NULL);
+        gtk_text_buffer_get_selection_bounds(GTK_TEXT_BUFFER(ar->obj), &a, &b);
+        send_msg(ar->outstr, obj, "text",
+                 gtk_text_buffer_get_text(GTK_TEXT_BUFFER(ar->obj), &a, &b, TRUE),
+                 NULL);
 }
 
 /*
  * Callback that only sends "name:tag" and returns true
  */
 static bool
-cb_simple(GtkBuildable *obj, const char *tag)
+cb_simple(GtkBuildable *obj, struct info *a)
 {
-        send_msg(obj, tag, NULL);
+        send_msg(a->outstr, obj, a->txt, NULL);
         return true;
 }
 
 static void
-cb_spin_button(GtkBuildable *obj, const char *tag)
+cb_spin_button(GtkBuildable *obj, struct info *a)
 {
         char str[BUFLEN], *lc = lc_numeric();
 
         snprintf(str, BUFLEN, "%f", gtk_spin_button_get_value(GTK_SPIN_BUTTON(obj)));
-        send_msg(obj, tag, str, NULL);
+        send_msg(a->outstr, obj, a->txt, str, NULL);
         lc_numeric_free(lc);
 }
 
 static void
-cb_switch(GtkBuildable *obj, void *pspec, void *user_data)
+cb_switch(GtkBuildable *obj, void *pspec, struct info *a)
 {
         (void) pspec;
-        (void) user_data;
-        send_msg(obj, gtk_switch_get_active(GTK_SWITCH(obj)) ? "1" : "0", NULL);
+        send_msg(a->outstr, obj,
+                 gtk_switch_get_active(GTK_SWITCH(obj)) ? "1" : "0",
+                 NULL);
 }
 
 static void
-cb_toggle_button(GtkBuildable *obj, const char *tag)
+cb_toggle_button(GtkBuildable *obj, struct info *a)
 {
-        (void) tag;
-        send_msg(obj, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(obj)) ? "1" : "0", NULL);
+        send_msg(a->outstr, obj,
+                 gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(obj)) ? "1" : "0",
+                 NULL);
 }
 
 static void
-cb_tree_selection(GtkBuildable *obj, const char *tag)
+cb_tree_selection(GtkBuildable *obj, struct info *a)
 {
         GtkTreeSelection *sel = GTK_TREE_SELECTION(obj);
         GtkTreeView *view = gtk_tree_selection_get_tree_view(sel);
 
-
-        send_msg(GTK_BUILDABLE(view), tag, NULL);
+        a->obj = G_OBJECT(view);
+        send_msg(a->outstr, GTK_BUILDABLE(view), a->txt, NULL);
         gtk_tree_selection_selected_foreach(
-                sel, (GtkTreeSelectionForeachFunc) send_tree_row_msg, view);
+                sel, (GtkTreeSelectionForeachFunc) send_tree_row_msg, a);
 }
 
 
@@ -1182,9 +1219,10 @@ cb_draw(GtkWidget *widget, cairo_t *cr, gpointer data)
  */
 
 static void
-update_button(GObject *obj, const char *action,
-              const char *data, const char *whole_msg, GType type)
+update_button(GObject *obj, const char *action, const char *data,
+              const char *whole_msg, GType type, struct info *ar)
 {
+        (void) ar;
         if (eql(action, "set_label"))
                 gtk_button_set_label(GTK_BUTTON(obj), data);
         else
@@ -1192,13 +1230,14 @@ update_button(GObject *obj, const char *action,
 }
 
 static void
-update_calendar(GObject *obj, const char *action,
-                const char *data, const char *whole_msg, GType type)
+update_calendar(GObject *obj, const char *action, const char *data,
+                const char *whole_msg, GType type, struct info *ar)
 {
         GtkCalendar *calendar = GTK_CALENDAR(obj);
         char dummy;
         int year = 0, month = 0, day = 0;
 
+        (void) ar;
         if (eql(action, "select_date") &&
             sscanf(data, "%d-%d-%d %c", &year, &month, &day, &dummy) == 3) {
                 if (month > -1 && month <= 11 && day > 0 && day <= 31) {
@@ -1220,16 +1259,17 @@ update_calendar(GObject *obj, const char *action,
 
 /*
  * Common actions for various kinds of window.  Return false if
- * command is ignored
+ * command is ignored.  Runs inside gtk_main().
  */
 static bool
-update_class_window(GObject *obj, const char *action,
-                    const char *data, const char *whole_msg, GType type)
+update_class_window(GObject *obj, const char *action, const char *data,
+                    const char *whole_msg, GType type, struct info *ar)
 {
         GtkWindow *window = GTK_WINDOW(obj);
         char dummy;
         int x, y;
 
+        (void) ar;
         (void) type;
         (void) whole_msg;
         if (eql(action, "set_title"))
@@ -1253,11 +1293,12 @@ update_class_window(GObject *obj, const char *action,
 }
 
 static void
-update_color_button(GObject *obj, const char *action,
-                    const char *data, const char *whole_msg, GType type)
+update_color_button(GObject *obj, const char *action, const char *data,
+                    const char *whole_msg, GType type, struct info *ar)
 {
         GdkRGBA color;
 
+        (void) ar;
         if (eql(action, "set_color")) {
                 gdk_rgba_parse(&color, data);
                 gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(obj), &color);
@@ -1266,14 +1307,15 @@ update_color_button(GObject *obj, const char *action,
 }
 
 static void
-update_combo_box_text(GObject *obj, const char *action,
-                      const char *data, const char *whole_msg, GType type)
+update_combo_box_text(GObject *obj, const char *action, const char *data,
+                      const char *whole_msg, GType type, struct info *ar)
 {
         GtkComboBoxText *combobox = GTK_COMBO_BOX_TEXT(obj);
         char data1[strlen(data) + 1];
         char dummy;
         int val;
 
+        (void) ar;
         strcpy(data1, data);
         if (eql(action, "prepend_text"))
                 gtk_combo_box_text_prepend_text(combobox, data1);
@@ -1292,9 +1334,9 @@ update_combo_box_text(GObject *obj, const char *action,
 }
 
 /*
- * Maintaining a list of drawing operations.  It is the responsibility
- * of cb_draw() to actually draw them.  update_drawing_area() needs a
- * few helper functions.
+ * update_drawing_area(), which runs inside gtk_main(), maintains a
+ * list of drawing operations.  It needs a few helper functions.  It
+ * is the responsibility of cb_draw() to actually execute the list.
  */
 
 enum draw_op_stat {
@@ -1801,11 +1843,12 @@ save_drawing(GtkWidget *widget, const char *fn)
 }
 
 static void
-update_drawing_area(GObject *obj, const char *action,
-                    const char *data, const char *whole_msg, GType type)
+update_drawing_area(GObject *obj, const char *action, const char *data,
+                    const char *whole_msg, GType type, struct info *ar)
 {
         enum draw_op_stat dost;
 
+        (void) ar;
         if (eql(action, "remove"))
                 dost = rem_draw_op(obj, data);
         else if (eql(action, "save"))
@@ -1830,11 +1873,12 @@ update_drawing_area(GObject *obj, const char *action,
 }
 
 static void
-update_entry(GObject *obj, const char *action,
-             const char *data, const char *whole_msg, GType type)
+update_entry(GObject *obj, const char *action, const char *data,
+             const char *whole_msg, GType type, struct info *ar)
 {
         GtkEntry *entry = GTK_ENTRY(obj);
 
+        (void) ar;
         if (eql(action, "set_text"))
                 gtk_entry_set_text(entry, data);
         else if (eql(action, "set_placeholder_text"))
@@ -1844,13 +1888,14 @@ update_entry(GObject *obj, const char *action,
 }
 
 static void
-update_expander(GObject *obj, const char *action,
-                const char *data, const char *whole_msg, GType type)
+update_expander(GObject *obj, const char *action, const char *data,
+                const char *whole_msg, GType type, struct info *ar)
 {
         GtkExpander *expander = GTK_EXPANDER(obj);
         char dummy;
         unsigned int val;
 
+        (void) ar;
         if (eql(action, "set_expanded") &&
             sscanf(data, "%u %c", &val, &dummy) == 1 && val < 2)
                 gtk_expander_set_expanded(expander, val);
@@ -1861,9 +1906,10 @@ update_expander(GObject *obj, const char *action,
 }
 
 static void
-update_file_chooser_button(GObject *obj, const char *action,
-                           const char *data, const char *whole_msg, GType type)
+update_file_chooser_button(GObject *obj, const char *action, const char *data,
+                           const char *whole_msg, GType type, struct info *ar)
 {
+        (void) ar;
         if (eql(action, "set_filename"))
                 gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(obj), data);
         else
@@ -1871,26 +1917,28 @@ update_file_chooser_button(GObject *obj, const char *action,
 }
 
 static void
-update_file_chooser_dialog(GObject *obj, const char *action,
-                           const char *data, const char *whole_msg, GType type)
+update_file_chooser_dialog(GObject *obj, const char *action, const char *data,
+                           const char *whole_msg, GType type, struct info *ar)
 {
         GtkFileChooser *chooser = GTK_FILE_CHOOSER(obj);
 
+        (void) ar;
         if (eql(action, "set_filename"))
                 gtk_file_chooser_set_filename(chooser, data);
         else if (eql(action, "set_current_name"))
                 gtk_file_chooser_set_current_name(chooser, data);
-        else if (update_class_window(obj, action, data, whole_msg, type));
+        else if (update_class_window(obj, action, data, whole_msg, type, NULL));
         else
                 ign_cmd(type, whole_msg);
 }
 
 static void
-update_focus(GObject *obj, const char *action,
-             const char *data, const char *whole_msg, GType type)
+update_focus(GObject *obj, const char *action, const char *data,
+             const char *whole_msg, GType type, struct info *ar)
 {
         char dummy;
 
+        (void) ar;
         (void) action;
         (void) data;
         if (sscanf(data, " %c", &dummy) < 1 &&
@@ -1901,11 +1949,12 @@ update_focus(GObject *obj, const char *action,
 }
 
 static void
-update_font_button(GObject *obj, const char *action,
-                   const char *data, const char *whole_msg, GType type)
+update_font_button(GObject *obj, const char *action, const char *data,
+                   const char *whole_msg, GType type, struct info *ar)
 {
         GtkFontButton *font_button = GTK_FONT_BUTTON(obj);
 
+        (void) ar;
         if (eql(action, "set_font_name"))
                 gtk_font_button_set_font_name(font_button, data);
         else
@@ -1913,9 +1962,10 @@ update_font_button(GObject *obj, const char *action,
 }
 
 static void
-update_frame(GObject *obj, const char *action,
-             const char *data, const char *whole_msg, GType type)
+update_frame(GObject *obj, const char *action, const char *data,
+             const char *whole_msg, GType type, struct info *ar)
 {
+        (void) ar;
         if (eql(action, "set_label"))
                 gtk_frame_set_label(GTK_FRAME(obj), data);
         else
@@ -1923,12 +1973,13 @@ update_frame(GObject *obj, const char *action,
 }
 
 static void
-update_image(GObject *obj, const char *action,
-             const char *data, const char *whole_msg, GType type)
+update_image(GObject *obj, const char *action, const char *data,
+             const char *whole_msg, GType type, struct info *ar)
 {
         GtkIconSize size;
         GtkImage *image = GTK_IMAGE(obj);
 
+        (void) ar;
         gtk_image_get_icon_name(image, NULL, &size);
         if (eql(action, "set_from_file"))
                 gtk_image_set_from_file(image, data);
@@ -1939,9 +1990,10 @@ update_image(GObject *obj, const char *action,
 }
 
 static void
-update_label(GObject *obj, const char *action,
-             const char *data, const char *whole_msg, GType type)
+update_label(GObject *obj, const char *action, const char *data,
+             const char *whole_msg, GType type, struct info *ar)
 {
+        (void) ar;
         if (eql(action, "set_text"))
                 gtk_label_set_text(GTK_LABEL(obj), data);
         else
@@ -1949,12 +2001,13 @@ update_label(GObject *obj, const char *action,
 }
 
 static void
-update_notebook(GObject *obj, const char *action,
-                const char *data, const char *whole_msg, GType type)
+update_notebook(GObject *obj, const char *action, const char *data,
+                const char *whole_msg, GType type, struct info *ar)
 {
         char dummy;
         int val, n_pages = gtk_notebook_get_n_pages(GTK_NOTEBOOK(obj));
 
+        (void) ar;
         if (eql(action, "set_current_page") &&
             sscanf(data, "%d %c", &val, &dummy) == 1 &&
             val >= 0 && val < n_pages)
@@ -1964,19 +2017,20 @@ update_notebook(GObject *obj, const char *action,
 }
 
 static void
-update_nothing(GObject *obj, const char *action,
-               const char *data, const char *whole_msg, GType type)
+update_nothing(GObject *obj, const char *action, const char *data,
+               const char *whole_msg, GType type, struct info *ar)
 {
-        (void) obj;
         (void) action;
+        (void) ar;
         (void) data;
-        (void) whole_msg;
+        (void) obj;
         (void) type;
+        (void) whole_msg;
 }
 
 static void
-update_print_dialog(GObject *obj, const char *action,
-                    const char *data, const char *whole_msg, GType type)
+update_print_dialog(GObject *obj, const char *action, const char *data,
+                    const char *whole_msg, GType type, struct info *ar)
 {
         GtkPageSetup *page_setup;
         GtkPrintJob *job;
@@ -1985,6 +2039,7 @@ update_print_dialog(GObject *obj, const char *action,
         GtkPrinter *printer;
         gint response_id;
 
+        (void) ar;
         if (eql(action, "print")) {
                 response_id = gtk_dialog_run(GTK_DIALOG(dialog));
                 switch (response_id) {
@@ -2014,13 +2069,14 @@ update_print_dialog(GObject *obj, const char *action,
 }
 
 static void
-update_progress_bar(GObject *obj, const char *action,
-                    const char *data, const char *whole_msg, GType type)
+update_progress_bar(GObject *obj, const char *action, const char *data,
+                    const char *whole_msg, GType type, struct info *ar)
 {
         GtkProgressBar *progressbar = GTK_PROGRESS_BAR(obj);
         char dummy;
         double frac;
 
+        (void) ar;
         if (eql(action, "set_text"))
                 gtk_progress_bar_set_text(progressbar, *data == '\0' ? NULL : data);
         else if (eql(action, "set_fraction") &&
@@ -2031,13 +2087,14 @@ update_progress_bar(GObject *obj, const char *action,
 }
 
 static void
-update_scale(GObject *obj, const char *action,
-             const char *data, const char *whole_msg, GType type)
+update_scale(GObject *obj, const char *action, const char *data,
+             const char *whole_msg, GType type, struct info *ar)
 {
         GtkRange *range = GTK_RANGE(obj);
         char dummy;
         double val1, val2;
 
+        (void) ar;
         if (eql(action, "set_value") && sscanf(data, "%lf %c", &val1, &dummy) == 1)
                 gtk_range_set_value(range, val1);
         else if (eql(action, "set_fill_level") &&
@@ -2058,8 +2115,8 @@ update_scale(GObject *obj, const char *action,
 }
 
 static void
-update_scrolled_window(GObject *obj, const char *action,
-                       const char *data, const char *whole_msg, GType type)
+update_scrolled_window(GObject *obj, const char *action, const char *data,
+                       const char *whole_msg, GType type, struct info *ar)
 {
         GtkScrolledWindow *window = GTK_SCROLLED_WINDOW(obj);
         GtkAdjustment *hadj = gtk_scrolled_window_get_hadjustment(window);
@@ -2067,6 +2124,7 @@ update_scrolled_window(GObject *obj, const char *action,
         char dummy;
         double d0, d1;
 
+        (void) ar;
         if (eql(action, "hscroll") && sscanf(data, "%lf %c", &d0, &dummy) == 1)
                 gtk_adjustment_set_value(hadj, d0);
         else if (eql(action, "vscroll") && sscanf(data, "%lf %c", &d0, &dummy) == 1)
@@ -2082,15 +2140,16 @@ update_scrolled_window(GObject *obj, const char *action,
 }
 
 static void
-update_sensitivity(GObject *obj, const char *action,
-                   const char *data, const char *whole_msg, GType type)
+update_sensitivity(GObject *obj, const char *action, const char *data,
+                   const char *whole_msg, GType type, struct info *ar)
 {
         char dummy;
         unsigned int val;
 
         (void) action;
-        (void) whole_msg;
+        (void) ar;
         (void) type;
+        (void) whole_msg;
         if (sscanf(data, "%u %c", &val, &dummy) == 1 && val < 2)
                 gtk_widget_set_sensitive(GTK_WIDGET(obj), val);
         else
@@ -2098,15 +2157,16 @@ update_sensitivity(GObject *obj, const char *action,
 }
 
 static void
-update_size_request(GObject *obj, const char *action,
-                    const char *data, const char *whole_msg, GType type)
+update_size_request(GObject *obj, const char *action, const char *data,
+                    const char *whole_msg, GType type, struct info *ar)
 {
         char dummy;
         int x, y;
 
         (void) action;
-        (void) whole_msg;
+        (void) ar;
         (void) type;
+        (void) whole_msg;
         if (sscanf(data, "%d %d %c", &x, &y, &dummy) == 2)
                 gtk_widget_set_size_request(GTK_WIDGET(obj), x, y);
         else if (sscanf(data, " %c", &dummy) < 1)
@@ -2116,8 +2176,8 @@ update_size_request(GObject *obj, const char *action,
 }
 
 static void
-update_socket(GObject *obj, const char *action,
-              const char *data, const char *whole_msg, GType type)
+update_socket(GObject *obj, const char *action, const char *data,
+              const char *whole_msg, GType type, struct info *ar)
 {
         GtkSocket *socket = GTK_SOCKET(obj);
         Window id;
@@ -2127,19 +2187,20 @@ update_socket(GObject *obj, const char *action,
         if (eql(action, "id") && sscanf(data, " %c", &dummy) < 1) {
                 id = gtk_socket_get_id(socket);
                 snprintf(str, BUFLEN, "%lu", id);
-                send_msg(GTK_BUILDABLE(socket), "id", str, NULL);
+                send_msg(ar->outstr, GTK_BUILDABLE(socket), "id", str, NULL);
         } else
                 ign_cmd(type, whole_msg);
 }
 
 static void
-update_spin_button(GObject *obj, const char *action,
-                   const char *data, const char *whole_msg, GType type)
+update_spin_button(GObject *obj, const char *action, const char *data,
+                   const char *whole_msg, GType type, struct info *ar)
 {
         GtkSpinButton *spinbutton = GTK_SPIN_BUTTON(obj);
         char dummy;
         double val1, val2;
 
+        (void) ar;
         if (eql(action, "set_text") && /* TODO: rename to "set_value" */
             sscanf(data, "%lf %c", &val1, &dummy) == 1)
                 gtk_spin_button_set_value(spinbutton, val1);
@@ -2154,12 +2215,13 @@ update_spin_button(GObject *obj, const char *action,
 }
 
 static void
-update_spinner(GObject *obj, const char *action,
-               const char *data, const char *whole_msg, GType type)
+update_spinner(GObject *obj, const char *action, const char *data,
+               const char *whole_msg, GType type, struct info *ar)
 {
         GtkSpinner *spinner = GTK_SPINNER(obj);
         char dummy;
 
+        (void) ar;
         (void) data;
         if (eql(action, "start") && sscanf(data, " %c", &dummy) < 1)
                 gtk_spinner_start(spinner);
@@ -2170,14 +2232,15 @@ update_spinner(GObject *obj, const char *action,
 }
 
 static void
-update_statusbar(GObject *obj, const char *action,
-                 const char *data, const char *whole_msg, GType type)
+update_statusbar(GObject *obj, const char *action, const char *data,
+                 const char *whole_msg, GType type, struct info *ar)
 {
         GtkStatusbar *statusbar = GTK_STATUSBAR(obj);
         char *ctx_msg, dummy;
         const char *msg;
         int ctx_len, t;
 
+        (void) ar;
         /* TODO: remove "push", "pop", "remove_all"; rename "push_id" to "push", etc. */
         if ((ctx_msg = malloc(strlen(data) + 1)) == NULL)
                 OOM_ABORT;
@@ -2209,12 +2272,13 @@ update_statusbar(GObject *obj, const char *action,
 }
 
 static void
-update_switch(GObject *obj, const char *action,
-              const char *data, const char *whole_msg, GType type)
+update_switch(GObject *obj, const char *action, const char *data,
+              const char *whole_msg, GType type, struct info *ar)
 {
         char dummy;
         unsigned int val;
 
+        (void) ar;
         if (eql(action, "set_active") &&
             sscanf(data, "%u %c", &val, &dummy) == 1 && val < 2)
                 gtk_switch_set_active(GTK_SWITCH(obj), val);
@@ -2223,15 +2287,17 @@ update_switch(GObject *obj, const char *action,
 }
 
 static void
-update_text_view(GObject *obj, const char *action,
-                 const char *data, const char *whole_msg, GType type)
+update_text_view(GObject *obj, const char *action, const char *data,
+                 const char *whole_msg, GType type, struct info *ar)
 {
+        FILE *sv;
         GtkTextView *view = GTK_TEXT_VIEW(obj);
         GtkTextBuffer *textbuf = gtk_text_view_get_buffer(view);
         GtkTextIter a, b;
         char dummy;
         int val;
 
+        (void) ar;
         if (eql(action, "set_text"))
                 gtk_text_buffer_set_text(textbuf, data, -1);
         else if (eql(action, "delete") && sscanf(data, " %c", &dummy) < 1) {
@@ -2255,22 +2321,23 @@ update_text_view(GObject *obj, const char *action,
                 gtk_text_view_scroll_to_mark(view, gtk_text_buffer_get_insert(textbuf),
                                              0., 0, 0., 0.);
         else if (eql(action, "save") && data != NULL &&
-                 (save = fopen(data, "w")) != NULL) {
+                 (sv = fopen(data, "w")) != NULL) {
                 gtk_text_buffer_get_bounds(textbuf, &a, &b);
-                save_msg(GTK_BUILDABLE(view), "insert_at_cursor",
+                send_msg(sv, GTK_BUILDABLE(view), "insert_at_cursor",
                          gtk_text_buffer_get_text(textbuf, &a, &b, TRUE), NULL);
-                fclose(save);
+                fclose(sv);
         } else
                 ign_cmd(type, whole_msg);
 }
 
 static void
-update_toggle_button(GObject *obj, const char *action,
-                     const char *data, const char *whole_msg, GType type)
+update_toggle_button(GObject *obj, const char *action, const char *data,
+                     const char *whole_msg, GType type, struct info *ar)
 {
         char dummy;
         unsigned int val;
 
+        (void) ar;
         if (eql(action, "set_label"))
                 gtk_button_set_label(GTK_BUTTON(obj), data);
         else if (eql(action, "set_active") &&
@@ -2281,17 +2348,19 @@ update_toggle_button(GObject *obj, const char *action,
 }
 
 static void
-update_tooltip_text(GObject *obj, const char *action,
-                    const char *data, const char *whole_msg, GType type)
+update_tooltip_text(GObject *obj, const char *action, const char *data,
+                    const char *whole_msg, GType type, struct info *ar)
 {
         (void) action;
-        (void) whole_msg;
+        (void) ar;
         (void) type;
+        (void) whole_msg;
         gtk_widget_set_tooltip_text(GTK_WIDGET(obj), data);
 }
 
 /*
- * update_tree_view() needs a few helper functions
+ * update_tree_view(), which runs inside gtk_main(), needs a few
+ * helper functions
  */
 
 /*
@@ -2476,8 +2545,8 @@ tree_view_set_cursor(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *co
 }
 
 static void
-update_tree_view(GObject *obj, const char *action,
-                 const char *data, const char *whole_msg, GType type)
+update_tree_view(GObject *obj, const char *action, const char *data,
+                 const char *whole_msg, GType type, struct info *ar)
 {
         GtkTreeView *view = GTK_TREE_VIEW(obj);
         GtkTreeIter iter0, iter1;
@@ -2486,7 +2555,9 @@ update_tree_view(GObject *obj, const char *action,
         bool iter0_valid, iter1_valid;
         char *tokens, *arg0, *arg1, *arg2;
         int col = -1;           /* invalid column number */
+        struct info args;
 
+        (void) ar;
         if (!GTK_IS_LIST_STORE(model) && !GTK_IS_TREE_STORE(model))
         {
                 fprintf(stderr, "missing model/");
@@ -2557,9 +2628,12 @@ update_tree_view(GObject *obj, const char *action,
                 gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(view));
                 tree_model_clear(model);
         } else if (eql(action, "save") && arg0 != NULL &&
-                   (save = fopen(arg0, "w")) != NULL) {
-                gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc) save_tree_row_msg, view);
-                fclose(save);
+                   (args.outstr = fopen(arg0, "w")) != NULL) {
+                args.obj = obj;
+                gtk_tree_model_foreach(model,
+                                       (GtkTreeModelForeachFunc) save_tree_row_msg,
+                                       &args);
+                fclose(args.outstr);
         } else
                 ign_cmd(type, whole_msg);
         free(tokens);
@@ -2567,15 +2641,16 @@ update_tree_view(GObject *obj, const char *action,
 }
 
 static void
-update_visibility(GObject *obj, const char *action,
-                  const char *data, const char *whole_msg, GType type)
+update_visibility(GObject *obj, const char *action, const char *data,
+                  const char *whole_msg, GType type, struct info *ar)
 {
         char dummy;
         unsigned int val;
 
         (void) action;
-        (void) whole_msg;
+        (void) ar;
         (void) type;
+        (void) whole_msg;
         if (sscanf(data, "%u %c", &val, &dummy) == 1 && val < 2)
                 gtk_widget_set_visible(GTK_WIDGET(obj), val);
         else
@@ -2583,11 +2658,11 @@ update_visibility(GObject *obj, const char *action,
 }
 
 /*
- * Change the style of the widget passed
+ * Change the style of the widget passed.  Runs inside gtk_main().
  */
 static void
-update_widget_style(GObject *obj, const char *name,
-                    const char *data, const char *whole_msg, GType type)
+update_widget_style(GObject *obj, const char *name, const char *data,
+                    const char *whole_msg, GType type, struct info *ar)
 {
         GtkStyleContext *context;
         GtkStyleProvider *style_provider;
@@ -2595,9 +2670,10 @@ update_widget_style(GObject *obj, const char *name,
         const char *prefix = "* {", *suffix = "}";
         size_t sz;
 
+        (void) ar;
         (void) name;
-        (void) whole_msg;
         (void) type;
+        (void) whole_msg;
         style_provider = g_object_get_data(obj, "style_provider");
         sz = strlen(prefix) + strlen(suffix) + strlen(data) + 1;
         context = gtk_widget_get_style_context(GTK_WIDGET(obj));
@@ -2615,19 +2691,20 @@ update_widget_style(GObject *obj, const char *name,
 }
 
 static void
-update_window(GObject *obj, const char *action,
-              const char *data, const char *whole_msg, GType type)
+update_window(GObject *obj, const char *action, const char *data,
+              const char *whole_msg, GType type, struct info *ar)
 {
-        if (!update_class_window(obj, action, data, whole_msg, type))
+        (void) ar;
+        if (!update_class_window(obj, action, data, whole_msg, type, NULL))
                 ign_cmd(type, whole_msg);
 }
 
 /*
- * Simulate user activity on various widgets
+ * Simulate user activity on various widgets.  Runs inside gtk_main().
  */
 static void
-fake_ui_activity(GObject *obj, const char *action,
-                 const char *data, const char *whole_msg, GType type)
+fake_ui_activity(GObject *obj, const char *action, const char *data,
+                 const char *whole_msg, GType type, struct info *ar)
 {
         char dummy;
 
@@ -2635,34 +2712,40 @@ fake_ui_activity(GObject *obj, const char *action,
         (void) data;
         if (!GTK_IS_WIDGET(obj) || sscanf(data, " %c", &dummy) > 0)
                 ign_cmd(type, whole_msg);
-        else if (GTK_IS_SPIN_BUTTON(obj))
-                cb_spin_button(GTK_BUILDABLE(obj), "text"); /* TODO: rename to "value" */
-        else if (GTK_IS_SCALE(obj))
-                cb_range(GTK_BUILDABLE(obj), "value");
-        else if (GTK_IS_ENTRY(obj))
-                cb_editable(GTK_BUILDABLE(obj), "text");
-        else if (GTK_IS_CALENDAR(obj))
-                cb_calendar(GTK_BUILDABLE(obj), "clicked");
-        else if (GTK_IS_FILE_CHOOSER_BUTTON(obj))
-                cb_file_chooser_button(GTK_BUILDABLE(obj), "file");
-        else if (!gtk_widget_activate(GTK_WIDGET(obj)))
+        else if (GTK_IS_SPIN_BUTTON(obj)) {
+                ar->txt = "text";
+                cb_spin_button(GTK_BUILDABLE(obj), ar); /* TODO: rename to "value" */
+        } else if (GTK_IS_SCALE(obj)) {
+                ar->txt = "value";
+                cb_range(GTK_BUILDABLE(obj), ar);
+        } else if (GTK_IS_ENTRY(obj)) {
+                ar->txt = "text";
+                cb_editable(GTK_BUILDABLE(obj), ar);
+        } else if (GTK_IS_CALENDAR(obj)) {
+                ar->txt = "clicked";
+                cb_calendar(GTK_BUILDABLE(obj), ar);
+        } else if (GTK_IS_FILE_CHOOSER_BUTTON(obj)) {
+                ar->txt = "file";
+                cb_file_chooser_button(GTK_BUILDABLE(obj), ar);
+        } else if (!gtk_widget_activate(GTK_WIDGET(obj)))
                 ign_cmd(type, whole_msg);
 }
 
 /*
- * The final UI update
+ * The final UI update.  Runs inside gtk_main().
  */
 static void
-main_quit(GObject *obj, const char *action,
-          const char *data, const char *whole_msg, GType type)
+main_quit(GObject *obj, const char *action, const char *data,
+          const char *whole_msg, GType type, struct info *ar)
 {
         char dummy;
 
-        (void) obj;
         (void) action;
+        (void) ar;
         (void) data;
-        (void) whole_msg;
+        (void) obj;
         (void) type;
+        (void) whole_msg;
         if (sscanf(data, " %c", &dummy) < 1)
                 gtk_main_quit();
         else
@@ -2670,15 +2753,16 @@ main_quit(GObject *obj, const char *action,
 }
 
 /*
- * Don't update anything; just complain
+ * Don't update anything; just complain from inside gtk_main()
  */
 static void
-complain(GObject *obj, const char *action,
-         const char *data, const char *whole_msg, GType type)
+complain(GObject *obj, const char *action, const char *data,
+         const char *whole_msg, GType type, struct info *ar)
 {
-        (void) obj;
         (void) action;
+        (void) ar;
         (void) data;
+        (void) obj;
         ign_cmd(type, whole_msg);
 }
 
@@ -2686,26 +2770,27 @@ complain(GObject *obj, const char *action,
  * Data to be passed to and from the GTK main loop
  */
 struct ui_data {
-        void (*fn)(GObject *, const char *action,
-                   const char *data, const char *msg, GType type);
+        void (*fn)(GObject *, const char *action, const char *data,
+                   const char *msg, GType type, struct info *args);
         GObject *obj;
         char *action;
         char *data;
         char *msg;
         char *msg_tokens;
         GType type;
+        struct info *args;
 };
 
 /*
  * Parse command pointed to by ud, and act on ui accordingly.  Runs
- * once per command inside gtk_main_loop().
+ * once per command inside gtk_main().
  */
 static gboolean
 update_ui(struct ui_data *ud)
 {
         char *lc = lc_numeric();
 
-        (ud->fn)(ud->obj, ud->action, ud->data, ud->msg, ud->type);
+        (ud->fn)(ud->obj, ud->action, ud->data, ud->msg, ud->type, ud->args);
         free(ud->msg_tokens);
         free(ud->msg);
         free(ud);
@@ -2742,23 +2827,22 @@ remember_loading_file(char *filename)
 
 /*
  * Read lines from stream cmd and perform appropriate actions on the
- * GUI
+ * GUI.  Runs inside receiver thread.
  */
 static void *
-digest_msg(FILE *cmd)
+digest_msg(struct info *args)
 {
-        FILE *load;             /* restoring user data */
-        char *name;
         static int recursion = -1; /* > 0 means this is a recursive call */
 
         recursion++;
         for (;;) {
-                struct ui_data *ud;
-                char first_char = '\0';
+                FILE *cmd = args->instr;
+                struct ui_data *ud = NULL;
+                char first_char = '\0', *name;
                 size_t msg_size = 32;
                 int name_start = 0, name_end = 0;
                 int action_start = 0, action_end = 0;
-                int data_start;
+                int data_start = 0;
 
                 if (feof(cmd))
                         break;
@@ -2766,14 +2850,14 @@ digest_msg(FILE *cmd)
                         OOM_ABORT;
                 if ((ud->msg = malloc(msg_size)) == NULL)
                         OOM_ABORT;
+                ud->args = args;
                 ud->type = G_TYPE_INVALID;
                 pthread_testcancel();
                 if (recursion == 0)
-                        log_msg(NULL);
-                read_buf(cmd, &ud->msg, &msg_size);
+                        log_msg(args->logstr, NULL);
+                data_start = read_buf(cmd, &ud->msg, &msg_size);
                 if (recursion == 0)
-                        log_msg(ud->msg);
-                data_start = strlen(ud->msg);
+                        log_msg(args->logstr, ud->msg);
                 if ((ud->msg_tokens = malloc(strlen(ud->msg) + 1)) == NULL)
                         OOM_ABORT;
                 strcpy(ud->msg_tokens, ud->msg);
@@ -2794,15 +2878,19 @@ digest_msg(FILE *cmd)
                         goto exec;
                 }
                 if (eql(ud->action, "load") && strlen(ud->data) > 0 &&
-                    (load = fopen(ud->data, "r")) != NULL &&
                     remember_loading_file(ud->data)) {
-                        digest_msg(load);
-                        fclose(load);
+                        struct info a = *args;
+
+                        if ((a.instr = fopen(ud->data, "r")) != NULL) {
+                                digest_msg(&a);
+                                fclose(a.instr);
+                                ud->fn = update_nothing;
+                        } else
+                                ud->fn = complain;
                         remember_loading_file(NULL);
-                        ud->fn = update_nothing;
                         goto exec;
                 }
-                if ((ud->obj = (gtk_builder_get_object(builder, name))) == NULL) {
+                if ((ud->obj = (gtk_builder_get_object(args->builder, name))) == NULL) {
                         ud->fn = complain;
                         goto exec;
                 }
@@ -2903,8 +2991,9 @@ digest_msg(FILE *cmd)
  * number are taken directly from the XML .ui file.
  */
 static bool
-tree_view_column_get_renderer_column(const char *ui_file, GtkTreeViewColumn *t_col,
-                                     int n, GtkCellRenderer **renderer)
+tree_view_column_get_renderer_column(GtkBuilder *builder, const char *ui_file,
+                                     GtkTreeViewColumn *t_col, int n,
+                                     GtkCellRenderer **renderer)
 {
         bool r = false;
         char *xpath_base1 = "//object[@class=\"GtkTreeViewColumn\" and @id=\"";
@@ -2984,42 +3073,40 @@ tree_view_column_get_renderer_column(const char *ui_file, GtkTreeViewColumn *t_c
  */
 static void
 cb_tree_model_edit(GtkCellRenderer *renderer, const gchar *path_s,
-                   const gchar *new_text, gpointer view)
+                   const gchar *new_text, struct info *args)
 {
         GtkTreeIter iter;
-        GtkTreeModel *model = gtk_tree_view_get_model(view);
         int col = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(renderer),
                                                     "col_number"));
 
-        gtk_tree_model_get_iter_from_string(model, &iter, path_s);
-        set_tree_view_cell(model, &iter, path_s, col,
+        gtk_tree_model_get_iter_from_string(args->model, &iter, path_s);
+        set_tree_view_cell(args->model, &iter, path_s, col,
                            new_text);
-        send_tree_cell_msg_by(send_msg, model, path_s, &iter, col,
-                              GTK_BUILDABLE(view));
+        send_tree_cell_msg_by(send_msg, path_s, &iter, col, args);
 }
 
 static void
-cb_tree_model_toggle(GtkCellRenderer *renderer, gchar *path_s, gpointer view)
+cb_tree_model_toggle(GtkCellRenderer *renderer, gchar *path_s, struct info *args)
 {
         GtkTreeIter iter;
-        GtkTreeModel *model = gtk_tree_view_get_model(view);
         bool toggle_state;
         int col = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(renderer),
                                                     "col_number"));
 
-        gtk_tree_model_get_iter_from_string(model, &iter, path_s);
-        gtk_tree_model_get(model, &iter, col, &toggle_state, -1);
-        set_tree_view_cell(model, &iter, path_s, col,
+        gtk_tree_model_get_iter_from_string(args->model, &iter, path_s);
+        gtk_tree_model_get(args->model, &iter, col, &toggle_state, -1);
+        set_tree_view_cell(args->model, &iter, path_s, col,
                            toggle_state? "0" : "1");
 }
 
 static void
-connect_widget_signals(gpointer *obj, char *ui_file)
+connect_widget_signals(gpointer *obj, struct info *ar)
 {
         GObject *obj2;
         GType type = G_TYPE_INVALID;
         char *suffix = NULL;
         const char *name = NULL;
+        FILE *o = ar->outstr;
 
         type = G_TYPE_FROM_INSTANCE(obj);
         if (GTK_IS_BUILDABLE(obj))
@@ -3027,110 +3114,155 @@ connect_widget_signals(gpointer *obj, char *ui_file)
         if (type == GTK_TYPE_TREE_VIEW_COLUMN) {
                 GList *cells = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(obj));
                 GtkTreeViewColumn *tv_col = GTK_TREE_VIEW_COLUMN(obj);
+                GObject *view = G_OBJECT(
+                        gtk_tree_view_column_get_tree_view(tv_col));
                 unsigned int i, n_cells = g_list_length(cells);
 
                 g_list_free(cells);
-                g_signal_connect(obj, "clicked", G_CALLBACK(cb_simple), "clicked");
+                g_signal_connect(obj, "clicked", G_CALLBACK(cb_simple), info_txt_new(o, "clicked"));
                 for (i = 1; i <= n_cells; i++) {
                         GtkCellRenderer *renderer;
-                        GtkTreeView *view = GTK_TREE_VIEW(
-                                gtk_tree_view_column_get_tree_view(tv_col));
                         gboolean editable = FALSE;
 
-                        if (!tree_view_column_get_renderer_column(ui_file, tv_col,
+                        if (!tree_view_column_get_renderer_column(ar->builder, ar->txt, tv_col,
                                                                   i, &renderer))
                                 continue;
                         if (GTK_IS_CELL_RENDERER_TEXT(renderer)) {
                                 g_object_get(renderer, "editable", &editable, NULL);
-                                if (editable)
+                                if (editable) {
+                                        GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
+
                                         g_signal_connect(renderer, "edited",
-                                                         G_CALLBACK(cb_tree_model_edit), view);
+                                                         G_CALLBACK(cb_tree_model_edit),
+                                                         info_obj_new(o, view, model));
+                                }
                         } else if (GTK_IS_CELL_RENDERER_TOGGLE(renderer)) {
                                 g_object_get(renderer, "activatable", &editable, NULL);
-                                if (editable)
+                                if (editable) {
+                                        GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
+
                                         g_signal_connect(renderer, "toggled",
-                                                         G_CALLBACK(cb_tree_model_toggle), view);
+                                                         G_CALLBACK(cb_tree_model_toggle),
+                                                         info_obj_new(o, NULL, model));
+                                }
                         }
                 }
-        } else if (type == GTK_TYPE_BUTTON) {
+        } else if (type == GTK_TYPE_BUTTON)
                 /* Button associated with a GtkTextView. */
                 if ((suffix = strstr(name, "_send_text")) != NULL &&
-                    GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(suffix, name)))
+                    GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(ar->builder, suffix, name)))
                         g_signal_connect(obj, "clicked", G_CALLBACK(cb_send_text),
-                                         gtk_text_view_get_buffer(GTK_TEXT_VIEW(obj2)));
+                                         info_obj_new(o, G_OBJECT(gtk_text_view_get_buffer(GTK_TEXT_VIEW(obj2))), NULL));
                 else if ((suffix = strstr(name, "_send_selection")) != NULL &&
-                         GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(suffix, name)))
+                         GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(ar->builder, suffix, name)))
                         g_signal_connect(obj, "clicked", G_CALLBACK(cb_send_text_selection),
-                                         gtk_text_view_get_buffer(GTK_TEXT_VIEW(obj2)));
+                                         info_obj_new(o, G_OBJECT(gtk_text_view_get_buffer(GTK_TEXT_VIEW(obj2))), NULL));
                 else {
-                        g_signal_connect(obj, "clicked", G_CALLBACK(cb_simple), "clicked");
+                        g_signal_connect(obj, "clicked", G_CALLBACK(cb_simple), info_txt_new(o, "clicked"));
                         /* Buttons associated with (and part of) a GtkDialog.
                          * (We shun response ids which could be returned from
                          * gtk_dialog_run() because that would require the
                          * user to define those response ids in Glade,
                          * numerically */
                         if ((suffix = strstr(name, "_cancel")) != NULL &&
-                            GTK_IS_DIALOG(obj2 = obj_sans_suffix(suffix, name)))
+                            GTK_IS_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, name)))
                                 if (eql(widget_name(GTK_BUILDABLE(obj2)), MAIN_WIN))
-                                        g_signal_connect_swapped(obj, "clicked", G_CALLBACK(gtk_main_quit), NULL);
+                                        g_signal_connect_swapped(obj, "clicked",
+                                                                 G_CALLBACK(gtk_main_quit), NULL);
                                 else
-                                        g_signal_connect_swapped(obj, "clicked", G_CALLBACK(gtk_widget_hide), obj2);
+                                        g_signal_connect_swapped(obj, "clicked",
+                                                                 G_CALLBACK(gtk_widget_hide), obj2);
                         else if ((suffix = strstr(name, "_ok")) != NULL &&
-                                 GTK_IS_DIALOG(obj2 = obj_sans_suffix(suffix, name))) {
+                                 GTK_IS_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, name))) {
                                 if (GTK_IS_FILE_CHOOSER_DIALOG(obj2))
-                                        g_signal_connect_swapped(obj, "clicked", G_CALLBACK(cb_send_file_chooser_dialog_selection), GTK_FILE_CHOOSER(obj2));
+                                        g_signal_connect_swapped(obj, "clicked",
+                                                                 G_CALLBACK(cb_send_file_chooser_dialog_selection),
+                                                                 info_obj_new(o, obj2, NULL));
                                 if (eql(widget_name(GTK_BUILDABLE(obj2)), MAIN_WIN))
-                                        g_signal_connect_swapped(obj, "clicked", G_CALLBACK(gtk_main_quit), NULL);
+                                        g_signal_connect_swapped(obj, "clicked",
+                                                                 G_CALLBACK(gtk_main_quit), NULL);
                                 else
-                                        g_signal_connect_swapped(obj, "clicked", G_CALLBACK(gtk_widget_hide), obj2);
+                                        g_signal_connect_swapped(obj, "clicked",
+                                                                 G_CALLBACK(gtk_widget_hide), obj2);
                         } else if ((suffix = strstr(name, "_apply")) != NULL &&
-                                   GTK_IS_FILE_CHOOSER_DIALOG(obj2 = obj_sans_suffix(suffix, name)))
-                                g_signal_connect_swapped(obj, "clicked", G_CALLBACK(cb_send_file_chooser_dialog_selection), obj2);
+                                   GTK_IS_FILE_CHOOSER_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, name)))
+                                g_signal_connect_swapped(obj, "clicked",
+                                                         G_CALLBACK(cb_send_file_chooser_dialog_selection),
+                                                         info_obj_new(o, obj2, NULL));
                 }
-        } else if (GTK_IS_MENU_ITEM(obj))
+        else if (GTK_IS_MENU_ITEM(obj))
                 if ((suffix = strstr(name, "_invoke")) != NULL &&
-                    GTK_IS_DIALOG(obj2 = obj_sans_suffix(suffix, name)))
-                        g_signal_connect_swapped(obj, "activate", G_CALLBACK(gtk_widget_show), obj2);
+                    GTK_IS_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, name)))
+                        g_signal_connect_swapped(obj, "activate",
+                                                 G_CALLBACK(gtk_widget_show), obj2);
                 else
-                        g_signal_connect(obj, "activate", G_CALLBACK(cb_menu_item), "active");
+                        g_signal_connect(obj, "activate",
+                                         G_CALLBACK(cb_menu_item), info_txt_new(o, "active"));
         else if (GTK_IS_WINDOW(obj)) {
-                g_signal_connect(obj, "delete-event", G_CALLBACK(cb_event_simple), "closed");
+                g_signal_connect(obj, "delete-event",
+                                 G_CALLBACK(cb_event_simple), info_txt_new(o, "closed"));
                 if (eql(name, MAIN_WIN))
-                        g_signal_connect_swapped(obj, "delete-event", G_CALLBACK(gtk_main_quit), NULL);
+                        g_signal_connect_swapped(obj, "delete-event",
+                                                 G_CALLBACK(gtk_main_quit), NULL);
                 else
-                        g_signal_connect(obj, "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+                        g_signal_connect(obj, "delete-event",
+                                         G_CALLBACK(gtk_widget_hide_on_delete), NULL);
         } else if (type == GTK_TYPE_FILE_CHOOSER_BUTTON)
-                g_signal_connect(obj, "file-set", G_CALLBACK(cb_file_chooser_button), "file");
+                g_signal_connect(obj, "file-set",
+                                 G_CALLBACK(cb_file_chooser_button), info_txt_new(o, "file"));
         else if (type == GTK_TYPE_COLOR_BUTTON)
-                g_signal_connect(obj, "color-set", G_CALLBACK(cb_color_button), "color");
+                g_signal_connect(obj, "color-set",
+                                 G_CALLBACK(cb_color_button), info_txt_new(o, "color"));
         else if (type == GTK_TYPE_FONT_BUTTON)
-                g_signal_connect(obj, "font-set", G_CALLBACK(cb_font_button), "font");
+                g_signal_connect(obj, "font-set",
+                                 G_CALLBACK(cb_font_button), info_txt_new(o, "font"));
         else if (type == GTK_TYPE_SWITCH)
-                g_signal_connect(obj, "notify::active", G_CALLBACK(cb_switch), NULL);
-        else if (type == GTK_TYPE_TOGGLE_BUTTON || type == GTK_TYPE_RADIO_BUTTON || type == GTK_TYPE_CHECK_BUTTON)
-                g_signal_connect(obj, "toggled", G_CALLBACK(cb_toggle_button), NULL);
+                g_signal_connect(obj, "notify::active",
+                                 G_CALLBACK(cb_switch), info_txt_new(o, NULL));
+        else if (type == GTK_TYPE_TOGGLE_BUTTON ||
+                 type == GTK_TYPE_RADIO_BUTTON ||
+                 type == GTK_TYPE_CHECK_BUTTON)
+                g_signal_connect(obj, "toggled",
+                                 G_CALLBACK(cb_toggle_button), info_txt_new(o, NULL));
         else if (type == GTK_TYPE_ENTRY)
-                g_signal_connect(obj, "changed", G_CALLBACK(cb_editable), "text");
+                g_signal_connect(obj, "changed",
+                                 G_CALLBACK(cb_editable), info_txt_new(o, "text"));
         else if (type == GTK_TYPE_SPIN_BUTTON)
-                g_signal_connect(obj, "value_changed", G_CALLBACK(cb_spin_button), "text"); /* TODO: rename to "value" */
+                g_signal_connect(obj, "value_changed",
+                                 G_CALLBACK(cb_spin_button), info_txt_new(o, "text")); /* TODO: rename to "value" */
         else if (type == GTK_TYPE_SCALE)
-                g_signal_connect(obj, "value-changed", G_CALLBACK(cb_range), "value");
+                g_signal_connect(obj, "value-changed",
+                                 G_CALLBACK(cb_range), info_txt_new(o, "value"));
         else if (type == GTK_TYPE_CALENDAR) {
-                g_signal_connect(obj, "day-selected-double-click", G_CALLBACK(cb_calendar), "doubleclicked");
-                g_signal_connect(obj, "day-selected", G_CALLBACK(cb_calendar), "clicked");
+                g_signal_connect(obj, "day-selected-double-click",
+                                 G_CALLBACK(cb_calendar), info_txt_new(o, "doubleclicked"));
+                g_signal_connect(obj, "day-selected",
+                                 G_CALLBACK(cb_calendar), info_txt_new(o, "clicked"));
         } else if (type == GTK_TYPE_TREE_SELECTION)
-                g_signal_connect(obj, "changed", G_CALLBACK(cb_tree_selection), "clicked");
+                g_signal_connect(obj, "changed",
+                                 G_CALLBACK(cb_tree_selection), info_txt_new(o, "clicked"));
         else if (type == GTK_TYPE_SOCKET) {
-                g_signal_connect(obj, "plug-added", G_CALLBACK(cb_simple), "plug-added");
-                g_signal_connect(obj, "plug-removed", G_CALLBACK(cb_simple), "plug-removed");
+                g_signal_connect(obj, "plug-added",
+                                 G_CALLBACK(cb_simple), info_txt_new(o, "plug-added"));
+                g_signal_connect(obj, "plug-removed",
+                                 G_CALLBACK(cb_simple), info_txt_new(o, "plug-removed"));
+                /* TODO: rename to plug_added, plug_removed */
         } else if (type == GTK_TYPE_DRAWING_AREA)
                 g_signal_connect(obj, "draw", G_CALLBACK(cb_draw), NULL);
         else if (type == GTK_TYPE_EVENT_BOX) {
                 gtk_widget_set_can_focus(GTK_WIDGET(obj), true);
-                g_signal_connect(obj, "button-press-event", G_CALLBACK(cb_event_box_button), "button_press");
-                g_signal_connect(obj, "button-release-event", G_CALLBACK(cb_event_box_button), "button_release");
-                g_signal_connect(obj, "motion-notify-event", G_CALLBACK(cb_event_box_motion), "motion");
-                g_signal_connect(obj, "key-press-event", G_CALLBACK(cb_event_box_key), "key_press");
+                g_signal_connect(obj, "button-press-event",
+                                 G_CALLBACK(cb_event_box_button),
+                                 info_txt_new(o, "button_press"));
+                g_signal_connect(obj, "button-release-event",
+                                 G_CALLBACK(cb_event_box_button),
+                                 info_txt_new(o, "button_release"));
+                g_signal_connect(obj, "motion-notify-event",
+                                 G_CALLBACK(cb_event_box_motion),
+                                 info_txt_new(o, "motion"));
+                g_signal_connect(obj, "key-press-event",
+                                 G_CALLBACK(cb_event_box_key),
+                                 info_txt_new(o, "key_press"));
         }
 }
 
@@ -3155,12 +3287,13 @@ add_widget_style_provider(gpointer *obj, void *data)
 }
 
 static void
-prepare_widgets(char *ui_file)
+prepare_widgets(GtkBuilder *builder, char *ui_file, FILE *out)
 {
         GSList *objects = NULL;
+        struct info args = {.builder = builder, .outstr = out, .txt = ui_file};
 
         objects = gtk_builder_get_objects(builder);
-        g_slist_foreach(objects, (GFunc) connect_widget_signals, ui_file);
+        g_slist_foreach(objects, (GFunc) connect_widget_signals, &args);
         g_slist_foreach(objects, (GFunc) add_widget_style_provider, NULL);
         g_slist_free(objects);
 }
@@ -3168,7 +3301,6 @@ prepare_widgets(char *ui_file)
 int
 main(int argc, char *argv[])
 {
-        FILE *in = NULL;        /* command input */
         GObject *main_window = NULL;
         bool bg = false;
         char *in_fifo = NULL, *out_fifo = NULL;
@@ -3176,12 +3308,10 @@ main(int argc, char *argv[])
         char *xid = NULL;
         char opt;
         pthread_t receiver;
+        struct info ar;
 
         /* Disable runtime GLIB deprecation warnings: */
         setenv("G_ENABLE_DIAGNOSTIC", "0", 0);
-        out = NULL;
-        save = NULL;
-        log_out = NULL;
         gtk_init(&argc, &argv);
         while ((opt = getopt(argc, argv, "bGhe:i:l:o:O:u:V")) != -1) {
                 switch (opt) {
@@ -3203,20 +3333,20 @@ main(int argc, char *argv[])
                 bye(EXIT_FAILURE, stderr,
                     "illegal parameter '%s'\n" USAGE, argv[optind]);
         redirect_stderr(err_file);
-        in = open_fifo(in_fifo, "r", stdin);
-        out = open_fifo(out_fifo, "w", stdout);
-        go_bg_if(bg, in, out, err_file);
-        builder = builder_from_file(ui_file);
-        log_out = open_log(log_file);
-        pthread_create(&receiver, NULL, (void *(*)(void *)) digest_msg, in);
-        main_window = find_main_window();
+        ar.instr = open_fifo(in_fifo, "r", stdin, _IONBF);
+        ar.outstr = open_fifo(out_fifo, "w", stdout, _IOLBF);
+        go_bg_if(bg, ar.instr, ar.outstr, err_file);
+        ar.builder = builder_from_file(ui_file);
+        ar.logstr = open_log(log_file);
+        pthread_create(&receiver, NULL, (void *(*)(void *)) digest_msg, &ar);
+        main_window = find_main_window(ar.builder);
         xmlInitParser();
         LIBXML_TEST_VERSION;
-        prepare_widgets(ui_file);
+        prepare_widgets(ar.builder, ui_file, ar.outstr);
         xembed_if(xid, main_window);
         gtk_main();
-        rm_unless(stdin, in, in_fifo);
-        rm_unless(stdout, out, out_fifo);
+        rm_unless(stdin, ar.instr, in_fifo);
+        rm_unless(stdout, ar.outstr, out_fifo);
         pthread_cancel(receiver);
         pthread_join(receiver, NULL);
         xmlCleanupParser();
