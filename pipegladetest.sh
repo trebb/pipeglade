@@ -218,7 +218,6 @@ if test $AUTOMATIC; then
                "illegal parameter 'yyy'" ""
     check_call "./pipeglade --display nnn" 1 \
                "nnn"
-
     check_rm $FIN
     check_rm $FOUT
 
@@ -1464,7 +1463,6 @@ if test $AUTOMATIC; then
 fi
 
 echo "_:main_quit" >$FIN
-
 check_rm $FIN
 
 
@@ -1482,7 +1480,6 @@ if test $AUTOMATIC; then
                 "### (Idle) ###"
     check_error "_:main_quit" \
                 "	# Comment"
-
     check_rm $FIN
     rm $FERR
 fi
@@ -1590,7 +1587,6 @@ if test $AUTOMATIC; then
     ./pipeglade --display ${DISPLAY-:0} -i $FIN -o $FOUT -b >/dev/null
     check 0 "" \
           "# checking --display $DISPLAY\n _:main_quit"
-
     check_rm $FIN
     check_rm $FOUT
 
@@ -1602,7 +1598,6 @@ if test $AUTOMATIC; then
           "main_apply:clicked"
     check 0 "" \
           "main_cancel:force"
-
     check_rm $FIN
     check_rm $FOUT
     check_cmd "! ps -p `cat $PID_FILE` >/dev/null"
@@ -1616,12 +1611,13 @@ if test $AUTOMATIC; then
     check 1 "" \
           "main_ok:force" \
           "main_ok:clicked"
-
     check_rm $FIN
     check_rm $FOUT
 
 
-    ./pipeglade -u simple_open.ui -i $FIN -o $FOUT -b >/dev/null
+    ./pipeglade -u simple_open.ui -i $FIN -o $FOUT >/dev/null &
+    # wait for $FIN and $OUT_FILE to appear
+    while test ! \( -e $FIN -a -e $FOUT \); do :; done
     check 3 "" \
           "main_apply:force" \
           "main_apply:clicked" \
@@ -1629,7 +1625,6 @@ if test $AUTOMATIC; then
           "main:folder"
     check 0 "" \
           "main_cancel:force"
-
     check_rm $FIN
     check_rm $FOUT
 
@@ -1640,7 +1635,6 @@ if test $AUTOMATIC; then
           "main_ok:clicked" \
           "main:file" \
           "main:folder"
-
     check_rm $FIN
     check_rm $FOUT
 
@@ -2679,7 +2673,6 @@ check 0 "" \
 
 
 echo "_:main_quit" >$FIN
-
 check_rm $FIN
 check_rm $FOUT
 

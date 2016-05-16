@@ -312,13 +312,16 @@ open_log(const char *name)
         return s;
 }
 
+/*
+ * Delete fifo fn if streams s and forbidden are distinct
+ */
 static void
-rm_unless(FILE *forbidden, FILE *s, char *name)
+rm_unless(FILE *forbidden, FILE *s, char *fn)
 {
         if (s == forbidden)
                 return;
         fclose(s);
-        remove(name);
+        remove(fn);
 }
 
 /*
@@ -335,6 +338,23 @@ usec_since(struct timespec *start)
 }
 
 /*
+ * Write string s to stream o, escaping newlines and backslashes
+ */
+static void
+fputs_escaped(const char *s, FILE *o)
+{
+        size_t i = 0;
+        char c;
+
+        while ((c = s[i++]) != '\0')
+                switch (c) {
+                case '\\': fputs("\\\\", o); break;
+                case '\n': fputs("\\n", o); break;
+                default: putc(c, o); break;
+                }
+}
+
+/*
  * Write log file
  */
 static void
@@ -347,11 +367,15 @@ log_msg(FILE *l, char *msg)
                 return;
         if (msg == NULL && old_msg == NULL)
                 fprintf(l, "##########\t##### (New Pipeglade session) #####\n");
-        else if (msg == NULL && old_msg != NULL) { /* command done; start idle */
-                fprintf(l, "%10ld\t%s\n", usec_since(&start), old_msg);
+        else if (msg == NULL && old_msg != NULL) {
+                /* command done; start idle */
+                fprintf(l, "%10ld\t", usec_since(&start));
+                fputs_escaped(old_msg, l);
+                putc('\n', l);
                 free(old_msg);
                 old_msg = NULL;
-        } else if (msg != NULL && old_msg == NULL) { /* idle done; start command */
+        } else if (msg != NULL && old_msg == NULL) {
+                /* idle done; start command */
                 fprintf(l, "%10ld\t### (Idle) ###\n", usec_since(&start));
                 if ((old_msg = malloc(strlen(msg) + 1)) == NULL)
                         OOM_ABORT;
@@ -471,7 +495,7 @@ read_buf(FILE *s, char **buf, size_t *bufsize)
 
 static void
 send_msg_to(FILE* o, GtkBuildable *obj, const char *tag, va_list ap)
-{ 
+{
         char *data;
         const char *w_id = widget_id(obj);
         fd_set wfds;
@@ -482,18 +506,8 @@ send_msg_to(FILE* o, GtkBuildable *obj, const char *tag, va_list ap)
         FD_SET(ofd, &wfds);
         if (select(ofd + 1, NULL, &wfds, NULL, &timeout) == 1) {
                 fprintf(o, "%s:%s ", w_id, tag);
-                while ((data = va_arg(ap, char *)) != NULL) {
-                        size_t i = 0;
-                        char c;
-
-                        while ((c = data[i++]) != '\0')
-                                if (c == '\\')
-                                        fprintf(o, "\\\\");
-                                else if (c == '\n')
-                                        fprintf(o, "\\n");
-                                else
-                                        putc(c, o);
-                }
+                while ((data = va_arg(ap, char *)) != NULL)
+                        fputs_escaped(data, o);
                 putc('\n', o);
         } else
                 fprintf(stderr,
@@ -3350,10 +3364,10 @@ main(int argc, char *argv[])
         prepare_widgets(ar.builder, ui_file, ar.outstr);
         xembed_if(xid, main_window);
         gtk_main();
-        rm_unless(stdin, ar.instr, in_fifo);
-        rm_unless(stdout, ar.outstr, out_fifo);
         pthread_cancel(receiver);
         pthread_join(receiver, NULL);
         xmlCleanupParser();
+        rm_unless(stdin, ar.instr, in_fifo);
+        rm_unless(stdout, ar.outstr, out_fifo);
         exit(EXIT_SUCCESS);
 }
