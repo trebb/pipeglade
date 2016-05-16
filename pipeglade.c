@@ -400,10 +400,13 @@ builder_from_file(char *ui_file)
         return b;
 }
 
+/*
+ * Return the id attribute of widget
+ */
 static const char *
-widget_name(GtkBuildable *obj)
+widget_id(GtkBuildable *widget)
 {
-        return gtk_buildable_get_name(obj);
+        return gtk_buildable_get_name(widget);
 }
 
 /*
@@ -468,9 +471,9 @@ read_buf(FILE *s, char **buf, size_t *bufsize)
 
 static void
 send_msg_to(FILE* o, GtkBuildable *obj, const char *tag, va_list ap)
-{
+{ 
         char *data;
-        const char *w_name = widget_name(obj);
+        const char *w_id = widget_id(obj);
         fd_set wfds;
         int ofd = fileno(o);
         struct timeval timeout = {1, 0};
@@ -478,7 +481,7 @@ send_msg_to(FILE* o, GtkBuildable *obj, const char *tag, va_list ap)
         FD_ZERO(&wfds);
         FD_SET(ofd, &wfds);
         if (select(ofd + 1, NULL, &wfds, NULL, &timeout) == 1) {
-                fprintf(o, "%s:%s ", w_name, tag);
+                fprintf(o, "%s:%s ", w_id, tag);
                 while ((data = va_arg(ap, char *)) != NULL) {
                         size_t i = 0;
                         char c;
@@ -495,7 +498,7 @@ send_msg_to(FILE* o, GtkBuildable *obj, const char *tag, va_list ap)
         } else
                 fprintf(stderr,
                         "send error; discarding feedback message %s:%s\n",
-                        w_name, tag);
+                        w_id, tag);
 }
 
 /*
@@ -2060,7 +2063,7 @@ update_print_dialog(GObject *obj, const char *action, const char *data,
                         break;
                 default:
                         fprintf(stderr, "%s sent an unexpected response id (%d)\n",
-                                widget_name(GTK_BUILDABLE(dialog)), response_id);
+                                widget_id(GTK_BUILDABLE(dialog)), response_id);
                         break;
                 }
                 gtk_widget_hide(GTK_WIDGET(dialog));
@@ -2838,9 +2841,10 @@ digest_msg(struct info *args)
         for (;;) {
                 FILE *cmd = args->instr;
                 struct ui_data *ud = NULL;
-                char first_char = '\0', *name;
+                char first_char = '\0',
+                        *id;    /* widget id */
                 size_t msg_size = 32;
-                int name_start = 0, name_end = 0;
+                int id_start = 0, id_end = 0;
                 int action_start = 0, action_end = 0;
                 int data_start = 0;
 
@@ -2868,9 +2872,9 @@ digest_msg(struct info *args)
                 }
                 sscanf(ud->msg_tokens,
                        " %n%*[0-9a-zA-Z_]%n:%n%*[0-9a-zA-Z_]%n%*1[ \t]%n",
-                       &name_start, &name_end, &action_start, &action_end, &data_start);
-                ud->msg_tokens[name_end] = ud->msg_tokens[action_end] = '\0';
-                name = ud->msg_tokens + name_start;
+                       &id_start, &id_end, &action_start, &action_end, &data_start);
+                ud->msg_tokens[id_end] = ud->msg_tokens[action_end] = '\0';
+                id = ud->msg_tokens + id_start;
                 ud->action = ud->msg_tokens + action_start;
                 ud->data = ud->msg_tokens + data_start;
                 if (eql(ud->action, "main_quit")) {
@@ -2890,7 +2894,7 @@ digest_msg(struct info *args)
                         remember_loading_file(NULL);
                         goto exec;
                 }
-                if ((ud->obj = (gtk_builder_get_object(args->builder, name))) == NULL) {
+                if ((ud->obj = (gtk_builder_get_object(args->builder, id))) == NULL) {
                         ud->fn = complain;
                         goto exec;
                 }
@@ -2908,7 +2912,7 @@ digest_msg(struct info *args)
                 else if (eql(ud->action, "grab_focus"))
                         ud->fn = update_focus;
                 else if (eql(ud->action, "style")) {
-                        ud->action = name;
+                        ud->action = id;
                         ud->fn = update_widget_style;
                 } else if (ud->type == GTK_TYPE_DRAWING_AREA)
                         ud->fn = update_drawing_area;
@@ -3003,7 +3007,7 @@ tree_view_column_get_renderer_column(GtkBuilder *builder, const char *ui_file,
         char *xpath_renderer_id = "/@id";
         char *xpath_text_col = "../attributes/attribute[@name=\"text\""
                 " or @name=\"active\"]";
-        const char *xpath_id = widget_name(GTK_BUILDABLE(t_col));
+        const char *w_id = widget_id(GTK_BUILDABLE(t_col));
         int i;
         size_t xpath_len;
         size_t xpath_n_len = 3;    /* Big Enough (TM) */
@@ -3020,7 +3024,7 @@ tree_view_column_get_renderer_column(GtkBuilder *builder, const char *ui_file,
                 xmlFreeDoc(doc);
                 return false;
         }
-        xpath_len = 2 * (strlen(xpath_base1) + strlen(xpath_id) +
+        xpath_len = 2 * (strlen(xpath_base1) + strlen(w_id) +
                          strlen(xpath_base2) + xpath_n_len +
                          strlen(xpath_base3)) +
                 sizeof('|') +
@@ -3029,8 +3033,8 @@ tree_view_column_get_renderer_column(GtkBuilder *builder, const char *ui_file,
         if ((xpath = malloc(xpath_len)) == NULL)
                 OOM_ABORT;
         snprintf((char *) xpath, xpath_len, "%s%s%s%d%s%s|%s%s%s%d%s%s",
-                 xpath_base1, xpath_id, xpath_base2, n, xpath_base3, xpath_text_col,
-                 xpath_base1, xpath_id, xpath_base2, n, xpath_base3, xpath_renderer_id);
+                 xpath_base1, w_id, xpath_base2, n, xpath_base3, xpath_text_col,
+                 xpath_base1, w_id, xpath_base2, n, xpath_base3, xpath_renderer_id);
         if ((xpath_obj = xmlXPathEvalExpression(xpath, xpath_ctx)) == NULL) {
                 xmlXPathFreeContext(xpath_ctx);
                 free(xpath);
@@ -3105,12 +3109,12 @@ connect_widget_signals(gpointer *obj, struct info *ar)
         GObject *obj2;
         GType type = G_TYPE_INVALID;
         char *suffix = NULL;
-        const char *name = NULL;
+        const char *w_id = NULL;
         FILE *o = ar->outstr;
 
         type = G_TYPE_FROM_INSTANCE(obj);
         if (GTK_IS_BUILDABLE(obj))
-                name = widget_name(GTK_BUILDABLE(obj));
+                w_id = widget_id(GTK_BUILDABLE(obj));
         if (type == GTK_TYPE_TREE_VIEW_COLUMN) {
                 GList *cells = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(obj));
                 GtkTreeViewColumn *tv_col = GTK_TREE_VIEW_COLUMN(obj);
@@ -3149,12 +3153,12 @@ connect_widget_signals(gpointer *obj, struct info *ar)
                 }
         } else if (type == GTK_TYPE_BUTTON)
                 /* Button associated with a GtkTextView. */
-                if ((suffix = strstr(name, "_send_text")) != NULL &&
-                    GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(ar->builder, suffix, name)))
+                if ((suffix = strstr(w_id, "_send_text")) != NULL &&
+                    GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(ar->builder, suffix, w_id)))
                         g_signal_connect(obj, "clicked", G_CALLBACK(cb_send_text),
                                          info_obj_new(o, G_OBJECT(gtk_text_view_get_buffer(GTK_TEXT_VIEW(obj2))), NULL));
-                else if ((suffix = strstr(name, "_send_selection")) != NULL &&
-                         GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(ar->builder, suffix, name)))
+                else if ((suffix = strstr(w_id, "_send_selection")) != NULL &&
+                         GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(ar->builder, suffix, w_id)))
                         g_signal_connect(obj, "clicked", G_CALLBACK(cb_send_text_selection),
                                          info_obj_new(o, G_OBJECT(gtk_text_view_get_buffer(GTK_TEXT_VIEW(obj2))), NULL));
                 else {
@@ -3164,35 +3168,35 @@ connect_widget_signals(gpointer *obj, struct info *ar)
                          * gtk_dialog_run() because that would require the
                          * user to define those response ids in Glade,
                          * numerically */
-                        if ((suffix = strstr(name, "_cancel")) != NULL &&
-                            GTK_IS_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, name)))
-                                if (eql(widget_name(GTK_BUILDABLE(obj2)), MAIN_WIN))
+                        if ((suffix = strstr(w_id, "_cancel")) != NULL &&
+                            GTK_IS_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, w_id)))
+                                if (eql(widget_id(GTK_BUILDABLE(obj2)), MAIN_WIN))
                                         g_signal_connect_swapped(obj, "clicked",
                                                                  G_CALLBACK(gtk_main_quit), NULL);
                                 else
                                         g_signal_connect_swapped(obj, "clicked",
                                                                  G_CALLBACK(gtk_widget_hide), obj2);
-                        else if ((suffix = strstr(name, "_ok")) != NULL &&
-                                 GTK_IS_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, name))) {
+                        else if ((suffix = strstr(w_id, "_ok")) != NULL &&
+                                 GTK_IS_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, w_id))) {
                                 if (GTK_IS_FILE_CHOOSER_DIALOG(obj2))
                                         g_signal_connect_swapped(obj, "clicked",
                                                                  G_CALLBACK(cb_send_file_chooser_dialog_selection),
                                                                  info_obj_new(o, obj2, NULL));
-                                if (eql(widget_name(GTK_BUILDABLE(obj2)), MAIN_WIN))
+                                if (eql(widget_id(GTK_BUILDABLE(obj2)), MAIN_WIN))
                                         g_signal_connect_swapped(obj, "clicked",
                                                                  G_CALLBACK(gtk_main_quit), NULL);
                                 else
                                         g_signal_connect_swapped(obj, "clicked",
                                                                  G_CALLBACK(gtk_widget_hide), obj2);
-                        } else if ((suffix = strstr(name, "_apply")) != NULL &&
-                                   GTK_IS_FILE_CHOOSER_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, name)))
+                        } else if ((suffix = strstr(w_id, "_apply")) != NULL &&
+                                   GTK_IS_FILE_CHOOSER_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, w_id)))
                                 g_signal_connect_swapped(obj, "clicked",
                                                          G_CALLBACK(cb_send_file_chooser_dialog_selection),
                                                          info_obj_new(o, obj2, NULL));
                 }
         else if (GTK_IS_MENU_ITEM(obj))
-                if ((suffix = strstr(name, "_invoke")) != NULL &&
-                    GTK_IS_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, name)))
+                if ((suffix = strstr(w_id, "_invoke")) != NULL &&
+                    GTK_IS_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, w_id)))
                         g_signal_connect_swapped(obj, "activate",
                                                  G_CALLBACK(gtk_widget_show), obj2);
                 else
@@ -3201,7 +3205,7 @@ connect_widget_signals(gpointer *obj, struct info *ar)
         else if (GTK_IS_WINDOW(obj)) {
                 g_signal_connect(obj, "delete-event",
                                  G_CALLBACK(cb_event_simple), info_txt_new(o, "closed"));
-                if (eql(name, MAIN_WIN))
+                if (eql(w_id, MAIN_WIN))
                         g_signal_connect_swapped(obj, "delete-event",
                                                  G_CALLBACK(gtk_main_quit), NULL);
                 else
