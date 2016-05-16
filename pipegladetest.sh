@@ -36,15 +36,16 @@ FILE4=saved4.txt
 FILE5=saved5.txt
 FILE6=saved6.txt
 BIG_INPUT=big.txt
+BIG_INPUT2=big2.txt
 BIG_INPUT_ERR=err.txt
 WEIRD_PATHS=$(awk 'BEGIN{ for (i=0x01; i<= 0xff; i++) if (i != 0x2a && i != 0x2f && i != 0x3f && i != 0x5c)  printf "'$DIR'/(%c) ", i }')
-BIG_STRING=$(for i in {1..10000}; do echo -n "abcdefghijklmnopqrstuvwxyz($i)ABCDEFGHIJKLMNOPQRSTUVWXYZ0{${RANDOM}}123456789"; done)
-BIG_NUM=$(for i in {1..10000}; do echo -n "$RANDOM"; done)
+BIG_STRING=$(for i in {1..100}; do echo -n "abcdefghijklmnopqrstuvwxyz($i)ABCDEFGHIJKLMNOPQRSTUVWXYZ0{${RANDOM}}123456789"; done)
+BIG_NUM=$(for i in {1..100}; do echo -n "$RANDOM"; done)
 rm -rf $FIN $FOUT $FERR $LOG $ERR_FILE $BAD_FIFO $PID_FILE $OUT_FILE \
    $EPS_FILE $EPSF_FILE $PDF_FILE $PS_FILE $SVG_FILE \
-   $FILE1 $FILE2 $FILE3 $FILE4 $FILE5 $FILE6 $BIG_INPUT $BIG_INPUT_err $DIR
+   $FILE1 $FILE2 $FILE3 $FILE4 $FILE5 $FILE6 $BIG_INPUT $BIG_INPUT2 $BIG_INPUT_ERR $DIR
 
-if stat -f "%0p"; then
+if stat -f "%0p" 2>/dev/null; then
     STAT_CMD='stat -f "%0p"'
 else
     # probably GNU stat
@@ -217,14 +218,6 @@ if test $AUTOMATIC; then
                "illegal parameter 'yyy'" ""
     check_call "./pipeglade --display nnn" 1 \
                "nnn"
-    mkfifo $FIN
-    echo -e "statusbar1:pop\n _:main_quit" > $FIN &
-    check_call "./pipeglade -i $FIN" 0 \
-               "" ""
-    mkfifo $FIN
-    echo -e "statusbar1:pop_id 111\n _:main_quit" > $FIN &
-    check_call "./pipeglade -i $FIN" 0 \
-               "" ""
 
     check_rm $FIN
     check_rm $FOUT
@@ -1481,7 +1474,7 @@ if test $AUTOMATIC; then
     read r 2< $FERR &
     ./pipeglade -i $FIN 2> $FERR -l - &
     # wait for $FIN to appear
-    while test ! \( -e $FIN \); do :; done
+    while test ! \( -e $FIN -a -e $FERR \); do :; done
 
     check_error "# Comment" \
                 "##########	##### (New Pipeglade session) #####"
@@ -1546,7 +1539,7 @@ check() {
 if test $AUTOMATIC; then
 
     # Being impervious to locale
-    LC_ALL=de_DE.UTF-8 ./pipeglade -i $FIN -o $FOUT -O $ERR_FILE -b
+    LC_ALL=de_DE.UTF-8 ./pipeglade -i $FIN -o $FOUT -O $ERR_FILE -b >/dev/null
     check 0 "" \
           "drawingarea1:transform 1 1.5 1 1 1 1 1"
     check 0 "" \
@@ -1566,7 +1559,7 @@ if test $AUTOMATIC; then
     rm $ERR_FILE
 
     # Logging to stderr while redirecting stderr
-    ./pipeglade -i $FIN -o $FOUT -O $ERR_FILE -l - -b
+    ./pipeglade -i $FIN -o $FOUT -O $ERR_FILE -l - -b >/dev/null
     check 0 "" \
           "# Comment"
     check 0 "" \
@@ -1594,7 +1587,7 @@ if test $AUTOMATIC; then
     rm $FIN $FOUT
 
 
-    ./pipeglade --display ${DISPLAY-:0} -i $FIN -o $FOUT -b
+    ./pipeglade --display ${DISPLAY-:0} -i $FIN -o $FOUT -b >/dev/null
     check 0 "" \
           "# checking --display $DISPLAY\n _:main_quit"
 
@@ -1616,7 +1609,7 @@ if test $AUTOMATIC; then
     rm $PID_FILE
 
 
-    ./pipeglade -u simple_dialog.ui -i $FIN -o $FOUT -b
+    ./pipeglade -u simple_dialog.ui -i $FIN -o $FOUT -b >/dev/null
     check 1 "" \
           "button1:force" \
           "button1:clicked"
@@ -1628,7 +1621,7 @@ if test $AUTOMATIC; then
     check_rm $FOUT
 
 
-    ./pipeglade -u simple_open.ui -i $FIN -o $FOUT -b
+    ./pipeglade -u simple_open.ui -i $FIN -o $FOUT -b >/dev/null
     check 3 "" \
           "main_apply:force" \
           "main_apply:clicked" \
@@ -1641,8 +1634,8 @@ if test $AUTOMATIC; then
     check_rm $FOUT
 
 
-    ./pipeglade -u simple_open.ui -i $FIN -o $FOUT -b
-    check 2 "" \
+    ./pipeglade -u simple_open.ui -i $FIN -o $FOUT -b >/dev/null
+    check 3 "" \
           "main_ok:force" \
           "main_ok:clicked" \
           "main:file" \
@@ -1656,22 +1649,22 @@ if test $AUTOMATIC; then
     mkfifo -m 777 $FOUT
     touch $ERR_FILE $LOG
     chmod 777 $ERR_FILE $LOG
-    ./pipeglade -i $FIN -o $FOUT -b -O $ERR_FILE -l $LOG
-    check_cmd "$STAT_CMD $FIN | grep '600$'"
-    check_cmd "$STAT_CMD $FOUT | grep '600$'"
-    check_cmd "$STAT_CMD $ERR_FILE | grep '600$'"
-    check_cmd "$STAT_CMD $LOG | grep '600$'"
+    ./pipeglade -i $FIN -o $FOUT -O $ERR_FILE -l $LOG -b >/dev/null
+    check_cmd "$STAT_CMD $FIN | grep -q '600$' 2>/dev/null"
+    check_cmd "$STAT_CMD $FOUT | grep -q '600$' 2>/dev/null"
+    check_cmd "$STAT_CMD $ERR_FILE | grep -q '600$' 2>/dev/null"
+    check_cmd "$STAT_CMD $LOG | grep -q '600$' 2>/dev/null"
     echo -e "_:main_quit" > $FIN
     check_rm $FIN
     check_rm $FOUT
     rm -f $ERR_FILE $LOG
 
 
-    ./pipeglade -i $FIN -o $FOUT -b -O $ERR_FILE -l $LOG
-    check_cmd "$STAT_CMD $FIN | grep '600$'"
-    check_cmd "$STAT_CMD $FOUT | grep '600$'"
-    check_cmd "$STAT_CMD $ERR_FILE | grep '600$'"
-    check_cmd "$STAT_CMD $LOG | grep '600$'"
+    ./pipeglade -i $FIN -o $FOUT -O $ERR_FILE -l $LOG -b >/dev/null
+    check_cmd "$STAT_CMD $FIN | grep -q '600$' 2>/dev/null"
+    check_cmd "$STAT_CMD $FOUT | grep -q '600$' 2>/dev/null"
+    check_cmd "$STAT_CMD $ERR_FILE | grep -q '600$' 2>/dev/null"
+    check_cmd "$STAT_CMD $LOG | grep -q '600$' 2>/dev/null"
     echo -e "_:main_quit" > $FIN
     check_rm $FIN
     check_rm $FOUT
@@ -1680,7 +1673,7 @@ if test $AUTOMATIC; then
 fi
 
 echo "####	# Initial line to check if -l option appends" >$LOG
-LC_NUMERIC=de_DE.UTF-8 ./pipeglade -i $FIN -o $FOUT -l $LOG -b
+LC_NUMERIC=de_DE.UTF-8 ./pipeglade -i $FIN -o $FOUT -l $LOG -b >/dev/null
 
 
 if test $AUTOMATIC; then
@@ -1689,12 +1682,12 @@ if test $AUTOMATIC; then
           "socket1:id"
     read XID <$FOUT
     XID=${XID/socket1:id }
-    (sleep .5; ./pipeglade -u simple_dialog.ui -e $XID <<< "main_cancel:force") &
+    (sleep .5; ./pipeglade -u simple_dialog.ui -e $XID <<< "main_cancel:force") >/dev/null &
     check 2 "" \
           "" \
           "socket1:plug-added" \
           "socket1:plug-removed"
-    (sleep .5; ./pipeglade -u simple_dialog.ui -e $XID <<< "main_cancel:force") &
+    (sleep .5; ./pipeglade -u simple_dialog.ui -e $XID <<< "main_cancel:force") >/dev/null &
     check 2 "" \
           "" \
           "socket1:plug-added" \
@@ -2695,17 +2688,38 @@ check_cmd "head -n 2 $LOG | tail -n 1 | grep -q '##### (New Pipeglade session) #
 check_cmd "tail -n 4 $LOG | head -n 1 | grep -q '### (Idle) ###'"
 check_cmd "tail -n 3 $LOG | head -n 1 | grep -q 'statusbar1:remove_all_id ZZZ'"
 check_cmd "tail -n 2 $LOG | head -n 1 | grep -q '### (Idle) ###'"
-check_cmd "tail -n 1 $LOG | grep '_:main_quit'"
+# check_cmd "tail -n 1 $LOG | grep '_:main_quit'"
 
 if test $AUTOMATIC; then
     unset -v BIG_STRING
     unset -v BIG_NUM
     unset -v WEIRD_PATH
-    echo -e "g/_:main_quit/d\ng|$FILE6|d\nwq" | ed -s $LOG
-    for i in {1..50}; do
-        grep "^ " $LOG | cut -f2-
+    for i in {1..10}; do
+        echo "treeview1:set $i 3 $RANDOM"
+        echo "treeview1:set $i 8 $RANDOM"
+        echo "treeview1:set $i 9 row $i"
+    done > $DIR/$FILE4
+    for i in {1..10}; do
+        echo "treeview2:set $i 3 $RANDOM"
+        echo "treeview2:set $i 8 $RANDOM"
+        echo "treeview2:set $i 9 row $i"
+    done > $DIR/$FILE5
+    cut -f2- $LOG > $DIR/$FILE6
+    echo -e "g/_:main_quit/d\ng|$FILE6|d\ng/:load/s|$FILE1|$FILE4|\ng/:load/s|$FILE2|$FILE5|\nwq" | ed -s $DIR/$FILE6
+    for i in {1..5}; do
+        cat $DIR/$FILE6
     done >$BIG_INPUT
+    cp "$BIG_INPUT" "$BIG_INPUT2"
+    echo "_:load $BIG_INPUT2" >>$BIG_INPUT
     echo "_:main_quit" >>$BIG_INPUT
+    echo -e "g/_:load/d\ng/^#/d\nwq" | ed -s $BIG_INPUT2
+    ./pipeglade -i $FIN -o $FOUT -O $BIG_INPUT_ERR -b >/dev/null
+    cat "$FOUT" >/dev/null &
+    cat "$BIG_INPUT" > "$FIN"
+    while test \( -e $FOUT -a -e $FIN \); do sleep .5; done
+    check_cmd "test $(grep -v -e WARNING -e '^$' $BIG_INPUT_ERR | wc -l) -eq 0"
+    cat $BIG_INPUT_ERR
+    rm $BIG_INPUT_ERR
     ./pipeglade -O $BIG_INPUT_ERR <$BIG_INPUT >/dev/null
     check_cmd "test $(grep -v -e WARNING -e '^$' $BIG_INPUT_ERR | wc -l) -eq 0"
 fi
