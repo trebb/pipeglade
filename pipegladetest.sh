@@ -1486,7 +1486,7 @@ fi
 
 
 #exit
-
+# 
 echo "
 # BATCH THREE
 #
@@ -1663,6 +1663,25 @@ if test $AUTOMATIC; then
     check_rm $FIN
     check_rm $FOUT
     rm -f $ERR_FILE $LOG
+
+    ./pipeglade -u clock.ui -i $FIN -o $FOUT -b
+    check 0 "" \
+          "main:resize 500 600\n main:move 100 100"
+    check_cmd  'test $(xdotool search --name pipeglade-clock getwindowgeometry --shell | grep -c -e "X=...$" -e "Y=...$" -e "WIDTH=500" -e "HEIGHT=600") -eq 4'
+    check 0 "" \
+          "main:resize\n main:move 0 0"
+    check_cmd  'test $(xdotool search --name pipeglade-clock getwindowgeometry --shell | grep -c -e "X=.$" -e "Y=.$" -e "WIDTH=440" -e "HEIGHT=440") -eq 4'
+    check 0 "" \
+          "main:fullscreen"
+    check_cmd  'test $(xdotool search --name pipeglade-clock getwindowgeometry --shell | grep -c -e "WIDTH=..." -e "HEIGHT=...") -eq 2'
+    check 0 "" \
+          "main:unfullscreen"
+    check_cmd  'test $(xdotool search --name pipeglade-clock getwindowgeometry --shell | grep -c -e "WIDTH=440" -e "HEIGHT=440") -eq 2'
+    check 0 "" \
+          "main:set_title Another Title!"
+    check_cmd  'xdotool search --name "Another Title!" getwindowname | grep -qe "Another Title!"'
+    check 0 "" \
+          "_:main_quit"
 
 fi
 
@@ -2618,31 +2637,12 @@ if test $INTERACTIVE; then
           "scrolledwindow8:hscroll_to_range 1600 2900\n scrolledwindow8:vscroll_to_range 1600 2900" \
           "button_c:clicked"
 
-    check 1 "Press \"OK\" if we are fullscreen now" \
-          "main:fullscreen" \
-          "button1:clicked"
-    check 1 "Press \"OK\" if we are back to default size" \
-          "main:unfullscreen" \
-          "button1:clicked"
-    check 1 "Press \"OK\" if window is 1000x1000 now" \
-          "main:resize 1000 1000" \
-          "button1:clicked"
-    check 1 "Press \"OK\" if we are back to default size again" \
-          "main:resize" \
-          "button1:clicked"
-    check 1 "Press \"OK\" if our NE corner is at 400, 200 now" \
-          "main:move 400 200" \
-          "button1:clicked"
-
     check 1 "Press \"OK\" if there is now a \"Disconnect\" button" \
           "button2:set_visible 1\n button2:set_sensitive 0" \
           "button1:clicked"
     check 1 "Press \"Disconnect\"" \
           "button2:set_sensitive 1" \
           "button2:clicked"
-    check 1 "Press \"OK\" if the window title is now \"ALMOST DONE\"" \
-          "main:set_title ALMOST DONE" \
-          "button1:clicked"
 
     check 1 "Press \"BIG BUTTON\" inside the window titled \"PRESS ME\"" \
           "dialog1:set_title PRESS ME\n dialog1:set_visible 1\n dialog1:resize 800 800\n dialog1:move 50 50" \
