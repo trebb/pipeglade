@@ -1486,7 +1486,7 @@ fi
 
 
 #exit
-# 
+
 echo "
 # BATCH THREE
 #
@@ -1629,12 +1629,13 @@ if test $AUTOMATIC; then
     check_rm $FOUT
 
 
-    ./pipeglade -u simple_open.ui -i $FIN -o $FOUT -b >/dev/null
-    check 3 "" \
+    ./pipeglade -u simple_open.ui -i $FIN -o $FOUT >/dev/null &
+    # wait for $FIN and $OUT_FILE to appear
+    while test ! \( -e $FIN -a -e $FOUT \); do :; done
+    check 2 "" \
           "main_ok:force" \
           "main_ok:clicked" \
-          "main:file" \
-          "main:folder"
+          "main:file"
     check_rm $FIN
     check_rm $FOUT
 
@@ -2712,7 +2713,7 @@ if test $AUTOMATIC; then
     while test \( -e $FOUT -a -e $FIN \); do sleep .5; done
     check_cmd "test $(grep -v -e WARNING -e '^$' $BIG_INPUT_ERR | wc -l) -eq 0"
     cat $BIG_INPUT_ERR
-    rm $BIG_INPUT_ERR
+    rm -f $BIG_INPUT_ERR
     ./pipeglade -O $BIG_INPUT_ERR <$BIG_INPUT >/dev/null
     check_cmd "test $(grep -v -e WARNING -e '^$' $BIG_INPUT_ERR | wc -l) -eq 0"
 fi
