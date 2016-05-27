@@ -51,7 +51,11 @@ back into a text area of the same GUI.  Another example,
 
   ./clock.sh,
 
-uses the GtkBuilder file clock.ui and displays an analog clock.
+uses the GtkBuilder file clock.ui to display an analog clock, and
+
+  ./calc.sh
+
+harnesses dc(1) to provide an RPN desk calculator.
 
 There are three other example GtkBuilder files.  To see how they look
 like, call
