@@ -5,6 +5,7 @@
   command execution.
   * Add command line option -O for redirecting stderr.
   * Reject commands with excess arguments.
+  * Support temporary blocking of feedback messages.
   * GtkDialog and GtkFileChooserDialog now respond to the commands
   that work for GtkWindow.
   * Toplevel windows report 'name:closed' when closed by the window

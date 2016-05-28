@@ -82,7 +82,7 @@ gh-pages/index.html gh-pages/pipeglade.1.html: pipeglade.1 www-template/index.ht
 	cp www-template/* gh-pages/
 	cp clock.sh gh-pages/clock.sh.txt
 	cp clock.ui gh-pages/clock.ui.txt
-	mandoc -Wall -T html -O style=style.css pipeglade.1 > gh-pages/pipeglade.1.html
+	mandoc -Wall -T xhtml -O style=style.css pipeglade.1 > gh-pages/pipeglade.1.html
 	mandoc -Wall -T pdf -O paper=a4 pipeglade.1 > gh-pages/pipeglade.1.pdf
 	cp LICENSE gh-pages/
 	echo -e '/@/\ns/</\&lt;/\ns/>/\&gt;/\n,s/^$$/<p>/\nwq' | ed -s gh-pages/LICENSE

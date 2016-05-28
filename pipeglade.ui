@@ -729,7 +729,7 @@ selection</property>
                     <property name="model">liststore1</property>
                     <property name="search_column">0</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection" id="treeview-selection">
+                      <object class="GtkTreeSelection" id="treeview_selection">
                         <property name="mode">multiple</property>
                       </object>
                     </child>
@@ -910,7 +910,7 @@ selection</property>
                     <property name="level_indentation">2</property>
                     <property name="enable_tree_lines">True</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection" id="treeview-selection3">
+                      <object class="GtkTreeSelection" id="treeview_selection3">
                         <property name="mode">multiple</property>
                       </object>
                     </child>
@@ -1069,7 +1069,7 @@ selection</property>
                     <property name="level_indentation">2</property>
                     <property name="enable_tree_lines">True</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection" id="treeview-selection6">
+                      <object class="GtkTreeSelection" id="treeview_selection6">
                         <property name="mode">multiple</property>
                       </object>
                     </child>

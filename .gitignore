@@ -1,6 +1,7 @@
 *.core
 *.eps
 *.epsf
+*.err
 *.gmon
 *.gprof
 *.log

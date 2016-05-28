@@ -293,6 +293,8 @@ if test $AUTOMATIC; then
                 "ignoring command \"nnn:style font:Bold 11\""
     check_error "nnn:force" \
                 "ignoring command \"nnn:force\""
+    check_error "nnn:block 1" \
+                "ignoring command \"nnn:block 1\""
     # Wrong number or kind of arguments for generic actions
     check_error "button1:set_sensitive" \
                 "ignoring GtkButton command \"button1:set_sensitive\""
@@ -324,6 +326,10 @@ if test $AUTOMATIC; then
                 "ignoring GtkButton command \"button1:force 2\""
     check_error "_:main_quit 2" \
                 "ignoring command \"_:main_quit 2\""
+    check_error "button1:block 2" \
+                "ignoring GtkButton command \"button1:block 2\""
+    check_error "button1:block 0 0" \
+                "ignoring GtkButton command \"button1:block 0 0\""
     # Widget that shouldn't fire callbacks
     check_error "label1:force" \
                 "ignoring GtkLabel command \"label1:force\""
@@ -1711,6 +1717,9 @@ if test $AUTOMATIC; then
           "entry1:set_text FFFF" \
           "entry1:text FFFF"
     check 1 "" \
+          "entry1:block 1\n entry1:set_text XXXXX\n entry1:block 0\n entry1:set_text EEEE" \
+          "entry1:text EEEE"
+    check 1 "" \
           "entry1:set_text $BIG_STRING" \
           "entry1:text $BIG_STRING"
     check 1 "" \
@@ -1733,23 +1742,25 @@ if test $AUTOMATIC; then
     check 1 "" \
           "entry1:force" \
           "entry1:text GGGG"
+    check 1 "" \
+          "spinbutton1:block 1\n spinbutton1:set_text 29.0\n spinbutton1:block 0\n spinbutton1:set_text 28.0\n" \
+          "spinbutton1:text 28.0"
     check 2 "" \
           "spinbutton1:set_text 33.0\n spinbutton1:set_range 50 60\n" \
           "spinbutton1:text 33.0" \
           "spinbutton1:text 50.0"
-    check 2 "" \
-          "radiobutton2:set_active 1" \
-          "radiobutton1:0" \
-          "radiobutton2:1"
+    check 1 "" \
+          "radiobutton2:block 1\n radiobutton2:set_active 1\n radiobutton2:block 0" \
+          "radiobutton1:0"
     check 2 "" \
           "radiobutton1:set_active 1" \
           "radiobutton2:0" \
           "radiobutton1:1"
     check 1 "" \
-          "switch1:set_active 1" \
+          "switch1:set_active 1\n switch1:block 1\n switch1:set_active 0" \
           "switch1:1"
     check 1 "" \
-          "switch1:set_active 0" \
+          "switch1:set_active 1\n switch1:block 0\n switch1:set_active 0" \
           "switch1:0"
     check 0 "" \
           "progressbar1:set_text $BIG_STRING"
@@ -1761,6 +1772,12 @@ fi
 check 1 "" \
       "togglebutton1:set_active 1" \
       "togglebutton1:1"
+check 1 "" \
+      "togglebutton1:block 1\n togglebutton1:set_active 0\n togglebutton1:block 0\n togglebutton1:set_active 1" \
+      "togglebutton1:1"
+check 1 "" \
+      "calendar1:block 1\n calendar1:select_date 1752-05-17\n calendar1:block 0\n calendar1:select_date 1752-05-18" \
+      "calendar1:clicked 1752-05-18"
 check 1 "" \
       "calendar1:select_date 1752-03-29" \
       "calendar1:clicked 1752-03-29"
@@ -2277,7 +2294,7 @@ if test $AUTOMATIC; then
           "scale1:value 10.000000" \
           "scale1:value 10.000000"
     check 2 "" \
-          "scale1:set_range 20 22\n scale1:set_value 10\n scale1:set_value 100" \
+          "scale1:block 1\n scale1:set_range 20 22\n scale1:set_value 21\n scale1:block 0\n scale1:set_value 10\n scale1:set_value 100" \
           "scale1:value 20.000000" \
           "scale1:value 22.000000"
     check 1 "" \

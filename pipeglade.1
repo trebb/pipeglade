@@ -300,6 +300,19 @@ sets the widget's tooltip
 .Ar text .
 Default is disabling the tooltip.
 .Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 | 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages from widget.
+Doesn't work for
+.Sx GtkTreeView ;
+address the underlying
+.Cm GtkTreeSelection
+instead.
+Initially, all widgets are unblocked.
+.Pp
 .Qq Ar id Ns Cm :force
 simulates a click on widget
 .Ar id ,

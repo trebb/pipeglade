@@ -1995,6 +1995,34 @@ update_label(struct ui_data *ud)
                 ign_cmd(ud->type, ud->msg);
 }
 
+struct handler_id {
+        unsigned int id; /* returned by g_signal_connect() and friends */
+        bool blocked;    /* we avoid multiple blocking/unblocking */
+        struct handler_id *next;
+};
+
+static void
+update_blocked(struct ui_data *ud)
+{
+        char dummy;
+        struct handler_id *hid;
+        unsigned long int val;
+
+        if (sscanf(ud->data, "%lu %c", &val, &dummy) == 1 && val < 2) {
+                for (hid = g_object_get_data(ud->obj, "signal-id");
+                     hid != NULL; hid = hid->next) {
+                        if (val == 0 && hid->blocked == true) {
+                                g_signal_handler_unblock(ud->obj, hid->id);
+                                hid->blocked = false;
+                        } else if (val == 1 && hid->blocked == false) {
+                                g_signal_handler_block(ud->obj, hid->id);
+                                hid->blocked = true;
+                        }
+                }
+        } else
+                ign_cmd(ud->type, ud->msg);
+}
+
 static void
 update_notebook(struct ui_data *ud)
 {
@@ -2695,7 +2723,6 @@ update_ui(struct ui_data *ud)
         char *lc = lc_numeric();
 
         (ud->fn)(ud);
-        /* (ud->fn)(ud->obj, ud->action, ud->data, ud->msg, ud->type, ud->args); */
         free(ud->msg_tokens);
         free(ud->msg);
         free(ud);
@@ -2804,6 +2831,8 @@ digest_msg(struct info *ar)
                 ud->type = G_TYPE_FROM_INSTANCE(ud->obj);
                 if (eql(ud->action, "force"))
                         ud->fn = fake_ui_activity;
+                else if (eql(ud->action, "block"))
+                        ud->fn = update_blocked;
                 else if (eql(ud->action, "set_sensitive"))
                         ud->fn = update_sensitivity;
                 else if (eql(ud->action, "set_visible"))
@@ -3006,6 +3035,44 @@ cb_tree_model_toggle(GtkCellRenderer *renderer, gchar *path_s, struct info *ar)
                            toggle_state? "0" : "1");
 }
 
+/*
+ * Add new element containing id to the list of callback-handler ids
+ * stored in obj's field named "signal_id"
+ */
+static void
+push_handler_id(gpointer *obj, unsigned int id)
+{
+        struct handler_id *prev_hid, *hid;
+
+        prev_hid = g_object_get_data(G_OBJECT(obj), "signal-id");
+        if ((hid = malloc(sizeof(struct handler_id))) == NULL)
+                OOM_ABORT;
+        hid->next = prev_hid;
+        hid->id = id;
+        hid->blocked = false;
+        g_object_set_data(G_OBJECT(obj), "signal-id", hid);
+}
+
+/*
+ * Connect function cb to obj's widget signal sig, remembering the
+ * handler id in a list in obj's field named "signal-id"
+ */
+static void
+sig_conn(gpointer *obj, char *sig, GCallback cb, struct info *ar)
+{
+        unsigned int handler_id = g_signal_connect(obj, sig, cb, ar);
+
+        push_handler_id(obj, handler_id);
+}
+
+static void
+sig_conn_swapped(gpointer *obj, char *sig, GCallback cb, void *data)
+{
+        unsigned int handler_id = g_signal_connect_swapped(obj, sig, cb, data);
+
+        push_handler_id(obj, handler_id);
+}
+
 static void
 connect_widget_signals(gpointer *obj, struct info *ar)
 {
@@ -3026,7 +3093,7 @@ connect_widget_signals(gpointer *obj, struct info *ar)
                 unsigned int i, n_cells = g_list_length(cells);
 
                 g_list_free(cells);
-                g_signal_connect(obj, "clicked", G_CALLBACK(cb_simple), info_txt_new(o, "clicked"));
+                sig_conn(obj, "clicked", G_CALLBACK(cb_simple), info_txt_new(o, "clicked"));
                 for (i = 1; i <= n_cells; i++) {
                         GtkCellRenderer *renderer;
                         gboolean editable = FALSE;
@@ -3058,14 +3125,14 @@ connect_widget_signals(gpointer *obj, struct info *ar)
                 /* Button associated with a GtkTextView. */
                 if ((suffix = strstr(w_id, "_send_text")) != NULL &&
                     GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(ar->builder, suffix, w_id)))
-                        g_signal_connect(obj, "clicked", G_CALLBACK(cb_send_text),
-                                         info_obj_new(o, G_OBJECT(gtk_text_view_get_buffer(GTK_TEXT_VIEW(obj2))), NULL));
+                        sig_conn(obj, "clicked", G_CALLBACK(cb_send_text),
+                                 info_obj_new(o, G_OBJECT(gtk_text_view_get_buffer(GTK_TEXT_VIEW(obj2))), NULL));
                 else if ((suffix = strstr(w_id, "_send_selection")) != NULL &&
                          GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(ar->builder, suffix, w_id)))
-                        g_signal_connect(obj, "clicked", G_CALLBACK(cb_send_text_selection),
-                                         info_obj_new(o, G_OBJECT(gtk_text_view_get_buffer(GTK_TEXT_VIEW(obj2))), NULL));
+                        sig_conn(obj, "clicked", G_CALLBACK(cb_send_text_selection),
+                                 info_obj_new(o, G_OBJECT(gtk_text_view_get_buffer(GTK_TEXT_VIEW(obj2))), NULL));
                 else {
-                        g_signal_connect(obj, "clicked", G_CALLBACK(cb_simple), info_txt_new(o, "clicked"));
+                        sig_conn(obj, "clicked", G_CALLBACK(cb_simple), info_txt_new(o, "clicked"));
                         /* Buttons associated with (and part of) a GtkDialog.
                          * (We shun response ids which could be returned from
                          * gtk_dialog_run() because that would require the
@@ -3074,102 +3141,102 @@ connect_widget_signals(gpointer *obj, struct info *ar)
                         if ((suffix = strstr(w_id, "_cancel")) != NULL &&
                             GTK_IS_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, w_id)))
                                 if (eql(widget_id(GTK_BUILDABLE(obj2)), MAIN_WIN))
-                                        g_signal_connect_swapped(obj, "clicked",
-                                                                 G_CALLBACK(gtk_main_quit), NULL);
+                                        sig_conn_swapped(obj, "clicked",
+                                                         G_CALLBACK(gtk_main_quit), NULL);
                                 else
-                                        g_signal_connect_swapped(obj, "clicked",
-                                                                 G_CALLBACK(gtk_widget_hide), obj2);
+                                        sig_conn_swapped(obj, "clicked",
+                                                         G_CALLBACK(gtk_widget_hide), obj2);
                         else if ((suffix = strstr(w_id, "_ok")) != NULL &&
                                  GTK_IS_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, w_id))) {
                                 if (GTK_IS_FILE_CHOOSER_DIALOG(obj2))
-                                        g_signal_connect_swapped(obj, "clicked",
-                                                                 G_CALLBACK(cb_send_file_chooser_dialog_selection),
-                                                                 info_obj_new(o, obj2, NULL));
-                                if (eql(widget_id(GTK_BUILDABLE(obj2)), MAIN_WIN))
-                                        g_signal_connect_swapped(obj, "clicked",
-                                                                 G_CALLBACK(gtk_main_quit), NULL);
-                                else
-                                        g_signal_connect_swapped(obj, "clicked",
-                                                                 G_CALLBACK(gtk_widget_hide), obj2);
-                        } else if ((suffix = strstr(w_id, "_apply")) != NULL &&
-                                   GTK_IS_FILE_CHOOSER_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, w_id)))
-                                g_signal_connect_swapped(obj, "clicked",
+                                        sig_conn_swapped(obj, "clicked",
                                                          G_CALLBACK(cb_send_file_chooser_dialog_selection),
                                                          info_obj_new(o, obj2, NULL));
+                                if (eql(widget_id(GTK_BUILDABLE(obj2)), MAIN_WIN))
+                                        sig_conn_swapped(obj, "clicked",
+                                                         G_CALLBACK(gtk_main_quit), NULL);
+                                else
+                                        sig_conn_swapped(obj, "clicked",
+                                                         G_CALLBACK(gtk_widget_hide), obj2);
+                        } else if ((suffix = strstr(w_id, "_apply")) != NULL &&
+                                   GTK_IS_FILE_CHOOSER_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, w_id)))
+                                sig_conn_swapped(obj, "clicked",
+                                                 G_CALLBACK(cb_send_file_chooser_dialog_selection),
+                                                 info_obj_new(o, obj2, NULL));
                 }
         else if (GTK_IS_MENU_ITEM(obj))
                 if ((suffix = strstr(w_id, "_invoke")) != NULL &&
                     GTK_IS_DIALOG(obj2 = obj_sans_suffix(ar->builder, suffix, w_id)))
-                        g_signal_connect_swapped(obj, "activate",
-                                                 G_CALLBACK(gtk_widget_show), obj2);
+                        sig_conn_swapped(obj, "activate",
+                                         G_CALLBACK(gtk_widget_show), obj2);
                 else
-                        g_signal_connect(obj, "activate",
-                                         G_CALLBACK(cb_menu_item), info_txt_new(o, "active"));
+                        sig_conn(obj, "activate",
+                                 G_CALLBACK(cb_menu_item), info_txt_new(o, "active"));
         else if (GTK_IS_WINDOW(obj)) {
-                g_signal_connect(obj, "delete-event",
-                                 G_CALLBACK(cb_event_simple), info_txt_new(o, "closed"));
+                sig_conn(obj, "delete-event",
+                         G_CALLBACK(cb_event_simple), info_txt_new(o, "closed"));
                 if (eql(w_id, MAIN_WIN))
-                        g_signal_connect_swapped(obj, "delete-event",
-                                                 G_CALLBACK(gtk_main_quit), NULL);
+                        sig_conn_swapped(obj, "delete-event",
+                                         G_CALLBACK(gtk_main_quit), NULL);
                 else
-                        g_signal_connect(obj, "delete-event",
-                                         G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+                        sig_conn(obj, "delete-event",
+                                 G_CALLBACK(gtk_widget_hide_on_delete), NULL);
         } else if (type == GTK_TYPE_FILE_CHOOSER_BUTTON)
-                g_signal_connect(obj, "file-set",
-                                 G_CALLBACK(cb_file_chooser_button), info_txt_new(o, "file"));
+                sig_conn(obj, "file-set",
+                         G_CALLBACK(cb_file_chooser_button), info_txt_new(o, "file"));
         else if (type == GTK_TYPE_COLOR_BUTTON)
-                g_signal_connect(obj, "color-set",
-                                 G_CALLBACK(cb_color_button), info_txt_new(o, "color"));
+                sig_conn(obj, "color-set",
+                         G_CALLBACK(cb_color_button), info_txt_new(o, "color"));
         else if (type == GTK_TYPE_FONT_BUTTON)
-                g_signal_connect(obj, "font-set",
-                                 G_CALLBACK(cb_font_button), info_txt_new(o, "font"));
+                sig_conn(obj, "font-set",
+                         G_CALLBACK(cb_font_button), info_txt_new(o, "font"));
         else if (type == GTK_TYPE_SWITCH)
-                g_signal_connect(obj, "notify::active",
-                                 G_CALLBACK(cb_switch), info_txt_new(o, NULL));
+                sig_conn(obj, "notify::active",
+                         G_CALLBACK(cb_switch), info_txt_new(o, NULL));
         else if (type == GTK_TYPE_TOGGLE_BUTTON ||
                  type == GTK_TYPE_RADIO_BUTTON ||
                  type == GTK_TYPE_CHECK_BUTTON)
-                g_signal_connect(obj, "toggled",
-                                 G_CALLBACK(cb_toggle_button), info_txt_new(o, NULL));
+                sig_conn(obj, "toggled",
+                         G_CALLBACK(cb_toggle_button), info_txt_new(o, NULL));
         else if (type == GTK_TYPE_ENTRY)
-                g_signal_connect(obj, "changed",
-                                 G_CALLBACK(cb_editable), info_txt_new(o, "text"));
+                sig_conn(obj, "changed",
+                         G_CALLBACK(cb_editable), info_txt_new(o, "text"));
         else if (type == GTK_TYPE_SPIN_BUTTON)
-                g_signal_connect(obj, "value_changed",
-                                 G_CALLBACK(cb_spin_button), info_txt_new(o, "text")); /* TODO: rename to "value" */
+                sig_conn(obj, "value_changed",
+                         G_CALLBACK(cb_spin_button), info_txt_new(o, "text")); /* TODO: rename to "value" */
         else if (type == GTK_TYPE_SCALE)
-                g_signal_connect(obj, "value-changed",
-                                 G_CALLBACK(cb_range), info_txt_new(o, "value"));
+                sig_conn(obj, "value-changed",
+                         G_CALLBACK(cb_range), info_txt_new(o, "value"));
         else if (type == GTK_TYPE_CALENDAR) {
-                g_signal_connect(obj, "day-selected-double-click",
-                                 G_CALLBACK(cb_calendar), info_txt_new(o, "doubleclicked"));
-                g_signal_connect(obj, "day-selected",
-                                 G_CALLBACK(cb_calendar), info_txt_new(o, "clicked"));
+                sig_conn(obj, "day-selected-double-click",
+                         G_CALLBACK(cb_calendar), info_txt_new(o, "doubleclicked"));
+                sig_conn(obj, "day-selected",
+                         G_CALLBACK(cb_calendar), info_txt_new(o, "clicked"));
         } else if (type == GTK_TYPE_TREE_SELECTION)
-                g_signal_connect(obj, "changed",
-                                 G_CALLBACK(cb_tree_selection), info_txt_new(o, "clicked"));
+                sig_conn(obj, "changed",
+                         G_CALLBACK(cb_tree_selection), info_txt_new(o, "clicked"));
         else if (type == GTK_TYPE_SOCKET) {
-                g_signal_connect(obj, "plug-added",
-                                 G_CALLBACK(cb_simple), info_txt_new(o, "plug-added"));
-                g_signal_connect(obj, "plug-removed",
-                                 G_CALLBACK(cb_simple), info_txt_new(o, "plug-removed"));
+                sig_conn(obj, "plug-added",
+                         G_CALLBACK(cb_simple), info_txt_new(o, "plug-added"));
+                sig_conn(obj, "plug-removed",
+                         G_CALLBACK(cb_simple), info_txt_new(o, "plug-removed"));
                 /* TODO: rename to plug_added, plug_removed */
         } else if (type == GTK_TYPE_DRAWING_AREA)
-                g_signal_connect(obj, "draw", G_CALLBACK(cb_draw), NULL);
+                sig_conn(obj, "draw", G_CALLBACK(cb_draw), NULL);
         else if (type == GTK_TYPE_EVENT_BOX) {
                 gtk_widget_set_can_focus(GTK_WIDGET(obj), true);
-                g_signal_connect(obj, "button-press-event",
-                                 G_CALLBACK(cb_event_box_button),
-                                 info_txt_new(o, "button_press"));
-                g_signal_connect(obj, "button-release-event",
-                                 G_CALLBACK(cb_event_box_button),
-                                 info_txt_new(o, "button_release"));
-                g_signal_connect(obj, "motion-notify-event",
-                                 G_CALLBACK(cb_event_box_motion),
-                                 info_txt_new(o, "motion"));
-                g_signal_connect(obj, "key-press-event",
-                                 G_CALLBACK(cb_event_box_key),
-                                 info_txt_new(o, "key_press"));
+                sig_conn(obj, "button-press-event",
+                         G_CALLBACK(cb_event_box_button),
+                         info_txt_new(o, "button_press"));
+                sig_conn(obj, "button-release-event",
+                         G_CALLBACK(cb_event_box_button),
+                         info_txt_new(o, "button_release"));
+                sig_conn(obj, "motion-notify-event",
+                         G_CALLBACK(cb_event_box_motion),
+                         info_txt_new(o, "motion"));
+                sig_conn(obj, "key-press-event",
+                         G_CALLBACK(cb_event_box_key),
+                         info_txt_new(o, "key_press"));
         }
 }
 
