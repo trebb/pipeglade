@@ -2921,7 +2921,37 @@ digest_msg(struct info *ar)
  */
 
 /*
- * Attach to renderer key "col_number".  Associate "col_number" with
+ * Return the first string xpath obtains from ui_file.
+ * xmlFree(string) must be called when done
+ */
+static xmlChar *
+xpath1(xmlChar *xpath, const char *ui_file)
+{
+        xmlChar *r = NULL;
+        xmlDocPtr doc = NULL;
+        xmlNodeSetPtr nodes = NULL;
+        xmlXPathContextPtr ctx = NULL;
+        xmlXPathObjectPtr xpath_obj = NULL;
+
+        if ((doc = xmlParseFile(ui_file)) == NULL)
+                goto ret0;
+        if ((ctx = xmlXPathNewContext(doc)) == NULL)
+                goto ret1;
+        if ((xpath_obj = xmlXPathEvalExpression(xpath, ctx)) == NULL)
+                goto ret2;
+        if ((nodes = xpath_obj->nodesetval) != NULL && nodes->nodeNr > 0)
+                r = xmlNodeGetContent(nodes->nodeTab[0]);
+        xmlXPathFreeObject(xpath_obj);
+ret2:
+        xmlXPathFreeContext(ctx);
+ret1:
+        xmlFreeDoc(doc);
+ret0:
+        return r;
+}
+
+/*
+ * Attach key "col_number" to renderer.  Associate "col_number" with
  * the corresponding column number in the underlying model.
  * Due to what looks like a gap in the GTK API, renderer id and column
  * number are taken directly from the XML .ui file.
@@ -2929,77 +2959,57 @@ digest_msg(struct info *ar)
 static bool
 tree_view_column_get_renderer_column(GtkBuilder *builder, const char *ui_file,
                                      GtkTreeViewColumn *t_col, int n,
-                                     GtkCellRenderer **renderer)
+                                     GtkCellRenderer **rnd)
 {
         bool r = false;
-        char *xpath_base1 = "//object[@class=\"GtkTreeViewColumn\" and @id=\"";
-        char *xpath_base2 = "\"]/child[";
-        char *xpath_base3 = "]/object[@class=\"GtkCellRendererText\""
+        char *xp_bas1 = "//object[@class=\"GtkTreeViewColumn\" and @id=\"";
+        char *xp_bas2 = "\"]/child[";
+        char *xp_bas3 = "]/object[@class=\"GtkCellRendererText\""
                 " or @class=\"GtkCellRendererToggle\"]/";
-        char *xpath_renderer_id = "/@id";
-        char *xpath_text_col = "../attributes/attribute[@name=\"text\""
-                " or @name=\"active\"]";
-        const char *w_id = widget_id(GTK_BUILDABLE(t_col));
-        int i;
-        size_t xpath_len;
-        size_t xpath_n_len = 3;    /* Big Enough (TM) */
-        xmlChar *xpath, *renderer_name = NULL, *m_col_s = NULL;
-        xmlDocPtr doc;
-        xmlNodePtr cur;
-        xmlNodeSetPtr nodes;
-        xmlXPathContextPtr xpath_ctx;
-        xmlXPathObjectPtr xpath_obj;
+        char *xp_rnd_id = "@id";
+        char *xp_text_col = "../attributes/attribute[@name=\"text\""
+                " or @name=\"active\"]/text()";
+        const char *tree_col_id = widget_id(GTK_BUILDABLE(t_col));
+        size_t xp_rnd_nam_len, xp_mod_col_len;
+        size_t xp_n_len = 3;    /* Big Enough (TM) */
+        xmlChar *xp_rnd_nam = NULL, *xp_mod_col = NULL;
+        xmlChar *rnd_nam = NULL, *mod_col = NULL;
 
-        if ((doc = xmlParseFile(ui_file)) == NULL)
-                return false;
-        if ((xpath_ctx = xmlXPathNewContext(doc)) == NULL) {
-                xmlFreeDoc(doc);
-                return false;
-        }
-        xpath_len = 2 * (strlen(xpath_base1) + strlen(w_id) +
-                         strlen(xpath_base2) + xpath_n_len +
-                         strlen(xpath_base3)) +
-                sizeof('|') +
-                strlen(xpath_text_col) + strlen(xpath_renderer_id) +
-                sizeof('\0');
-        if ((xpath = malloc(xpath_len)) == NULL)
+        /* find name of nth cell renderer under the GtkTreeViewColumn */
+        /* tree_col_id */
+        xp_rnd_nam_len = strlen(xp_bas1) + strlen(tree_col_id) +
+                strlen(xp_bas2) + xp_n_len + strlen(xp_bas3) +
+                strlen(xp_rnd_id) + sizeof('\0');
+        if ((xp_rnd_nam = malloc(xp_rnd_nam_len)) == NULL)
                 OOM_ABORT;
-        snprintf((char *) xpath, xpath_len, "%s%s%s%d%s%s|%s%s%s%d%s%s",
-                 xpath_base1, w_id, xpath_base2, n, xpath_base3, xpath_text_col,
-                 xpath_base1, w_id, xpath_base2, n, xpath_base3, xpath_renderer_id);
-        if ((xpath_obj = xmlXPathEvalExpression(xpath, xpath_ctx)) == NULL) {
-                xmlXPathFreeContext(xpath_ctx);
-                free(xpath);
-                xmlFreeDoc(doc);
-                return false;
-        }
-        if ((nodes = xpath_obj->nodesetval) != NULL) {
-                for (i = 0; i < nodes->nodeNr; ++i) {
-                        if (nodes->nodeTab[i]->type == XML_ELEMENT_NODE) {
-                                cur = nodes->nodeTab[i];
-                                m_col_s = xmlNodeGetContent(cur);
-                        } else {
-                                cur = nodes->nodeTab[i];
-                                renderer_name = xmlNodeGetContent(cur);
-                        }
-                }
-        }
-        if (renderer_name) {
-                *renderer = GTK_CELL_RENDERER(
-                        gtk_builder_get_object(builder, (char *) renderer_name));
-                if (m_col_s) {
-                        g_object_set_data(G_OBJECT(*renderer), "col_number",
-                                          GINT_TO_POINTER(strtol((char *) m_col_s,
+        snprintf((char *) xp_rnd_nam, xp_rnd_nam_len, "%s%s%s%d%s%s",
+                 xp_bas1, tree_col_id, xp_bas2, n,
+                 xp_bas3, xp_rnd_id);
+        rnd_nam = xpath1(xp_rnd_nam, ui_file);
+        /* find the model column that is attached to the nth cell */
+        /* renderer under GtkTreeViewColumn tree_col_id */
+        xp_mod_col_len = strlen(xp_bas1) + strlen(tree_col_id) +
+                strlen(xp_bas2) + xp_n_len + strlen(xp_bas3) +
+                strlen(xp_text_col) + sizeof('\0');
+        if ((xp_mod_col = malloc(xp_mod_col_len)) == NULL)
+                OOM_ABORT;
+        snprintf((char *) xp_mod_col, xp_mod_col_len, "%s%s%s%d%s%s",
+                 xp_bas1, tree_col_id, xp_bas2, n, xp_bas3, xp_text_col);
+        mod_col = xpath1(xp_mod_col, ui_file);
+        if (rnd_nam) {
+                *rnd = GTK_CELL_RENDERER(
+                        gtk_builder_get_object(builder, (char *) rnd_nam));
+                if (mod_col) {
+                        g_object_set_data(G_OBJECT(*rnd), "col_number",
+                                          GINT_TO_POINTER(strtol((char *) mod_col,
                                                                  NULL, 10)));
-                        xmlFree(m_col_s);
                         r = true;
                 }
-                xmlFree(renderer_name);
         }
-        xmlXPathFreeObject(xpath_obj);
-        xmlXPathFreeContext(xpath_ctx);
-        free(xpath);
-        xmlFreeDoc(doc);
+        free(xp_rnd_nam);
+        free(xp_mod_col);
+        xmlFree(rnd_nam);
+        xmlFree(mod_col);
         return r;
 }
 
