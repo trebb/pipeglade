@@ -1913,7 +1913,8 @@ static void
 update_focus(struct ui_data *ud){
         char dummy;
 
-        if (sscanf(ud->data, " %c", &dummy) < 1 &&
+        if (GTK_IS_WIDGET(ud->obj) &&
+            sscanf(ud->data, " %c", &dummy) < 1 &&
             gtk_widget_get_can_focus(GTK_WIDGET(ud->obj)))
                 gtk_widget_grab_focus(GTK_WIDGET(ud->obj));
         else
@@ -2120,7 +2121,8 @@ update_sensitivity(struct ui_data *ud)
         char dummy;
         unsigned int val;
 
-        if (sscanf(ud->data, "%u %c", &val, &dummy) == 1 && val < 2)
+        if (GTK_IS_WIDGET(ud->obj) &&
+            sscanf(ud->data, "%u %c", &val, &dummy) == 1 && val < 2)
                 gtk_widget_set_sensitive(GTK_WIDGET(ud->obj), val);
         else
                 ign_cmd(ud->type, ud->msg);
@@ -2132,9 +2134,11 @@ update_size_request(struct ui_data *ud)
         char dummy;
         int x, y;
 
-        if (sscanf(ud->data, "%d %d %c", &x, &y, &dummy) == 2)
+        if (GTK_IS_WIDGET(ud->obj) &&
+            sscanf(ud->data, "%d %d %c", &x, &y, &dummy) == 2)
                 gtk_widget_set_size_request(GTK_WIDGET(ud->obj), x, y);
-        else if (sscanf(ud->data, " %c", &dummy) < 1)
+        else if (GTK_IS_WIDGET(ud->obj) &&
+                 sscanf(ud->data, " %c", &dummy) < 1)
                 gtk_widget_set_size_request(GTK_WIDGET(ud->obj), -1, -1);
         else
                 ign_cmd(ud->type, ud->msg);
@@ -2300,7 +2304,10 @@ update_toggle_button(struct ui_data *ud)
 static void
 update_tooltip_text(struct ui_data *ud)
 {
-        gtk_widget_set_tooltip_text(GTK_WIDGET(ud->obj), ud->data);
+        if (GTK_IS_WIDGET(ud->obj))
+                gtk_widget_set_tooltip_text(GTK_WIDGET(ud->obj), ud->data);
+        else
+                ign_cmd(ud->type, ud->msg);
 }
 
 /*
@@ -2589,7 +2596,8 @@ update_visibility(struct ui_data *ud)
         char dummy;
         unsigned int val;
 
-        if (sscanf(ud->data, "%u %c", &val, &dummy) == 1 && val < 2)
+        if (GTK_IS_WIDGET(ud->obj) &&
+            sscanf(ud->data, "%u %c", &val, &dummy) == 1 && val < 2)
                 gtk_widget_set_visible(GTK_WIDGET(ud->obj), val);
         else
                 ign_cmd(ud->type, ud->msg);
@@ -2607,6 +2615,10 @@ update_widget_style(struct ui_data *ud)
         const char *prefix = "* {", *suffix = "}";
         size_t sz;
 
+        if (!GTK_IS_WIDGET(ud->obj)) {
+                ign_cmd(ud->type, ud->msg);
+                return;
+        }
         style_provider = g_object_get_data(ud->obj, "style_provider");
         sz = strlen(prefix) + strlen(suffix) + strlen(ud->data) + 1;
         context = gtk_widget_get_style_context(GTK_WIDGET(ud->obj));

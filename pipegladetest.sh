@@ -923,11 +923,26 @@ if test $AUTOMATIC; then
     check_error "treeview1:set 1 7 555 5" \
                 "ignoring GtkTreeView command \"treeview1:set 1 7 555 5\""
 
-    # GtkTreeViewColumn
+    # GtkTreeViewColumn (which is not a GtkWidget)
     check_error "treeviewcolumn3:nnn" \
                 "ignoring GtkTreeViewColumn command \"treeviewcolumn3:nnn\""
     check_error "treeviewcolumn3:force" \
                 "ignoring GtkTreeViewColumn command \"treeviewcolumn3:force\""
+    check_error "treeviewcolumn3:grab_focus" \
+                "ignoring GtkTreeViewColumn command \"treeviewcolumn3:grab_focus\""
+    check_error "treeviewcolumn3:snapshot x.svg" \
+                "ignoring GtkTreeViewColumn command \"treeviewcolumn3:snapshot x.svg\""
+    check_error "treeviewcolumn3:set_sensitive 0" \
+                "ignoring GtkTreeViewColumn command \"treeviewcolumn3:set_sensitive 0\""
+    check_error "treeviewcolumn3:set_size_request 50 60" \
+                "ignoring GtkTreeViewColumn command \"treeviewcolumn3:set_size_request 50 60\""
+    check_error "treeviewcolumn3:set_visible 0" \
+                "ignoring GtkTreeViewColumn command \"treeviewcolumn3:set_visible 0\""
+    check_error "treeviewcolumn3:style" \
+                "ignoring GtkTreeViewColumn command \"treeviewcolumn3:style\""
+    check_error "treeviewcolumn3:set_tooltip_text" \
+                "ignoring GtkTreeViewColumn command \"treeviewcolumn3:set_tooltip_text\""
+
     # GtkEntry
     check_error "entry1:nnn" \
                 "ignoring GtkEntry command \"entry1:nnn\""
