@@ -295,6 +295,13 @@ if test $AUTOMATIC; then
                 "ignoring command \"nnn:force\""
     check_error "nnn:block 1" \
                 "ignoring command \"nnn:block 1\""
+    # Illegal id
+    check_error "+:main_quit" \
+                "ignoring command \"+:main_quit"
+    check_error "=:main_quit" \
+                "ignoring command \"=:main_quit"
+    check_error "|:main_quit" \
+                "ignoring command \"|:main_quit"
     # Wrong number or kind of arguments for generic actions
     check_error "button1:set_sensitive" \
                 "ignoring GtkButton command \"button1:set_sensitive\""
@@ -1487,7 +1494,7 @@ if test $AUTOMATIC; then
                 "ignoring GtkDrawingArea command \"drawingarea1:snapshot xsvg\""
 fi
 
-echo "_:main_quit" >$FIN
+echo "-:main_quit" >$FIN
 check_rm $FIN
 
 
@@ -1503,7 +1510,7 @@ if test $AUTOMATIC; then
                 "##########	##### (New Pipeglade session) #####"
     check_error "" \
                 "### (Idle) ###"
-    check_error "_:main_quit" \
+    check_error "-:main_quit" \
                 "	# Comment"
     check_rm $FIN
     rm $FERR

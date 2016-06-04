@@ -2816,7 +2816,7 @@ digest_cmd(struct info *ar)
                 }
                 strcpy(ud->cmd_tokens, ud->cmd);
                 sscanf(ud->cmd_tokens,
-                       " %n%*[0-9a-zA-Z_]%n:%n%*[0-9a-zA-Z_]%n%*1[ \t]%n",
+                       " %n%*[0-9a-zA-Z_-]%n:%n%*[0-9a-zA-Z_]%n%*1[ \t]%n",
                        &id_start, &id_end, &action_start, &action_end, &data_start);
                 ud->cmd_tokens[id_end] = ud->cmd_tokens[action_end] = '\0';
                 id = ud->cmd_tokens + id_start;

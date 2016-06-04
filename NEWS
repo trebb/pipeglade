@@ -4,6 +4,8 @@
   * Add command line option -l for logging duration of pipeglade
   command execution.
   * Add command line option -O for redirecting stderr.
+  * Widget names are alphanumeric including underscores and (new)
+  hyphens.
   * Reject commands with excess arguments.
   * Support temporary blocking of feedback messages.
   * GtkDialog and GtkFileChooserDialog now respond to the commands
