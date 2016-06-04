@@ -19,7 +19,7 @@
 .\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 .\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.Dd May 07, 2016
+.Dd Jun 04, 2016
 .Dt PIPEGLADE 1 PRM
 .Os BSD
 .Sh NAME
@@ -248,99 +248,9 @@ named
 .Li foo
 would appear as
 .Dl <object class="GtkWindow" id="foo"> .
-.Ss Any Widget (including widgets not mentioned above)
+.Ss Unspecific Widget
 .Bl -tag -width "commands "
 .It Commands
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 | 1
-makes the widget grayed out
-.Pq Cm 0
-or responsive
-.Pq Cm 1 .
-.Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 | 1
-hides
-.Pq Cm 0
-the widget, or makes it visible
-.Pq Cm 1 .
-.Pp
-.Qq Ar id Ns Cm :grab_focus
-puts the keyboard focus onto the widget, if possible.
-.Pp
-.Qq Ar id Ns Cm :set_size_request Bq Ar width height
-sets the widget's minimum size to
-.Ar width
-x
-.Ar height .
-Default is the widget's natural size.
-.Pp
-.Qo
-.Ar id Ns Cm :style
-.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
-.Qc
-sets properties
-.Ar prop
-of the widget style to
-.Ar val .
-Properties not explicitly specified are reset to their default values.
-Examples:
-.Bl -dash -offset indent -compact
-.It
-.Ql label1:style font:Bold 11; background-color:green
-.It
-.Ql label1:style font-style:italic; font-weight:bold; color:blue
-.It
-.Ql frame1:style border-color:red yellow; border-width:5px
-.It
-.Ql frame1:style border-radius:10px; transition:10s
-.El
-For a description of possible color notations see
-.Sx GtkColorButton .
-.Pp
-.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
-sets the widget's tooltip
-.Ar text .
-Default is disabling the tooltip.
-.Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 | 1
-blocks
-.Pq Cm 1
-or unblocks
-.Pq Cm 0
-feedback messages from widget.
-Doesn't work for
-.Sx GtkTreeView ;
-address the underlying
-.Cm GtkTreeSelection
-instead.
-Initially, all widgets are unblocked.
-.Pp
-.Qq Ar id Ns Cm :force
-simulates a click on widget
-.Ar id ,
-triggering a response as described with the widgets below.
-Exceptions:
-.Bl -dash -offset indent -compact
-.It
-The command is ignored by
-.Sx GtkComboBoxText
-(address its child
-.Sx GtkEntry
-instead),
-.Sx GtkEventBox ,
-.Sx GtkTreeView ,
-and
-.Sx GtkTreeViewColumn ;
-.It
-.Sx GtkCalendar , GtkEntry , GtkFileChooserButton , GtkScale ,
-and
-.Sx GtkSpinButton
-report the currently selected item;
-.It
-.Sx GtkColorButton
-and
-.Sx GtkFontButton
-just open their respective dialogs.
-.El
 .Pp
 .Qq Ar id Ns Cm :load Ar file
 reads arbitrary
@@ -362,10 +272,6 @@ command; see
 and
 .Sx GtkTreeView .
 .Pp
-.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
-writes a snapshot of the widget to an image file of the specified
-type.
-.Pp
 .Qq Ar id Ns Cm :main_quit
 kills the user interface.
 A non-empty
@@ -378,6 +284,55 @@ is required but ignored.
 .Qq Ar id Ns Cm :set_label Ar string
 replaces the button text with
 .Ar string .
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the button.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the button grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the widget, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the button is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the button's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+simulates a click on the button.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the button to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the button's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the button's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:clicked
 .Pp
@@ -405,6 +360,52 @@ on the calendar.
 .Pp
 .Qq Ar id Ns Cm :clear_marks
 unmarks all days on the calendar.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the calendar grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the calendar, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the calendar is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the calendar's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+simulates a click on the currently selected date.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the calendar to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the calendar's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the widget's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the calendar's style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:clicked Ar yyyy Ns Cm - Ns Ar mm Ns Cm - Ns Ar dd
 .Pp
@@ -413,7 +414,7 @@ unmarks all days on the calendar.
 .Ss GtkCheckButton
 .Bl -tag -width "commands "
 .It Commands
-.Qq Ar id Ns Cm :set_active Brq Cm 0 | 1
+.Qq Ar id Ns Cm :set_active Brq Cm 0 Ns | Ns 1
 switches the check mark off
 .Pq Cm 0
 or on
@@ -422,6 +423,55 @@ or on
 .Qq Ar id Ns Cm :set_label Ar string
 replaces the button text with
 .Ar string .
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the button.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the button grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the button, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the button is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the button's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+simulates a click on the button.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the button to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the button's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the widget's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the button's style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:1
 if switched on, or
@@ -432,27 +482,57 @@ otherwise.
 .Bl -tag -width "commands "
 .It Commands
 .Qq Ar id Ns Cm :set_color Ar color
-preselects the color.
-.Ar color
-can be
-.Bl -dash -offset indent -compact
-.It
-a standard X11 color name, like
-.Ql Dark Sea Green ,
-.It
-a hexadecimal value in the form
-.Cm # Ns Ar rgb , Cm # Ns Ar rrggbb , Cm # Ns Ar rrrgggbbb ,
-or
-.Cm # Ns Ar rrrrggggbbbb ,
-.It
-an RGB color in the form
-.Cm rgb( Ns Ar red Ns Cm \&, Ns Ar green Ns Cm \&, Ns Ar blue Ns Cm \&) ,
-or
-.It
-an RGBA color in the form
-.Cm rgba( Ns Ar red Ns Cm \&, Ns Ar green Ns Cm \&, Ns
-.Ar blue Ns Cm \&, Ns Ar alpha Ns Cm \&) .
-.El
+preselects the color; see
+.Sx Color .
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the button.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the button grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the button, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the button is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the button's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+opens the dialog window.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the button to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the button's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the widget's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the button's style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:color Cm rgb( Ns Ar red Ns Cm \&, Ns Ar green Ns Cm \&, Ns Ar blue Ns Cm \&)
 or
@@ -486,6 +566,52 @@ at
 .Qq Ar id Ns Cm :remove Ar position
 removes the item at
 .Ar position .
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the combo box.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the combo box grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the combo box, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the combo box is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the combo box to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the combo box's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar entry_id Ns Cm \&:text Ar text ,
 .Ar entry_id
@@ -545,6 +671,49 @@ moves the dialog window to position
 and
 .Qq Ar id Ns Cm :unfullscreen
 switch fullscreen mode on and off.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the dialog grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the dialog, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages from the dialog window.
+Initially, the window is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the dialog window's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the dialog window to an image file of the
+specified type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the dialog window's minimum size to
+.Ar width
+x
+.Ar height .
+Default is its natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the dialog window's style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:closed
 if the
@@ -751,6 +920,27 @@ Default is resetting the current transformation matrix.
 .Qq Ar id Ns Cm :translate Bro Ar n Ns | Ns Cm = Ns Ar n Ns | Ns Ar n Ns Cm < Ns Ar m Brc Ar tx ty
 translates the user space origin by
 .Pq Ar tx , ty .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the drawing area, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the drawing area's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the drawing area to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the drawing areas's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the natural size.
 .It Feedback
 none
 .El
@@ -765,6 +955,55 @@ replaces the user-editable text with
 sets the
 .Ar string
 that is displayed when the entry is empty and unfocused.
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus into the entry.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the entry grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the entry, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the entry is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the entry's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+lets the entry report its current content.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the entry to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the entry's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the entry's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:text Ar text ,
 once for each change of
@@ -776,7 +1015,45 @@ are mouse pointer coordinates relative to the
 .Cm GtkEventBox .
 .Bl -tag -width "commands "
 .It Commands
-none
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the event box.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the event box insensitive
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the event box is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the tooltip of the event box.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the event box to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the minimum size to
+.Ar width
+x
+.Ar height .
+Default is the natural size of the event box.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the widget style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:button_press Ar b x y ,
 .Qq Ar id Ns Cm \&:button_release Ar b x y
@@ -805,11 +1082,52 @@ being the key's name
 replaces the expander label text with
 .Ar string .
 .Pp
-.Qq Ar id Ns Cm :set_expanded Brq Cm 0 |  1
+.Qq Ar id Ns Cm :set_expanded Brq Cm 0 Ns | Ns  1
 hides
 .Pq Cm 0
 the child widget, or makes it visible
 .Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the expander.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the expander grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the expander, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the expander's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+toggles the expansion state.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the expander to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the expander's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 none
 .El
@@ -820,6 +1138,55 @@ none
 preselects
 .Ar path
 to the extent it exists.
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the button.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the button grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the button, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the button is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the button's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+simulates fresh selection of the currently selected pathname.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the button to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the button's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the widget's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:file Ar pathname
 if the selection has changed.
@@ -907,6 +1274,49 @@ moves the dialog window to position
 and
 .Qq Ar id Ns Cm :unfullscreen
 switch fullscreen mode on and off.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the dialog grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the dialog, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages form the dialog window.
+Initially, the widget is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the dialog window's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the widget to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the widget's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the widget's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the widget style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm :file Ar pathname
 and/or
@@ -922,6 +1332,55 @@ window was closed by the window manager.
 .It Commands
 .Qq Ar id Ns Cm :set_font_name Ar fontname
 preselects the font.
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the button.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the button grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the button, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the button is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the button's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+opens the dialog window.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the button to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the button's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the button's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:font Ar fontname
 .El
@@ -931,6 +1390,41 @@ preselects the font.
 .Qq Ar id Ns Cm :set_label Ar text
 replaces the frame label text with
 .Ar string .
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the frame and its content grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the frame, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the frame's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the frame to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the widget's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the frame's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 none
 .El
@@ -943,6 +1437,35 @@ replaces the image with one of the standard icons.
 .Qq Ar id Ns Cm :set_from_file Ar path
 replaces the image by the one found at
 .Ar path Ns .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the image, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the image's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the image to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the images's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the image's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 none
 .El
@@ -952,13 +1475,92 @@ none
 .Qq Ar id Ns Cm :set_text Ar string
 replaces the label text with
 .Ar string .
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the label grayed out
+.Pq Cm 0
+or clearly visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the label, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the label's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the label to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the label's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the label's style.
+See
+.Sx Style .
 .It Feedback
 none
 .El
 .Ss GtkMenuItem, GtkImageMenuItem
 .Bl -tag -width "commands "
 .It Commands
-none
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the item grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the item, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the item is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the item's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+simulates a click on the menu item.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the menu item to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the item's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the item's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the item's style.
+See
+.Sx Style .
 .It Feedback
 A
 .Cm GtkMenuItem
@@ -984,6 +1586,44 @@ it reports
 .Qq Ar id Ns Cm :set_current_page Ar n
 switches to zero-based page number
 .Ar n .
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the notebook.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the notebook grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the notebook, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the notebook's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the notebook to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the notebooks's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the widget's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the notebook's style.
+See
+.Sx Style .
 .It Feedback
 none
 .El
@@ -997,6 +1637,49 @@ Pressing the
 button sends
 .Ar file.ps
 to the printer the user selected in the dialog.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the dialog grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the dialog, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the dialog is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the dialog's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the dialog to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the dialog's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the dialog's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the widget style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:closed
 if the
@@ -1015,6 +1698,35 @@ moves the progress bar to
 replaces the text of the progress bar with
 .Ar string .
 Default is the progress percentage.
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the progress bar, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the tooltip of the progressbar.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the progress bar to an image file of the
+specified type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the minimum size of the progress bar to
+.Ar width
+x
+.Ar height .
+Default is the natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 none
 .El
@@ -1028,6 +1740,55 @@ All other buttons of the same group will go off automatically.
 .Qq Ar id Ns Cm :set_label Ar string
 replaces the button text with
 .Ar string .
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the button.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the button grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the button, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the button is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the button's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+simulates a click on the button.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the button to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the button's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the button's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:1
 if switched on, or
@@ -1054,6 +1815,55 @@ sets the steps the slider moves while pressing arrow keys and
 .Ql Page_Up Ns
 .Pf / Ql Page_Down ,
 respectively.
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the scale.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the scale grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the scale, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the scale is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the scale's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+simulates fresh selection of the current value.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the scale to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the scale's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:value Ar number
 .El
@@ -1080,6 +1890,44 @@ into the
 .Cm GtkScrolledWindow .
 If the range is greater than the window, the initial part of the range
 will be visible.
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the widget.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the widget grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the widget, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the widget's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the widget to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the minimum size to
+.Ar width
+x
+.Ar height .
+Default is the widget's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 none
 .El
@@ -1107,6 +1955,43 @@ file:
 .Qq Ar id Ns Cm :id
 requests a feedback message containing the socket
 .Ar xid .
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the socket.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the socket grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the socket, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the socket's tooltip.
+Default is disabling the tooltip.
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the socket to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the socket's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the socket's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm :id Ar xid
 can be used by another process to XEmbed its widgets into the
@@ -1138,6 +2023,55 @@ button, and
 .Pf / Ql Page_Down Ns
 /middle mouse button,
 respectively.
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the button.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the button grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the button, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the button is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the button's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+simulates fresh selection of the current value
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the button to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the button's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the widget's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the button's style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:text Ar text
 .El
@@ -1148,6 +2082,41 @@ respectively.
 and
 .Qq Ar id Ns Cm :stop
 start and stop the spinner.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the spinner grayed out
+.Pq Cm 0
+or clearly visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the spinner, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the spinner's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the spinner to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the spinner's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 none
 .El
@@ -1182,17 +2151,101 @@ remove the entries associated with context parameter
 or
 .Ql 0 ,
 respectively, from the statusbar.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the statusbar grayed out
+.Pq Cm 0
+or clearly visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the statusbar, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the statusbar's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the statusbar to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the statusbar's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the statusbar's style.
+See
+.Sx Style .
 .It Feedback
 none
 .El
 .Ss GtkSwitch
 .Bl -tag -width "commands "
 .It Commands
-.Qq Ar id Ns Cm :set_active Brq Cm 0 | 1
+.Qq Ar id Ns Cm :set_active Brq Cm 0 Ns | Ns 1
 turns the switch off
 .Pq Cm 0
 or on
 .Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the switch.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the switch grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the switch, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the switch is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the tooltip of the switch.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+simulates a click on the switch.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the switch to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the switch's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:1
 if switched on, or
@@ -1251,6 +2304,44 @@ stores in
 a
 .Nm
 command containing the text.
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus into the textview.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the text view grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the text view, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the tooltip of the text view.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the text view to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the minimum size to
+.Ar width
+x
+.Ar height .
+Default is the natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar button_id Ns Cm :text Ar text ,
 .Ar button_id
@@ -1266,7 +2357,7 @@ and backslashes are replaced by
 .Ss GtkToggleButton
 .Bl -tag -width "commands "
 .It Commands
-.Qq Ar id Ns Cm :set_active Brq Cm 0 | 1
+.Qq Ar id Ns Cm :set_active Brq Cm 0 Ns | Ns 1
 switches the button off
 .Pq Cm 0
 or on
@@ -1275,6 +2366,55 @@ or on
 .Qq Ar id Ns Cm :set_label Ar string
 replaces the button text with
 .Ar string .
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the button.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the button grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the button, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the button is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the button's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+simulates a click on the button.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the button to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the button's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the button's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the button's style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:1
 if switched on, or
@@ -1365,6 +2505,58 @@ stores the content of the underlying model as a sequence of
 .Nm
 commands into
 .Ar file .
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the tree view.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the tree view grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the tree view, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Po
+with
+.Ar id
+from the underlying
+.Cm GtkTreeSelection
+.Pc
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the widget is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the tooltip of the tree view.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the tree view to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the minimum size of the tree view to
+.Ar width
+x
+.Ar height .
+Default is the widget's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:clicked
 .Pp
@@ -1379,7 +2571,13 @@ has been edited.
 .Ss GtkTreeViewColumn
 .Bl -tag -width "commands "
 .It Commands
-none
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the widget is unblocked.
 .It Feedback
 .Qq Ar id Ns Cm \&:clicked
 .El
@@ -1405,11 +2603,98 @@ moves the window to position
 and
 .Qq Ar id Ns Cm :unfullscreen
 switch fullscreen mode on and off.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+makes the widget grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+hides
+.Pq Cm 0
+the widget, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the widget is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the window's tooltip.
+Default is disabling the tooltip.
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the window to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the window's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the widget's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
 .It Feedback
 .Qq Ar id Ns Cm \&:closed
 if the
 .Cm GtkWindow
 was closed by the window manager.
+.El
+.Sh SPECIAL SYNTAX
+.Ss Style
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets properties
+.Ar prop
+of the widget style to
+.Ar val .
+Properties not explicitly specified are reset to their default values.
+Examples:
+.Bl -dash -offset indent -compact
+.It
+.Ql label1:style font:Bold 11; background-color:green
+.It
+.Ql label1:style font-style:italic; font-weight:bold; color:blue
+.It
+.Ql frame1:style border-color:red yellow; border-width:5px
+.It
+.Ql frame1:style border-radius:10px; transition:10s
+.El
+For a description of possible color notations see
+.Sx Color .
+.Ss Color
+.Ar color
+can be
+.Bl -dash -offset indent -compact
+.It
+a standard X11 color name, like
+.Ql Dark Sea Green ,
+.It
+a hexadecimal value in the form
+.Cm # Ns Ar rgb , Cm # Ns Ar rrggbb , Cm # Ns Ar rrrgggbbb ,
+or
+.Cm # Ns Ar rrrrggggbbbb ,
+.It
+an RGB color in the form
+.Cm rgb( Ns Ar red Ns Cm \&, Ns Ar green Ns Cm \&, Ns Ar blue Ns Cm \&) ,
+or
+.It
+an RGBA color in the form
+.Cm rgba( Ns Ar red Ns Cm \&, Ns Ar green Ns Cm \&, Ns
+.Ar blue Ns Cm \&, Ns Ar alpha Ns Cm \&) .
 .El
 .Sh EXIT STATUS
 .Ex -std
