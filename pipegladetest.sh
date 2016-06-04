@@ -262,7 +262,7 @@ read r 2< $FERR &
 while test ! \( -e $FIN \); do :; done
 
 if test $AUTOMATIC; then
-    # Non-existent name
+    # Non-existent id
     check_error "nnn" \
                 "ignoring command \"nnn\""
     check_error "BIG_STRING" \
@@ -330,6 +330,10 @@ if test $AUTOMATIC; then
                 "ignoring GtkButton command \"button1:block 2\""
     check_error "button1:block 0 0" \
                 "ignoring GtkButton command \"button1:block 0 0\""
+    check_error "button1:snapshot" \
+                "ignoring GtkButton command \"button1:snapshot\""
+    check_error "button1:snapshot " \
+                "ignoring GtkButton command \"button1:snapshot \""
     # Widget that shouldn't fire callbacks
     check_error "label1:force" \
                 "ignoring GtkLabel command \"label1:force\""
@@ -1452,20 +1456,20 @@ if test $AUTOMATIC; then
                 "ignoring GtkDrawingArea command \"drawingarea1:rotate 1 x\""
     check_error "drawingarea1:rotate 1 10 10" \
                 "ignoring GtkDrawingArea command \"drawingarea1:rotate 1 10 10\""
-    check_error "drawingarea1:save" \
-                "ignoring GtkDrawingArea command \"drawingarea1:save\""
-    check_error "drawingarea1:save " \
-                "ignoring GtkDrawingArea command \"drawingarea1:save \""
-    check_error "drawingarea1:save x" \
-                "ignoring GtkDrawingArea command \"drawingarea1:save x\""
-    check_error "drawingarea1:save $BIG_STRING" \
-                "ignoring GtkDrawingArea command \"drawingarea1:save $BIG_STRING\""
-    check_error "drawingarea1:save x.yz" \
-                "ignoring GtkDrawingArea command \"drawingarea1:save x.yz\""
-    check_error "drawingarea1:save x.pdf 2" \
-                "ignoring GtkDrawingArea command \"drawingarea1:save x.pdf 2\""
-    check_error "drawingarea1:save xsvg" \
-                "ignoring GtkDrawingArea command \"drawingarea1:save xsvg\""
+    check_error "drawingarea1:snapshot" \
+                "ignoring GtkDrawingArea command \"drawingarea1:snapshot\""
+    check_error "drawingarea1:snapshot " \
+                "ignoring GtkDrawingArea command \"drawingarea1:snapshot \""
+    check_error "drawingarea1:snapshot x" \
+                "ignoring GtkDrawingArea command \"drawingarea1:snapshot x\""
+    check_error "drawingarea1:snapshot $BIG_STRING" \
+                "ignoring GtkDrawingArea command \"drawingarea1:snapshot $BIG_STRING\""
+    check_error "drawingarea1:snapshot x.yz" \
+                "ignoring GtkDrawingArea command \"drawingarea1:snapshot x.yz\""
+    check_error "drawingarea1:snapshot x.pdf 2" \
+                "ignoring GtkDrawingArea command \"drawingarea1:snapshot x.pdf 2\""
+    check_error "drawingarea1:snapshot xsvg" \
+                "ignoring GtkDrawingArea command \"drawingarea1:snapshot xsvg\""
 fi
 
 echo "_:main_quit" >$FIN
@@ -2600,7 +2604,7 @@ check 0 "" \
 check 0 "" \
       "drawingarea1:move_to 600 100 140\n drawingarea1:rel_move_for 6 w WEST\n drawingarea1:show_text 6 WEST\n drawingarea1:set_font_size 800<600 30"
 check 0 "" \
-      "drawingarea1:save $EPS_FILE\n drawingarea1:save $EPSF_FILE\n drawingarea1:save $PDF_FILE\n drawingarea1:save $PS_FILE\n drawingarea1:save $SVG_FILE"
+      "drawingarea1:snapshot $EPS_FILE\n drawingarea1:snapshot $EPSF_FILE\n drawingarea1:snapshot $PDF_FILE\n drawingarea1:snapshot $PS_FILE\n drawingarea1:snapshot $SVG_FILE"
 
 check_cmd "file -b $EPS_FILE | grep -qe EPS"
 check_cmd "file -b $EPSF_FILE | grep -qe EPS"

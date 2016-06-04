@@ -13,8 +13,8 @@
   * GtkStatusbar commands take non-whitespace strings as context id,
   not just integers.
   * Add missing GtkStatusbar command remove_all_id.
-  * Support saving GtkDrawingAreas into image files (eps, ps, pdf,
-  svg).
+  * Support saving snapshots of widgets into image files (eps, ps,
+  pdf, svg).
   * Support coordinate transformation in GtkDrawingArea.
   * New ability for GtkDrawingArea commands to insert themselves at
   arbitrary positions in the current list of drawing operations, not

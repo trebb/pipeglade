@@ -1831,36 +1831,6 @@ refresh_widget(GtkWidget *widget)
         return G_SOURCE_REMOVE;
 }
 
-/*
- * Write the drawing from the GtkDrawingArea widget in an appropriate
- * format to file
- */
-static enum draw_op_stat
-save_drawing(GtkWidget *widget, const char *fn)
-{
-        cairo_surface_t *sur;
-        cairo_t *cr;
-        int height = gtk_widget_get_allocated_height(widget);
-        int width = gtk_widget_get_allocated_width(widget);
-
-        if (has_suffix(fn, ".epsf") || has_suffix(fn, ".eps")) {
-                sur = cairo_ps_surface_create(fn, width, height);
-                cairo_ps_surface_set_eps(sur, TRUE);
-        } else if (has_suffix(fn, ".pdf"))
-                sur = cairo_pdf_surface_create(fn, width, height);
-        else if (has_suffix(fn, ".ps"))
-                sur = cairo_ps_surface_create(fn, width, height);
-        else if (has_suffix(fn, ".svg"))
-                sur = cairo_svg_surface_create(fn, width, height);
-        else
-                return FAILURE;
-        cr = cairo_create(sur);
-        cb_draw(widget, cr, NULL);
-        cairo_destroy(cr);
-        cairo_surface_destroy(sur);
-        return SUCCESS;
-}
-
 static void
 update_drawing_area(struct ui_data *ud)
 {
@@ -1868,8 +1838,6 @@ update_drawing_area(struct ui_data *ud)
 
         if (eql(ud->action, "remove"))
                 dost = rem_draw_op(ud->obj, ud->data);
-        else if (eql(ud->action, "save"))
-                dost = save_drawing(GTK_WIDGET(ud->obj), ud->data);
         else
                 dost = ins_draw_op(ud->obj, ud->action, ud->data);
         switch (dost) {
@@ -2656,7 +2624,8 @@ update_widget_style(struct ui_data *ud)
 }
 
 static void
-update_window(struct ui_data *ud){
+update_window(struct ui_data *ud)
+{
         if (!update_class_window(ud))
                 ign_cmd(ud->type, ud->msg);
 }
@@ -2702,6 +2671,40 @@ main_quit(struct ui_data *ud)
                 gtk_main_quit();
         else
                 ign_cmd(ud->type, ud->msg);
+}
+
+/*
+ * Write snapshot of widget in an appropriate format to file
+ */
+static void
+take_snapshot(struct ui_data *ud) 
+{
+        cairo_surface_t *sur = NULL;
+        cairo_t *cr = NULL;
+        int height;
+        int width;
+
+        if (!GTK_IS_WIDGET(ud->obj)) {
+                ign_cmd(ud->type, ud->msg);
+                return;
+        }
+        height = gtk_widget_get_allocated_height(GTK_WIDGET(ud->obj));
+        width = gtk_widget_get_allocated_width(GTK_WIDGET(ud->obj));
+        if (has_suffix(ud->data, ".epsf") || has_suffix(ud->data, ".eps")) {
+                sur = cairo_ps_surface_create(ud->data, width, height);
+                cairo_ps_surface_set_eps(sur, TRUE);
+        } else if (has_suffix(ud->data, ".pdf"))
+                sur = cairo_pdf_surface_create(ud->data, width, height);
+        else if (has_suffix(ud->data, ".ps"))
+                sur = cairo_ps_surface_create(ud->data, width, height);
+        else if (has_suffix(ud->data, ".svg"))
+                sur = cairo_svg_surface_create(ud->data, width, height);
+        else
+                ign_cmd(ud->type, ud->msg);
+        cr = cairo_create(sur);
+        gtk_widget_draw(GTK_WIDGET(ud->obj), cr);
+        cairo_destroy(cr);
+        cairo_surface_destroy(sur);
 }
 
 /*
@@ -2831,6 +2834,8 @@ digest_msg(struct info *ar)
                 ud->type = G_TYPE_FROM_INSTANCE(ud->obj);
                 if (eql(ud->action, "force"))
                         ud->fn = fake_ui_activity;
+                else if (eql(ud->action, "snapshot"))
+                        ud->fn = take_snapshot;
                 else if (eql(ud->action, "block"))
                         ud->fn = update_blocked;
                 else if (eql(ud->action, "set_sensitive"))
