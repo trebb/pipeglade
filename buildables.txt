@@ -1,0 +1,158 @@
+## In GTK+ 3.20, GtkBuildable is implemented by:
+##
+# widget                   status
+######################################
+# GtkAboutDialog           shun
+  GtkAccelLabel            
+# GtkAction                deprecated
+  GtkActionBar             
+# GtkActionGroup           deprecated
+# GtkAlignment             deprecated
+  GtkAppChooserButton      todo
+# GtkAppChooserDialog      shun
+  GtkAppChooserWidget      todo
+# GtkApplicationWindow     >=3.4
+# GtkArrow                 deprecated
+  GtkAspectFrame           todo
+  GtkAssistant             todo
+# GtkBin                   not_useful
+  GtkBox                   todo
+  GtkButton                done
+  GtkButtonBox             todo
+  GtkCalendar              done
+# GtkCellArea              not_useful
+# GtkCellAreaBox           not_useful
+# GtkCellView              not_useful
+  GtkCheckButton           done
+  GtkCheckMenuItem         todo
+  GtkColorButton           done
+# GtkColorChooserDialog    shun
+  GtkColorChooserWidget    todo
+# GtkColorSelection        deprecated
+# GtkColorSelectionDialog  deprecated
+  GtkComboBox              
+  GtkComboBoxText          done
+# GtkContainer             not_useful
+  GtkDialog                done
+  GtkDrawingArea           done
+  GtkEntry                 done
+  GtkEntryCompletion       
+  GtkEventBox              done
+  GtkExpander              done
+  GtkFileChooserButton     done
+  GtkFileChooserDialog     done
+  GtkFileChooserWidget     todo
+  GtkFileFilter            
+# GtkFixed                 shun
+# GtkFlowBox               >=3.12
+# GtkFlowBoxChild          >=3.12
+  GtkFontButton            done
+  GtkFontChooserDialog     
+  GtkFontChooserWidget     todo
+# GtkFontSelection         deprecated
+# GtkFontSelectionDialog   deprecated
+  GtkFrame                 done
+# GtkGLArea                >=3.16
+  GtkGrid                  todo
+# GtkHBox                  deprecated
+# GtkHButtonBox            deprecated
+# GtkHPaned                deprecated
+# GtkHSV                   deprecated
+# GtkHScale                deprecated
+# GtkHScrollbar            deprecated
+# GtkHSeparator            deprecated
+# GtkHandleBox             deprecated
+# GtkHeaderBar             >=3.10
+# GtkIconFactory           deprecated
+  GtkIconView              todo
+  GtkImage                 done
+  GtkImageMenuItem         done
+  GtkInfoBar               todo
+# GtkInvisible             not_useful
+  GtkLabel                 done
+  GtkLayout                
+# GtkLevelBar              >=3.6
+  GtkLinkButton            todo
+# GtkListBox               >=3.10
+# GtkListBoxRow            >=3.10
+# GtkListStore             hidden
+  GtkLockButton            todo
+  GtkMenu                  todo
+  GtkMenuBar               todo
+  GtkMenuButton            todo
+  GtkMenuItem              done
+# GtkMenuShell             not_useful
+  GtkMenuToolButton        todo
+# GtkMessageDialog         shun
+# GtkMisc                  deprecated
+# GtkModelButton           >=3.16
+  GtkNotebook              done
+# GtkOffscreenWindow       shun
+  GtkOverlay               todo
+  GtkPageSetupUnixDialog   todo
+  GtkPaned                 todo
+# GtkPlacesSidebar         >=3.16
+  GtkPlug                  todo
+# GtkPopover               >=3.12
+# GtkPopoverMenu           >=3.16
+  GtkPrintUnixDialog       done
+  GtkProgressBar           done
+# GtkRadioAction           deprecated
+  GtkRadioButton           done
+  GtkRadioMenuItem         
+  GtkRadioToolButton       
+# GtkRange                 not_useful
+# GtkRecentAction          deprecated
+# GtkRecentChooserDialog   shun
+  GtkRecentChooserMenu     
+  GtkRecentChooserWidget   todo
+  GtkRecentFilter          
+# GtkRevealer              >=3.10
+  GtkScale                 done
+  GtkScaleButton           todo
+# GtkScrollbar             not_useful
+  GtkScrolledWindow        done
+# GtkSearchBar             >=3.10
+# GtkSearchEntry           >=3.6
+  GtkSeparator             todo
+  GtkSeparatorMenuItem     todo
+  GtkSeparatorToolItem     todo
+  GtkShortcutsGroup        
+  GtkShortcutsSection      
+  GtkShortcutsShortcut     
+  GtkShortcutsWindow       todo
+  GtkSizeGroup             
+  GtkSocket                done
+  GtkSpinButton            done
+  GtkSpinner               done
+# GtkStack                 >=3.10
+# GtkStackSidebar          >=3.16
+# GtkStackSwitcher         >=3.10
+  GtkStatusbar             done
+  GtkSwitch                done
+# GtkTable                 deprecated
+# GtkTearoffMenuItem       deprecated
+# GtkTextTagTable          not_useful
+  GtkTextView              done
+# GtkToggleAction          deprecated
+  GtkToggleButton          done
+# GtkToggleToolButton      deprecated
+  GtkToolButton            
+  GtkToolItem              
+  GtkToolItemGroup         
+  GtkToolPalette           
+  GtkToolbar               
+# GtkTreeStore             hidden
+  GtkTreeView              done
+  GtkTreeViewColumn        done
+# GtkUIManager             deprecated
+# GtkVBox                  deprecated
+# GtkVButtonBox            deprecated
+# GtkVPaned                deprecated
+# GtkVScale                deprecated
+# GtkVScrollbar            deprecated
+# GtkVSeparator            deprecated
+  GtkViewport              todo
+  GtkVolumeButton          todo
+# GtkWidget                hidden
+  GtkWindow                done
