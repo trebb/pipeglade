@@ -443,7 +443,7 @@ find_main_window(GtkBuilder *builder)
 
         if (GTK_IS_WINDOW(mw = gtk_builder_get_object(builder, MAIN_WIN)))
                 return mw;
-        bye(EXIT_FAILURE, stderr, "no toplevel window named \'" MAIN_WIN "\'\n");
+        bye(EXIT_FAILURE, stderr, "no toplevel window with id \'" MAIN_WIN "\'\n");
         return NULL;            /* NOT REACHED */
 }
 

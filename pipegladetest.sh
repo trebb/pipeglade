@@ -149,7 +149,7 @@ if test $AUTOMATIC; then
     check_call "./pipeglade -u nonexistent.ui" 1 \
                "nonexistent.ui" ""
     check_call "./pipeglade -u bad_window.ui" 1 \
-               "no toplevel window named 'main'" ""
+               "no toplevel window with id 'main'" ""
     check_call "./pipeglade -u www-template/404.html" 1 \
                "html" ""
     check_call "./pipeglade -u README" 1 \
