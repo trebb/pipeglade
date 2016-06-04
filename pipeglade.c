@@ -566,8 +566,8 @@ struct ui_data {
         GObject *obj;
         char *action;
         char *data;
-        char *msg;
-        char *msg_tokens;
+        char *cmd;
+        char *cmd_tokens;
         GType type;
         struct info *args;
 };
@@ -1255,7 +1255,7 @@ update_button(struct ui_data *ud)
         if (eql(ud->action, "set_label"))
                 gtk_button_set_label(GTK_BUTTON(ud->obj), ud->data);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -1271,17 +1271,17 @@ update_calendar(struct ui_data *ud)
                         gtk_calendar_select_month(calendar, --month, year);
                         gtk_calendar_select_day(calendar, day);
                 } else
-                        ign_cmd(ud->type, ud->msg);
+                        ign_cmd(ud->type, ud->cmd);
         } else if (eql(ud->action, "mark_day") &&
                    sscanf(ud->data, "%d %c", &day, &dummy) == 1) {
                 if (day > 0 && day <= 31)
                         gtk_calendar_mark_day(calendar, day);
                 else
-                        ign_cmd(ud->type, ud->msg);
+                        ign_cmd(ud->type, ud->cmd);
         } else if (eql(ud->action, "clear_marks") && sscanf(ud->data, " %c", &dummy) < 1)
                 gtk_calendar_clear_marks(calendar);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 /*
@@ -1324,7 +1324,7 @@ update_color_button(struct ui_data *ud)
                 gdk_rgba_parse(&color, ud->data);
                 gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(ud->obj), &color);
         } else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -1349,7 +1349,7 @@ update_combo_box_text(struct ui_data *ud)
                 gtk_combo_box_text_insert_text(combobox,
                                                strtol(position, NULL, 10), text);
         } else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 /*
@@ -1847,7 +1847,7 @@ update_drawing_area(struct ui_data *ud)
                                           GTK_WIDGET(ud->obj), NULL);
                 break;
         case FAILURE:
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
                 break;
         case SUCCESS:
                 break;
@@ -1867,7 +1867,7 @@ update_entry(struct ui_data *ud)
         else if (eql(ud->action, "set_placeholder_text"))
                 gtk_entry_set_placeholder_text(entry, ud->data);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -1883,7 +1883,7 @@ update_expander(struct ui_data *ud)
         else if (eql(ud->action, "set_label"))
                 gtk_expander_set_label(expander, ud->data);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -1892,7 +1892,7 @@ update_file_chooser_button(struct ui_data *ud)
         if (eql(ud->action, "set_filename"))
                 gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(ud->obj), ud->data);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -1906,7 +1906,7 @@ update_file_chooser_dialog(struct ui_data *ud)
                 gtk_file_chooser_set_current_name(chooser, ud->data);
         else if (update_class_window(ud));
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -1918,7 +1918,7 @@ update_focus(struct ui_data *ud){
             gtk_widget_get_can_focus(GTK_WIDGET(ud->obj)))
                 gtk_widget_grab_focus(GTK_WIDGET(ud->obj));
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -1928,7 +1928,7 @@ update_font_button(struct ui_data *ud){
         if (eql(ud->action, "set_font_name"))
                 gtk_font_button_set_font_name(font_button, ud->data);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -1937,7 +1937,7 @@ update_frame(struct ui_data *ud)
         if (eql(ud->action, "set_label"))
                 gtk_frame_set_label(GTK_FRAME(ud->obj), ud->data);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -1952,7 +1952,7 @@ update_image(struct ui_data *ud)
         else if (eql(ud->action, "set_from_icon_name"))
                 gtk_image_set_from_icon_name(image, ud->data, size);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -1961,7 +1961,7 @@ update_label(struct ui_data *ud)
         if (eql(ud->action, "set_text"))
                 gtk_label_set_text(GTK_LABEL(ud->obj), ud->data);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 struct handler_id {
@@ -1989,7 +1989,7 @@ update_blocked(struct ui_data *ud)
                         }
                 }
         } else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -2003,7 +2003,7 @@ update_notebook(struct ui_data *ud)
             val >= 0 && val < n_pages)
                 gtk_notebook_set_current_page(GTK_NOTEBOOK(ud->obj), val);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -2033,7 +2033,7 @@ update_print_dialog(struct ui_data *ud)
                         if (gtk_print_job_set_source_file(job, ud->data, NULL))
                                 gtk_print_job_send(job, NULL, NULL, NULL);
                         else
-                                ign_cmd(ud->type, ud->msg);
+                                ign_cmd(ud->type, ud->cmd);
                         g_clear_object(&settings);
                         g_clear_object(&job);
                         break;
@@ -2047,7 +2047,7 @@ update_print_dialog(struct ui_data *ud)
                 }
                 gtk_widget_hide(GTK_WIDGET(dialog));
         } else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -2063,7 +2063,7 @@ update_progress_bar(struct ui_data *ud)
                  sscanf(ud->data, "%lf %c", &frac, &dummy) == 1)
                 gtk_progress_bar_set_fraction(progressbar, frac);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -2089,7 +2089,7 @@ update_scale(struct ui_data *ud)
                  sscanf(ud->data, "%lf %lf %c", &val1, &val2, &dummy) == 2)
                 gtk_range_set_increments(range, val1, val2);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -2112,7 +2112,7 @@ update_scrolled_window(struct ui_data *ud)
                  sscanf(ud->data, "%lf %lf %c", &d0, &d1, &dummy) == 2)
                 gtk_adjustment_clamp_page(vadj, d0, d1);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -2125,7 +2125,7 @@ update_sensitivity(struct ui_data *ud)
             sscanf(ud->data, "%u %c", &val, &dummy) == 1 && val < 2)
                 gtk_widget_set_sensitive(GTK_WIDGET(ud->obj), val);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -2141,7 +2141,7 @@ update_size_request(struct ui_data *ud)
                  sscanf(ud->data, " %c", &dummy) < 1)
                 gtk_widget_set_size_request(GTK_WIDGET(ud->obj), -1, -1);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -2156,7 +2156,7 @@ update_socket(struct ui_data *ud)
                 snprintf(str, BUFLEN, "%lu", id);
                 send_msg(ud->args->fout, GTK_BUILDABLE(socket), "id", str, NULL);
         } else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -2176,7 +2176,7 @@ update_spin_button(struct ui_data *ud)
                  sscanf(ud->data, "%lf %lf %c", &val1, &val2, &dummy) == 2)
                 gtk_spin_button_set_increments(spinbutton, val1, val2);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -2190,7 +2190,7 @@ update_spinner(struct ui_data *ud)
         else if (eql(ud->action, "stop") && sscanf(ud->data, " %c", &dummy) < 1)
                 gtk_spinner_stop(spinner);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -2227,7 +2227,7 @@ update_statusbar(struct ui_data *ud)
                 gtk_statusbar_remove_all(statusbar,
                                          gtk_statusbar_get_context_id(statusbar, ctx_msg));
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
         free(ctx_msg);
 }
 
@@ -2241,7 +2241,7 @@ update_switch(struct ui_data *ud)
             sscanf(ud->data, "%u %c", &val, &dummy) == 1 && val < 2)
                 gtk_switch_set_active(GTK_SWITCH(ud->obj), val);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -2283,7 +2283,7 @@ update_text_view(struct ui_data *ud)
                          gtk_text_buffer_get_text(textbuf, &a, &b, TRUE), NULL);
                 fclose(sv);
         } else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -2298,7 +2298,7 @@ update_toggle_button(struct ui_data *ud)
                  sscanf(ud->data, "%u %c", &val, &dummy) == 1 && val < 2)
                 gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ud->obj), val);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 static void
@@ -2307,7 +2307,7 @@ update_tooltip_text(struct ui_data *ud)
         if (GTK_IS_WIDGET(ud->obj))
                 gtk_widget_set_tooltip_text(GTK_WIDGET(ud->obj), ud->data);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 /*
@@ -2511,7 +2511,7 @@ update_tree_view(struct ui_data *ud)
         if (!GTK_IS_LIST_STORE(model) && !GTK_IS_TREE_STORE(model))
         {
                 fprintf(stderr, "missing model/");
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
                 return;
         }
         if ((tokens = malloc(strlen(ud->data) + 1)) == NULL)
@@ -2531,7 +2531,7 @@ update_tree_view(struct ui_data *ud)
             col < gtk_tree_model_get_n_columns(model) &&
             is_path_string(arg0)) {
                 if (set_tree_view_cell(model, &iter0, arg0, col, arg2) == false)
-                        ign_cmd(ud->type, ud->msg);
+                        ign_cmd(ud->type, ud->cmd);
         } else if (eql(ud->action, "scroll") && iter0_valid && iter1_valid &&
                    arg2 == NULL) {
                 path = gtk_tree_path_new_from_string(arg0);
@@ -2585,7 +2585,7 @@ update_tree_view(struct ui_data *ud)
                                        &ar);
                 fclose(ar.fout);
         } else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
         free(tokens);
         gtk_tree_path_free(path);
 }
@@ -2600,7 +2600,7 @@ update_visibility(struct ui_data *ud)
             sscanf(ud->data, "%u %c", &val, &dummy) == 1 && val < 2)
                 gtk_widget_set_visible(GTK_WIDGET(ud->obj), val);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 /*
@@ -2616,7 +2616,7 @@ update_widget_style(struct ui_data *ud)
         size_t sz;
 
         if (!GTK_IS_WIDGET(ud->obj)) {
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
                 return;
         }
         style_provider = g_object_get_data(ud->obj, "style_provider");
@@ -2639,7 +2639,7 @@ static void
 update_window(struct ui_data *ud)
 {
         if (!update_class_window(ud))
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 /*
@@ -2651,7 +2651,7 @@ fake_ui_activity(struct ui_data *ud)
         char dummy;
 
         if (!GTK_IS_WIDGET(ud->obj) || sscanf(ud->data, " %c", &dummy) > 0)
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
         else if (GTK_IS_SPIN_BUTTON(ud->obj)) {
                 ud->args->txt = "text";
                 cb_spin_button(GTK_BUILDABLE(ud->obj), ud->args); /* TODO: rename to "value" */
@@ -2668,7 +2668,7 @@ fake_ui_activity(struct ui_data *ud)
                 ud->args->txt = "file";
                 cb_file_chooser_button(GTK_BUILDABLE(ud->obj), ud->args);
         } else if (!gtk_widget_activate(GTK_WIDGET(ud->obj)))
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 /*
@@ -2682,7 +2682,7 @@ main_quit(struct ui_data *ud)
         if (sscanf(ud->data, " %c", &dummy) < 1)
                 gtk_main_quit();
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
 }
 
 /*
@@ -2697,7 +2697,7 @@ take_snapshot(struct ui_data *ud)
         int width;
 
         if (!GTK_IS_WIDGET(ud->obj)) {
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
                 return;
         }
         height = gtk_widget_get_allocated_height(GTK_WIDGET(ud->obj));
@@ -2712,7 +2712,7 @@ take_snapshot(struct ui_data *ud)
         else if (has_suffix(ud->data, ".svg"))
                 sur = cairo_svg_surface_create(ud->data, width, height);
         else
-                ign_cmd(ud->type, ud->msg);
+                ign_cmd(ud->type, ud->cmd);
         cr = cairo_create(sur);
         gtk_widget_draw(GTK_WIDGET(ud->obj), cr);
         cairo_destroy(cr);
@@ -2725,7 +2725,7 @@ take_snapshot(struct ui_data *ud)
 static void
 complain(struct ui_data *ud)
 {
-        ign_cmd(ud->type, ud->msg);
+        ign_cmd(ud->type, ud->cmd);
 }
 
 /*
@@ -2738,8 +2738,8 @@ update_ui(struct ui_data *ud)
         char *lc = lc_numeric();
 
         (ud->fn)(ud);
-        free(ud->msg_tokens);
-        free(ud->msg);
+        free(ud->cmd_tokens);
+        free(ud->cmd);
         free(ud);
         lc_numeric_free(lc);
         return G_SOURCE_REMOVE;
@@ -2777,7 +2777,7 @@ remember_loading_file(char *filename)
  * GUI.  Runs inside receiver thread.
  */
 static void *
-digest_msg(struct info *ar)
+digest_cmd(struct info *ar)
 {
         static int recursion = -1; /* > 0 means this is a recursive call */
 
@@ -2796,32 +2796,32 @@ digest_msg(struct info *ar)
                         break;
                 if ((ud = malloc(sizeof(*ud))) == NULL)
                         OOM_ABORT;
-                if ((ud->msg = malloc(msg_size)) == NULL)
+                if ((ud->cmd = malloc(msg_size)) == NULL)
                         OOM_ABORT;
                 ud->args = ar;
                 ud->type = G_TYPE_INVALID;
                 pthread_testcancel();
                 if (recursion == 0)
                         log_msg(ar->flog, NULL);
-                data_start = read_buf(cmd, &ud->msg, &msg_size);
+                data_start = read_buf(cmd, &ud->cmd, &msg_size);
                 if (recursion == 0)
-                        log_msg(ar->flog, ud->msg);
-                if ((ud->msg_tokens = malloc(strlen(ud->msg) + 1)) == NULL)
+                        log_msg(ar->flog, ud->cmd);
+                if ((ud->cmd_tokens = malloc(strlen(ud->cmd) + 1)) == NULL)
                         OOM_ABORT;
-                sscanf(ud->msg, " %c", &first_char);
+                sscanf(ud->cmd, " %c", &first_char);
                 if (data_start == 0 ||   /* empty line */
                     first_char == '#') { /* comment */
                         ud->fn = update_nothing;
                         goto exec;
                 }
-                strcpy(ud->msg_tokens, ud->msg);
-                sscanf(ud->msg_tokens,
+                strcpy(ud->cmd_tokens, ud->cmd);
+                sscanf(ud->cmd_tokens,
                        " %n%*[0-9a-zA-Z_]%n:%n%*[0-9a-zA-Z_]%n%*1[ \t]%n",
                        &id_start, &id_end, &action_start, &action_end, &data_start);
-                ud->msg_tokens[id_end] = ud->msg_tokens[action_end] = '\0';
-                id = ud->msg_tokens + id_start;
-                ud->action = ud->msg_tokens + action_start;
-                ud->data = ud->msg_tokens + data_start;
+                ud->cmd_tokens[id_end] = ud->cmd_tokens[action_end] = '\0';
+                id = ud->cmd_tokens + id_start;
+                ud->action = ud->cmd_tokens + action_start;
+                ud->data = ud->cmd_tokens + data_start;
                 if (eql(ud->action, "main_quit")) {
                         ud->fn = main_quit;
                         goto exec;
@@ -2831,7 +2831,7 @@ digest_msg(struct info *ar)
                         struct info a = *ar;
 
                         if ((a.fin = fopen(ud->data, "r")) != NULL) {
-                                digest_msg(&a);
+                                digest_cmd(&a);
                                 fclose(a.fin);
                                 ud->fn = update_nothing;
                         } else
@@ -3339,7 +3339,7 @@ main(int argc, char *argv[])
         go_bg_if(bg, ar.fin, ar.fout, err_file);
         ar.builder = builder_from_file(ui_file);
         ar.flog = open_log(log_file);
-        pthread_create(&receiver, NULL, (void *(*)(void *)) digest_msg, &ar);
+        pthread_create(&receiver, NULL, (void *(*)(void *)) digest_cmd, &ar);
         main_window = find_main_window(ar.builder);
         xmlInitParser();
         LIBXML_TEST_VERSION;
