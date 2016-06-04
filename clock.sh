@@ -68,7 +68,7 @@ IMG=$1                        # optional image file; exit when written
         if [ -z "$IMG" ]; then  # running clock
             sleep 1
         else                    # write image file and exit
-            echo "drawingarea1:save $IMG"
+            echo "main:snapshot $IMG"
             echo "_:main_quit"
         fi
     done
