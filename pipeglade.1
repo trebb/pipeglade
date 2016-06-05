@@ -19,7 +19,7 @@
 .\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 .\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.Dd Jun 04, 2016
+.Dd Jun 05, 2016
 .Dt PIPEGLADE 1 PRM
 .Os BSD
 .Sh NAME
@@ -288,19 +288,19 @@ replaces the button text with
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the button.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the button grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the widget, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -361,19 +361,19 @@ on the calendar.
 .Qq Ar id Ns Cm :clear_marks
 unmarks all days on the calendar.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the calendar grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the calendar, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -414,7 +414,7 @@ See
 .Ss GtkCheckButton
 .Bl -tag -width "commands "
 .It Commands
-.Qq Ar id Ns Cm :set_active Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_active Brq Cm 0 Ns | Ns Cm 1
 switches the check mark off
 .Pq Cm 0
 or on
@@ -427,19 +427,19 @@ replaces the button text with
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the button.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the button grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the button, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -488,19 +488,19 @@ preselects the color; see
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the button.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the button grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the button, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -570,19 +570,19 @@ removes the item at
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the combo box.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the combo box grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the combo box, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -672,19 +672,19 @@ and
 .Qq Ar id Ns Cm :unfullscreen
 switch fullscreen mode on and off.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the dialog grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the dialog, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -921,7 +921,7 @@ Default is resetting the current transformation matrix.
 translates the user space origin by
 .Pq Ar tx , ty .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the drawing area, or makes it visible
@@ -959,19 +959,19 @@ that is displayed when the entry is empty and unfocused.
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus into the entry.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the entry grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the entry, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -1018,13 +1018,13 @@ are mouse pointer coordinates relative to the
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the event box.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the event box insensitive
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -1091,13 +1091,13 @@ the child widget, or makes it visible
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the expander.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the expander grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the expander, or makes it visible
@@ -1142,19 +1142,19 @@ to the extent it exists.
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the button.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the button grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the button, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -1275,19 +1275,19 @@ and
 .Qq Ar id Ns Cm :unfullscreen
 switch fullscreen mode on and off.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the dialog grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the dialog, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -1336,19 +1336,19 @@ preselects the font.
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the button.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the button grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the button, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -1391,13 +1391,13 @@ See
 replaces the frame label text with
 .Ar string .
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the frame and its content grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the frame, or makes it visible
@@ -1438,7 +1438,7 @@ replaces the image with one of the standard icons.
 replaces the image by the one found at
 .Ar path Ns .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the image, or makes it visible
@@ -1476,13 +1476,13 @@ none
 replaces the label text with
 .Ar string .
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the label grayed out
 .Pq Cm 0
 or clearly visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the label, or makes it visible
@@ -1516,19 +1516,19 @@ none
 .Ss GtkMenuItem, GtkImageMenuItem
 .Bl -tag -width "commands "
 .It Commands
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the item grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the item, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -1590,13 +1590,13 @@ switches to zero-based page number
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the notebook.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the notebook grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the notebook, or makes it visible
@@ -1638,19 +1638,19 @@ button sends
 .Ar file.ps
 to the printer the user selected in the dialog.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the dialog grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the dialog, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -1699,7 +1699,7 @@ replaces the text of the progress bar with
 .Ar string .
 Default is the progress percentage.
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the progress bar, or makes it visible
@@ -1744,19 +1744,19 @@ replaces the button text with
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the button.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the button grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the button, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -1819,19 +1819,19 @@ respectively.
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the scale.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the scale grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the scale, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -1894,13 +1894,13 @@ will be visible.
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the widget.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the widget grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the widget, or makes it visible
@@ -1959,13 +1959,13 @@ requests a feedback message containing the socket
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the socket.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the socket grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the socket, or makes it visible
@@ -2027,19 +2027,19 @@ respectively.
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the button.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the button grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the button, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -2083,13 +2083,13 @@ and
 .Qq Ar id Ns Cm :stop
 start and stop the spinner.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the spinner grayed out
 .Pq Cm 0
 or clearly visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the spinner, or makes it visible
@@ -2152,13 +2152,13 @@ or
 .Ql 0 ,
 respectively, from the statusbar.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the statusbar grayed out
 .Pq Cm 0
 or clearly visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the statusbar, or makes it visible
@@ -2192,7 +2192,7 @@ none
 .Ss GtkSwitch
 .Bl -tag -width "commands "
 .It Commands
-.Qq Ar id Ns Cm :set_active Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_active Brq Cm 0 Ns | Ns Cm 1
 turns the switch off
 .Pq Cm 0
 or on
@@ -2201,19 +2201,19 @@ or on
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the switch.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the switch grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the switch, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -2308,13 +2308,13 @@ command containing the text.
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus into the textview.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the text view grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the text view, or makes it visible
@@ -2357,7 +2357,7 @@ and backslashes are replaced by
 .Ss GtkToggleButton
 .Bl -tag -width "commands "
 .It Commands
-.Qq Ar id Ns Cm :set_active Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_active Brq Cm 0 Ns | Ns Cm 1
 switches the button off
 .Pq Cm 0
 or on
@@ -2370,19 +2370,19 @@ replaces the button text with
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the button.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the button grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the button, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -2509,19 +2509,19 @@ commands into
 .Qq Ar id Ns Cm :grab_focus
 puts the keyboard focus onto the tree view.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the tree view grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the tree view, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 .Po
 with
 .Ar id
@@ -2571,7 +2571,7 @@ has been edited.
 .Ss GtkTreeViewColumn
 .Bl -tag -width "commands "
 .It Commands
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
@@ -2604,19 +2604,19 @@ and
 .Qq Ar id Ns Cm :unfullscreen
 switch fullscreen mode on and off.
 .Pp
-.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
 makes the widget grayed out
 .Pq Cm 0
 or responsive
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
 the widget, or makes it visible
 .Pq Cm 1 .
 .Pp
-.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns 1
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
 blocks
 .Pq Cm 1
 or unblocks
