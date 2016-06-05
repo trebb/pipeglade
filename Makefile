@@ -74,6 +74,32 @@ TODAY != date +%F
 MANPAGE_DATE != grep "^\.Dd " pipeglade.1
 MANPAGE_TODAY != date '+.Dd %B %e, %Y' | awk '{print $$1, $$2, $$3, $$4}'
 
+
+# Extract a list of actions from source code...
+prog-actions:
+	@awk -F\" '/eql\((ud->)?action, \"[a-zA-Z0-9_-]+\"/{print $$2}' pipeglade.c | sort -u
+
+# ... and from manual page
+man-actions:
+	@awk -F: '/Cm :[a-zA-Z0-9_-]+/{print $$2}' pipeglade.1 | awk '{print $$1}' | sort -u
+
+# Extract from manual page a list of subsections on widgets...
+man-widgets:
+	@awk '/\.Ss Gtk[A-Z][a-zA-Z]+$$/{print $$2}' pipeglade.1 | sort -u
+
+# ... and the respective TOC entries
+man-toc:
+	@awk '/BEGIN_TOC/,/END_TOC/' pipeglade.1 | awk '/\.Sx Gtk[A-Z][a-zA-Z]+ [,.]$$/{print $$2}'
+
+# Our collection of simple test widgets
+examples-list:
+	@ls -1 widget-examples | grep "\.ui$$"
+
+# Items marked done in list of all widgets
+done-list:
+	@awk '!/^#/&&/Gtk[A-Z][a-zA-Z]/&&/done/{print $$1}' buildables.txt
+
+
 # Prepare the www directory
 gh-pages: gh-pages/index.html gh-pages/pipeglade.1.html gh-pages/clock.svg
 

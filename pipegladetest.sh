@@ -2761,4 +2761,35 @@ if test $AUTOMATIC; then
     check_cmd "test $(grep -v -e WARNING -e '^$' $BIG_INPUT_ERR | wc -l) -eq 0"
 fi
 
+
+echo "
+# BATCH FOUR
+#
+# Possible and impossible combinations of widgets and actions.  Not
+# crashing means test passed, here.
+######################################################################
+"
+
+# TODO
+
+# 
+echo "
+# BATCH FIVE
+#
+# Tests of project metadata
+######################################################################
+"
+# Does the manual page cover all implemented actions and no unimplemented ones?
+check_cmd 'test "`make prog-actions`" == "`make man-actions`"'
+
+# Is the manual page table of contents complete and correct?
+check_cmd 'test "`make man-widgets`" == "`make man-toc`"'
+
+# Are the correct widgets in buildables.txt marked done?
+check_cmd 'test "`make man-widgets`" == "`make done-list`"'
+
+# Is our collection of test widgets complete?
+check_cmd 'test "`make man-widgets | sed s/Gtk// | tr \"[:upper:]\" \"[:lower:]\"`" == "`make examples-list | sed s/\\.ui$//`"'
+
+
 echo "PASSED: $OKS/$TESTS; FAILED: $FAILS/$TESTS"
