@@ -201,7 +201,10 @@ version and exits.
 The widget classes able to communicate through
 .Nm
 are
+.\" BEGIN_TOC
+.Sx GtkBox ,
 .Sx GtkButton ,
+.Sx GtkButtonBox ,
 .Sx GtkCalendar ,
 .Sx GtkCheckButton ,
 .Sx GtkColorButton ,
@@ -215,15 +218,22 @@ are
 .Sx GtkFileChooserDialog ,
 .Sx GtkFontButton ,
 .Sx GtkFrame ,
+.Sx GtkGrid ,
 .Sx GtkImage ,
+.Sx GtkImageMenuItem ,
+.Sx GtkInfoBar ,
 .Sx GtkLabel ,
-.Sx GtkMenuItem, GtkImageMenuItem ,
+.Sx GtkMenuItem ,
 .Sx GtkNotebook ,
+.Sx GtkOverlay ,
+.Sx GtkPlug ,
 .Sx GtkPrintUnixDialog ,
 .Sx GtkProgressBar ,
 .Sx GtkRadioButton ,
 .Sx GtkScale ,
-.Sx GtkScrolledWindow
+.Sx GtkScrolledWindow ,
+.Sx GtkSeparator ,
+.Sx GtkSeparatorMenuItem ,
 .Sx GtkSocket ,
 .Sx GtkSpinButton ,
 .Sx GtkSpinner ,
@@ -233,8 +243,10 @@ are
 .Sx GtkToggleButton ,
 .Sx GtkTreeView ,
 .Sx GtkTreeViewColumn ,
+.Sx GtkViewport ,
 and
 .Sx GtkWindow .
+.\" END_TOC
 .Pp
 .Nm
 references a widget by the
@@ -277,6 +289,45 @@ kills the user interface.
 A non-empty
 .Ar id
 is required but ignored.
+.El
+.Ss GtkBox
+.Bl -tag -width "commands "
+.It Commands
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
+makes the box grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
+hides
+.Pq Cm 0
+the box, or makes it visible
+.Pq Cm 1 .
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the box's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the box to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the box's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the box's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
+.It Feedback
+none
 .El
 .Ss GtkButton
 .Bl -tag -width "commands "
@@ -346,6 +397,46 @@ may work differently; see
 and
 .Sx GtkTextView
 for details.
+.El
+.Ss GtkButtonBox
+.Bl -tag -width "commands "
+.It Commands
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
+makes the box grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
+hides
+.Pq Cm 0
+the box, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the box's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the box to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the box's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the box's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
+.It Feedback
+none
 .El
 .Ss GtkCalendar
 .Bl -tag -width "commands "
@@ -1131,6 +1222,39 @@ See
 .It Feedback
 none
 .El
+.Ss GtkGrid
+.Bl -tag -width "commands "
+.It Commands
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
+hides
+.Pq Cm 0
+the grid, or makes it visible
+.Pq Cm 1 .
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the grid's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the grid to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the grid's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the grid's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
+.It Feedback
+none
+.El
 .Ss GtkFileChooserButton
 .Bl -tag -width "commands "
 .It Commands
@@ -1318,9 +1442,9 @@ sets the widget style.
 See
 .Sx Style .
 .It Feedback
-.Qq Ar id Ns Cm :file Ar pathname
+.Qq Ar id Ns Cm \&:file Ar pathname
 and/or
-.Qq Ar id Ns Cm :folder Ar pathname
+.Qq Ar id Ns Cm \&:folder Ar pathname
 .Pp
 .Qq Ar id Ns Cm \&:closed
 if the
@@ -1469,6 +1593,109 @@ See
 .It Feedback
 none
 .El
+.Ss GtkImageMenuItem
+.Bl -tag -width "commands "
+.It Commands
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
+makes the item grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
+hides
+.Pq Cm 0
+the item, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the item is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the item's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+simulates a click on the menu item.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the menu item to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the item's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the item's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the item's style.
+See
+.Sx Style .
+.It Feedback
+A
+.Cm GtkMenuItem
+or
+.Cm GtkImageMenuItem
+with id
+.Ar foo Ns Cm _invoke
+will invoke the
+.Sx GtkDialog
+or
+.Sx GtkFileChooserDialog
+with id
+.Ar foo
+if it exists.
+If there isn't any dialog attached to the
+.Cm GtkMenuItem ,
+it reports
+.Qq Ar id Ns Cm \&:active Ar label .
+.El
+.Ss GtkInfoBar
+.Bl -tag -width "commands "
+.It Commands
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
+makes the info bar grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
+hides
+.Pq Cm 0
+the info bar, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the info bar's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the info bar's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the info bar's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
+.It Feedback
+none
+.El
 .Ss GtkLabel
 .Bl -tag -width "commands "
 .It Commands
@@ -1513,7 +1740,7 @@ See
 .It Feedback
 none
 .El
-.Ss GtkMenuItem, GtkImageMenuItem
+.Ss GtkMenuItem
 .Bl -tag -width "commands "
 .It Commands
 .Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
@@ -1627,6 +1854,53 @@ See
 .It Feedback
 none
 .El
+.Ss GtkOverlay
+.Bl -tag -width "commands "
+.It Commands
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
+makes the overlay grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
+hides
+.Pq Cm 0
+the overlay, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the overlay's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the overlay to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the overlay's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the overlay's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
+.It Feedback
+none
+.El
+.Ss GtkPlug
+The main window can be turned into a
+.Cm GtkPlug
+and embedded into the XEmbed socket of another process; see
+.Sx OPTIONS ,
+option
+.Fl e .
 .Ss GtkPrintUnixDialog
 .Bl -tag -width "commands "
 .It Commands
@@ -1931,6 +2205,86 @@ See
 .It Feedback
 none
 .El
+.Ss GtkSeparator
+.Bl -tag -width "commands "
+.It Commands
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
+makes the separator insensitive
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the tooltip of the separator.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
+hides
+.Pq Cm 0
+the separator, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the separator to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the minimum size to
+.Ar width
+x
+.Ar height .
+Default is the natural size of the separator.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the widget style.
+See
+.Sx Style .
+.It Feedback
+none
+.El
+.Ss GtkSeparatorMenuItem
+.Bl -tag -width "commands "
+.It Commands
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
+makes the menu item insensitive
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
+hides
+.Pq Cm 0
+the menu item, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the tooltip of the menu item.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the menu item to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the minimum size to
+.Ar width
+x
+.Ar height .
+Default is the natural size of the menu item.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the widget style.
+See
+.Sx Style .
+.It Feedback
+none
+.El
 .Ss GtkSocket
 .Cm GtkSocket
 may be unsupported by Glade, but its definition can be inserted
@@ -1997,10 +2351,9 @@ See
 can be used by another process to XEmbed its widgets into the
 .Cm GtkSocket .
 .Pp
-.Qq Ar id Ns Cm :plug-added ,
+.Qq Ar id Ns Cm \&:plug-added ,
 .Qo
-.Ar id Ns
-.Cm :plug-removed
+.Ar id Ns Cm \&:plug-removed
 .Qc .
 Notification that the other process has inserted its widgets into or
 removed them from the
@@ -2343,7 +2696,7 @@ sets the style.
 See
 .Sx Style .
 .It Feedback
-.Qq Ar button_id Ns Cm :text Ar text ,
+.Qq Ar button_id Ns Cm \&:text Ar text ,
 .Ar button_id
 being the id of the
 .Sx GtkButton .
@@ -2580,6 +2933,46 @@ feedback messages.
 Initially, the widget is unblocked.
 .It Feedback
 .Qq Ar id Ns Cm \&:clicked
+.El
+.Ss GtkViewport
+.Bl -tag -width "commands "
+.It Commands
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
+makes the viewport insensitive
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
+hides
+.Pq Cm 0
+the viewport, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the tooltip of the viewport.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the viewport to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the minimum size to
+.Ar width
+x
+.Ar height .
+Default is the natural size of the viewport.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the widget style.
+See
+.Sx Style .
+.It Feedback
+none
 .El
 .Ss GtkWindow
 .Bl -tag -width "commands "
