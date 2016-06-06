@@ -12,7 +12,8 @@ Visit http://pipeglade.boundp.org
 INSTALLATION
 ============
 
-GTK+ v3.2 or newer and libxml2 are required.
+GTK+ v3.2 or newer and libxml2 are required.  Prerequisite Debian
+packages are pkg-config, libgtk-3-dev, and libxml2-dev.
 
   make
 
@@ -40,9 +41,17 @@ TESTS AND FIRST STEPS
 
   ./pipegladetest.sh
 
-runs pipeglade's tests (which require some human assistance).  The
-GtkBuilder file for the test GUI, pipeglade.ui, is also used in the
-demonstration script
+runs all of pipeglade's tests, some of which require human
+assistance.  Subsets of these tests can be run by
+
+  ./pipegladetest.sh automatic
+
+or
+
+  ./pipegladetest.sh interactive
+
+The GtkBuilder file for the test GUI, pipeglade.ui, is also used in
+the demonstration script
 
   ./echo.sh,
 
