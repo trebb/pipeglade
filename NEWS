@@ -1,3 +1,13 @@
+5.0.0 (not yet implemented)
+------------------
+  * API change, GtkSpinButton: rename action :set_text to :set_value;
+  rename response tag :text to :value.
+  * API change, GtkStatusbar: rename actions :push_id, :pop_id, and
+  :remove_all_id to :push, :pop, and :remove_all, respectively.
+  Remove the original functionality of :push, :pop, and :remove_all.
+  * API change, GtkSocket: rename response tags :plug-added and
+  :plug-removed to :plug_added and :plug_removed, respectively.
+
 4.7.0 (unreleased)
 ------------------
   * Add command line option -b for sending pipeglade to background.
