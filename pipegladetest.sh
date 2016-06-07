@@ -2765,20 +2765,10 @@ fi
 echo "
 # BATCH FOUR
 #
-# Possible and impossible combinations of widgets and actions.  Not
-# crashing means test passed, here.
-######################################################################
-"
-
-# TODO
-
-# 
-echo "
-# BATCH FIVE
-#
 # Tests of project metadata
 ######################################################################
 "
+
 # Does the manual page cover all implemented actions and no unimplemented ones?
 check_cmd 'test "`make prog-actions`" == "`make man-actions`"'
 
@@ -2790,6 +2780,54 @@ check_cmd 'test "`make man-widgets`" == "`make done-list`"'
 
 # Is our collection of test widgets complete?
 check_cmd 'test "`make man-widgets | sed s/Gtk// | tr \"[:upper:]\" \"[:lower:]\"`" == "`make examples-list | sed s/\\.ui$//`"'
+
+
+# 
+echo "
+# BATCH FIVE
+#
+# Possible and impossible combinations of widgets and actions.  Not
+# crashing means test passed, here.
+######################################################################
+"
+
+echo -e "main:ping" > mainping
+echo -e "_:main_quit" > mainquit
+# check_alive command
+check_alive() {
+    echo "$SEND ${1}"
+    echo -e "$1" >$FIN
+    while read -t .5 <$FOUT; do : ; done
+    if test -p $FIN; then
+        timeout -k0 1 cp mainping $FIN
+    fi
+    if test -p $FOUT; then
+        :>tempfout
+        timeout -k0 1 cp $FOUT tempfout
+        # read -t .5 r <tempfout
+    fi
+    if grep -q "main:ping" tempfout; then
+        count_ok
+        echo " $OK"
+    else
+        count_fail
+        echo " $FAIL"
+    fi
+}
+
+
+for wid in `make examples-list`; do
+    PID=`./pipeglade -i $FIN -o $FOUT -b -u widget-examples/$wid`
+    cmd=""
+    for act in `make prog-actions`; do
+        if test "$act" != "main_quit"; then
+            cmd="$cmd\n ${wid/\.ui/}1:$act"
+        fi
+    done
+    check_alive "$cmd"
+    timeout -k0 1 cp mainquit $FIN
+    kill $PID
+done
 
 
 echo "PASSED: $OKS/$TESTS; FAILED: $FAILS/$TESTS"
