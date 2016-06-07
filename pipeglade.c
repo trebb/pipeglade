@@ -2860,7 +2860,9 @@ digest_cmd(struct info *ar)
                 ud->type = G_TYPE_FROM_INSTANCE(ud->obj);
                 if (eql(ud->action, "force"))
                         ud->fn = fake_ui_activity;
-                else if (eql(ud->action, "ping"))
+                /* next line intentionally mangled to exclude it from */
+                /* auto-generated list of commands */
+                else if (eql(ud->action, /* undocumented */ "ping"))
                         ud->fn = ping;
                 else if (eql(ud->action, "snapshot"))
                         ud->fn = take_snapshot;
