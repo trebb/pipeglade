@@ -710,6 +710,14 @@ if test $AUTOMATIC; then
                 "ignoring GtkComboBoxText command \"comboboxtext1:nnn\""
     check_error "comboboxtext1:force" \
                 "ignoring GtkComboBoxText command \"comboboxtext1:force\""
+    check_error "comboboxtext1:insert_text" \
+                "ignoring GtkComboBoxText command \"comboboxtext1:insert_text\""
+    check_error "comboboxtext1:insert_text x y" \
+                "ignoring GtkComboBoxText command \"comboboxtext1:insert_text x y\""
+    check_error "comboboxtext1:remove" \
+                "ignoring GtkComboBoxText command \"comboboxtext1:remove\""
+    check_error "comboboxtext1:remove x y" \
+                "ignoring GtkComboBoxText command \"comboboxtext1:remove x y\""
 
     # GtkTreeView #
     check_error "treeview1:nnn" \
@@ -1792,6 +1800,11 @@ if test $AUTOMATIC; then
           "progressbar1:set_text $BIG_STRING"
     check 0 "" \
           "progressbar1:set_text This Is A Progressbar."
+    check 3 "" \
+          "label1:ping\n button1:ping\n main:ping" \
+          "label1:ping" \
+          "button1:ping" \
+          "main:ping"
 
 fi
 

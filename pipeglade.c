@@ -1331,24 +1331,20 @@ static void
 update_combo_box_text(struct ui_data *ud)
 {
         GtkComboBoxText *combobox = GTK_COMBO_BOX_TEXT(ud->obj);
-        char data1[strlen(ud->data) + 1];
         char dummy;
-        int val;
+        int txt0, pos;
 
-        strcpy(data1, ud->data);
         if (eql(ud->action, "prepend_text"))
-                gtk_combo_box_text_prepend_text(combobox, data1);
+                gtk_combo_box_text_prepend_text(combobox, ud->data);
         else if (eql(ud->action, "append_text"))
-                gtk_combo_box_text_append_text(combobox, data1);
-        else if (eql(ud->action, "remove") && sscanf(ud->data, "%d %c", &val, &dummy) == 1)
-                gtk_combo_box_text_remove(combobox, strtol(data1, NULL, 10));
-        else if (eql(ud->action, "insert_text")) {
-                char *position = strtok(data1, WHITESPACE);
-                char *text = strtok(NULL, WHITESPACE);
-
-                gtk_combo_box_text_insert_text(combobox,
-                                               strtol(position, NULL, 10), text);
-        } else
+                gtk_combo_box_text_append_text(combobox, ud->data);
+        else if (eql(ud->action, "remove") &&
+                 sscanf(ud->data, "%d %c", &pos, &dummy) == 1)
+                gtk_combo_box_text_remove(combobox, pos);
+        else if (eql(ud->action, "insert_text") &&
+                 sscanf(ud->data, "%d %n", &pos, &txt0) == 1)
+                gtk_combo_box_text_insert_text(combobox, pos, ud->data + txt0);
+        else
                 ign_cmd(ud->type, ud->cmd);
 }
 
@@ -2703,7 +2699,7 @@ main_quit(struct ui_data *ud)
  * Write snapshot of widget in an appropriate format to file
  */
 static void
-take_snapshot(struct ui_data *ud) 
+take_snapshot(struct ui_data *ud)
 {
         cairo_surface_t *sur = NULL;
         cairo_t *cr = NULL;
