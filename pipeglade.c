@@ -2643,6 +2643,20 @@ update_window(struct ui_data *ud)
 }
 
 /*
+ * Have the widget say "ping".  Runs inside gtk_main().
+ */
+static void
+ping(struct ui_data *ud)
+{
+        char dummy;
+
+        if (!GTK_IS_WIDGET(ud->obj) || sscanf(ud->data, " %c", &dummy) > 0)
+                ign_cmd(ud->type, ud->cmd);
+        ud->args->txt = "ping";
+        cb_simple(GTK_BUILDABLE(ud->obj), ud->args);
+}
+
+/*
  * Simulate user activity on various widgets.  Runs inside gtk_main().
  */
 static void
@@ -2846,6 +2860,8 @@ digest_cmd(struct info *ar)
                 ud->type = G_TYPE_FROM_INSTANCE(ud->obj);
                 if (eql(ud->action, "force"))
                         ud->fn = fake_ui_activity;
+                else if (eql(ud->action, "ping"))
+                        ud->fn = ping;
                 else if (eql(ud->action, "snapshot"))
                         ud->fn = take_snapshot;
                 else if (eql(ud->action, "block"))
