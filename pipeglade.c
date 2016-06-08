@@ -2706,7 +2706,8 @@ take_snapshot(struct ui_data *ud)
         int height;
         int width;
 
-        if (!GTK_IS_WIDGET(ud->obj)) {
+        if (!GTK_IS_WIDGET(ud->obj) ||
+            !gtk_widget_is_drawable(GTK_WIDGET(ud->obj))) {
                 ign_cmd(ud->type, ud->cmd);
                 return;
         }
