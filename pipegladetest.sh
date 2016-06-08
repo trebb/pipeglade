@@ -1796,8 +1796,9 @@ if test $AUTOMATIC; then
     check 1 "" \
           "switch1:set_active 1\n switch1:block 0\n switch1:set_active 0" \
           "switch1:0"
-    check 0 "" \
-          "progressbar1:set_text $BIG_STRING"
+    # Although this should be handled gracefully, it mangles the UI too much
+    # check 0 "" \
+    #       "progressbar1:set_text $BIG_STRING"
     check 0 "" \
           "progressbar1:set_text This Is A Progressbar."
     check 3 "" \
