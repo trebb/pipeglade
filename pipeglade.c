@@ -2721,8 +2721,10 @@ take_snapshot(struct ui_data *ud)
                 sur = cairo_ps_surface_create(ud->data, width, height);
         else if (has_suffix(ud->data, ".svg"))
                 sur = cairo_svg_surface_create(ud->data, width, height);
-        else
+        else {
                 ign_cmd(ud->type, ud->cmd);
+                return;
+        }
         cr = cairo_create(sur);
         gtk_widget_draw(GTK_WIDGET(ud->obj), cr);
         cairo_destroy(cr);
