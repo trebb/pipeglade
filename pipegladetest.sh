@@ -2756,7 +2756,7 @@ if test $AUTOMATIC; then
         echo "treeview2:set $i 9 row $i"
     done > $DIR/$FILE5
     cut -f2- $LOG > $DIR/$FILE6
-    echo -e "g/_:main_quit/d\ng|$FILE6|d\ng/:load/s|$FILE1|$FILE4|\ng/:load/s|$FILE2|$FILE5|\nwq" | ed -s $DIR/$FILE6
+    echo -e "g/_:main_quit/d\n/printdialog:/d\ng|$FILE6|d\ng/:load/s|$FILE1|$FILE4|\ng/:load/s|$FILE2|$FILE5|\nwq" | ed -s $DIR/$FILE6
     for i in {1..5}; do
         cat $DIR/$FILE6
     done >$BIG_INPUT
