@@ -2775,7 +2775,7 @@ if test $AUTOMATIC; then
     check_cmd "test $(grep -v -e WARNING -e '^$' $BIG_INPUT_ERR | wc -l) -eq 0"
 fi
 
-
+# 
 echo "
 # BATCH FOUR
 #
@@ -2836,6 +2836,9 @@ for wid in `make examples-list`; do
     for act in `make prog-actions`; do
         if test "$act" != "main_quit"; then
             cmd="$cmd\n ${wid/\.ui/}1:$act"
+            for args in '0' '0 1' '0 1 1' '1 0 1 2' '1 0 1 2 3' '1 0 1 2 3 4 5' '1 s XYZ' 'x.svg' 'x.eps' 'x.ps' 'x.pdf'; do
+                cmd="$cmd\n ${wid/\.ui/}1:$act $args"
+            done
         fi
     done
     check_alive "$cmd"
