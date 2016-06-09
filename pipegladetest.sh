@@ -65,6 +65,10 @@ TESTS=0
 FAILS=0
 OKS=0
 
+() {
+    echo "################################################################################"
+}
+
 count_fail() {
     (( TESTS+=1 ))
     (( FAILS+=1 ))
@@ -107,6 +111,7 @@ check_cmd() {
 }
 
 
+
 echo "
 # BATCH ONE
 #
@@ -2775,7 +2780,7 @@ if test $AUTOMATIC; then
     check_cmd "test $(grep -v -e WARNING -e '^$' $BIG_INPUT_ERR | wc -l) -eq 0"
 fi
 
-# 
+
 echo "
 # BATCH FOUR
 #
@@ -2796,7 +2801,7 @@ check_cmd 'test "`make man-widgets`" == "`make done-list`"'
 check_cmd 'test "`make man-widgets | sed s/Gtk// | tr \"[:upper:]\" \"[:lower:]\"`" == "`make examples-list | sed s/\\.ui$//`"'
 
 
-# 
+
 echo "
 # BATCH FIVE
 #
@@ -2805,22 +2810,25 @@ echo "
 ######################################################################
 "
 
-echo -e "main:ping" > mainping
-echo -e "_:main_quit" > mainquit
+MAINPING=`mktemp`
+MAINQUIT=`mktemp`
+TEMPFOUT=`mktemp`
+echo -e "main:ping" > $MAINPING
+echo -e "_:main_quit" > $MAINQUIT
+
 # check_alive command
 check_alive() {
     echo "$SEND ${1}"
     echo -e "$1" >$FIN
     while read -t .5 <$FOUT; do : ; done
     if test -p $FIN; then
-        timeout -k0 1 cp mainping $FIN
+        timeout -k0 1 cp $MAINPING $FIN
     fi
     if test -p $FOUT; then
-        :>tempfout
-        timeout -k0 1 cp $FOUT tempfout
-        # read -t .5 r <tempfout
+        :>$TEMPFOUT
+        timeout -k0 1 cp $FOUT $TEMPFOUT
     fi
-    if grep -q "main:ping" tempfout; then
+    if grep -q "main:ping" $TEMPFOUT; then
         count_ok
         echo " $OK"
     else
@@ -2842,9 +2850,12 @@ for wid in `make examples-list`; do
         fi
     done
     check_alive "$cmd"
-    timeout -k0 1 cp mainquit $FIN
+    timeout -k0 1 cp $MAINQUIT $FIN
     kill $PID
 done
+
+rm -f $MAINPING $MAINQUIT $TEMPFOUT
+
 
 
 echo "PASSED: $OKS/$TESTS; FAILED: $FAILS/$TESTS"
