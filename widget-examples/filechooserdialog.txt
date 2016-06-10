@@ -1,0 +1,4 @@
+filechooserdialog1:set_visible 1
+filechooserdialog1:snapshot gh-pages/GtkFileChooserDialog.svg
+_:main_quit
+

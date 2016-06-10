@@ -1,0 +1,8 @@
+expander1:force
+
+# trying to overcome a timing problem:
+main:set_visible 0
+main:set_visible 1
+
+main:snapshot gh-pages/GtkExpander.svg
+_:main_quit

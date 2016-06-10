@@ -1,0 +1,4 @@
+dialog1:set_visible 1
+dialog1:snapshot gh-pages/GtkDialog.svg
+_:main_quit
+

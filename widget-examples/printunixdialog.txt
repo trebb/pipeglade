@@ -1,0 +1,4 @@
+printunixdialog1:set_visible 1
+printunixdialog1:snapshot gh-pages/GtkPrintUnixDialog.svg
+_:main_quit
+

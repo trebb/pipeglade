@@ -6,10 +6,11 @@
     <property name="can_focus">False</property>
     <child>
       <object class="GtkToggleButton" id="togglebutton1">
-        <property name="label" translatable="yes">togglebutton</property>
+        <property name="label" translatable="yes">on/off</property>
         <property name="visible">True</property>
         <property name="can_focus">True</property>
         <property name="receives_default">True</property>
+        <property name="active">True</property>
       </object>
     </child>
   </object>

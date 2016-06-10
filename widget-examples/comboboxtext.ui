@@ -8,6 +8,7 @@
       <object class="GtkComboBoxText" id="comboboxtext1">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="active">1</property>
         <property name="has_entry">True</property>
         <items>
           <item translatable="yes">item one</item>

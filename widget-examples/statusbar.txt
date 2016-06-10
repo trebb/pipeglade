@@ -1,0 +1,8 @@
+statusbar1:push please wait ...
+
+# trying to do something about a timing problem we seem to have:
+main:set_visible 0
+main:set_visible 1
+
+main:snapshot gh-pages/GtkStatusbar.svg
+_:main_quit

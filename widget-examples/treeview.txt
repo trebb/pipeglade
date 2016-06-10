@@ -1,0 +1,8 @@
+treeview1:set_cursor 2
+
+main:set_visible 0
+main:set_visible 1
+
+treeview1:snapshot gh-pages/GtkTreeView.svg
+
+_:main_quit
