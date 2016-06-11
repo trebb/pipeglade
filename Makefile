@@ -104,22 +104,24 @@ done-list:
 # Prepare the www directory
 gh-pages: clean gh-pages/index.html gh-pages/pipeglade.1.html gh-pages/clock.svg ${SNAPSHOTS}
 
-gh-pages/index.html gh-pages/pipeglade.1.html: pipeglade pipeglade.1 www-template/index.html Makefile gh-pages/gallery.html
-	mkdir -p gh-pages
-	cp www-template/* gh-pages/
+gh-pages/index.html: pipeglade gh-pages/pipeglade.1.html www-template/index.html Makefile gh-pages/gallery.html
 	cp clock.sh gh-pages/clock.sh.txt
 	cp clock.ui gh-pages/clock.ui.txt
-	mandoc -Wall -T xhtml -O style=style.css pipeglade.1 > gh-pages/pipeglade.1.html
-	mandoc -Wall -T pdf -O paper=a4 pipeglade.1 > gh-pages/pipeglade.1.pdf
 	cp LICENSE gh-pages/
 	echo -e '/@/\ns/</\&lt;/\ns/>/\&gt;/\n,s/^$$/<p>/\nwq' | ed -s gh-pages/LICENSE
 	echo -e '/<!-- replace_with_widget_gallery -->/d\n-r gh-pages/gallery.html\nwq' | ed -s gh-pages/index.html
 	echo -e '/<!-- replace_with_license_text -->/d\n-r gh-pages/LICENSE\nwq' | ed -s gh-pages/index.html
 	echo -e ',s/_PUT_VERSION_HERE_/$(VERSION)/g\nwq' | ed -s gh-pages/index.html
 	echo -e '/<\/body>/-r gh-pages/statcounter.html\nwq' | ed -s gh-pages/index.html
-	echo -e '/<\/body>/-r gh-pages/statcounter.html\nwq' | ed -s gh-pages/pipeglade.1.html
 	echo -e '/<\/body>/-r gh-pages/statcounter.html\nwq' | ed -s gh-pages/404.html
 	rm -f gh-pages/statcounter.html gh-pages/LICENSE
+
+gh-pages/pipeglade.1.html: pipeglade.1 Makefile
+	mkdir -p gh-pages
+	cp www-template/* gh-pages/
+	mandoc -Wall -T xhtml -O style=style.css pipeglade.1 > gh-pages/pipeglade.1.html
+	mandoc -Wall -T pdf -O paper=a4 pipeglade.1 > gh-pages/pipeglade.1.pdf
+	echo -e '/<\/body>/-r gh-pages/statcounter.html\nwq' | ed -s gh-pages/pipeglade.1.html
 
 gh-pages/clock.svg: clock.sh clock.ui pipeglade
 	mkdir -p gh-pages
@@ -139,18 +141,24 @@ gh-pages/${W:S/$/.jpg/}: widget-examples/${W:S/Gtk//:tl}.ui
 		echo "_:load ${.ALLSRC:R}.txt"; \
 	else \
 		echo "main:snapshot ${.TARGET:R}.svg"; echo "_:main_quit"; \
-	fi | ./pipeglade -u ${.ALLSRC}
+	fi | ./pipeglade -u ${.ALLSRC} >/dev/null
 	convert "${.TARGET:R}.svg" -resize 90% -frame 2 "${.TARGET}" && rm "${.TARGET:R}.svg"
 .endfor
 
 gh-pages/gallery.html: ${SNAPSHOTS}
 	for i in ${.ALLSRC:T:R}; do \
-		echo "<div class=\"display\">"; \
-		echo "  <b class=\"flag\">$${i}</b>"; \
-		echo "  <br>"; \
-		echo "  <img src=\"$${i}.jpg\">"; \
-		echo "</div>"; \
 		echo "<p>"; \
+		echo "  <div class=\"display\">"; \
+		echo "    <i class=\link-sec\">"; \
+		echo -n "      <a href=\"pipeglade.1.html#"; \
+		xmllint --html --xpath "string(//div[@class=\"section\"]/h1[text()=\"WIDGETS\"]/../div[@class=\"subsection\"]/h2[text()=\"$${i}\"]/@id)" gh-pages/pipeglade.1.html; \
+		echo -n "\">$${i}</a>"; \
+		echo "    </i>"; \
+		echo "    (cf.&nbsp;<a class=\"link-ext\" href=\"https://developer.gnome.org/gtk3/stable/$${i}.html\">GTK+ 3 Reference Manual</a>)"; \
+		echo "    <br>"; \
+		echo "    <img src=\"$${i}.jpg\">"; \
+		echo "  </div>"; \
+		echo "</p>"; \
 	done > ${.TARGET}
 
 
