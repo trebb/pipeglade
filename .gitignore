@@ -4,11 +4,11 @@
 *.err
 *.gmon
 *.gprof
+*.jpg
 *.log
 *.pdf
 *.ps
 *.svg
-*.txt
 *fifo
 *~
 \#*#
