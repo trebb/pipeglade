@@ -186,14 +186,14 @@ gh-pages/${W:S/$/.jpg/}: widget-examples/${W:S/Gtk//:tl}.ui widget-examples/${W:
 	@mkdir -p gh-pages
 	@echo "_:load widget-examples/${W:S/Gtk//:tl}.txt" | \
 		./pipeglade -u widget-examples/${W:S/Gtk//:tl}.ui >/dev/null
-	@convert "${.TARGET:R}.svg" -resize 90% -frame 2 "${.TARGET}" && rm "${.TARGET:R}.svg"
+	@convert "${.TARGET:R}.svg" -resize 80% -frame 2 "${.TARGET}" && rm "${.TARGET:R}.svg"
 .else
 gh-pages/${W:S/$/.jpg/}: widget-examples/${W:S/Gtk//:tl}.ui
 	@echo "creating widget snapshot ${.TARGET}"
 	@mkdir -p gh-pages
 	@(echo "main:snapshot ${.TARGET:R}.svg"; echo "_:main_quit") | \
 		./pipeglade -u ${.ALLSRC} >/dev/null
-	@convert "${.TARGET:R}.svg" -resize 90% -frame 2 "${.TARGET}" && rm "${.TARGET:R}.svg"
+	@convert "${.TARGET:R}.svg" -resize 80% -frame 2 "${.TARGET}" && rm "${.TARGET:R}.svg"
 .endif
 .endfor
 
