@@ -971,7 +971,7 @@ resets the dash pattern to a solid line.
 .Qo Ar id Ns Cm :set_font_face Bro Ar n Ns | Ns Cm = Ns Ar n Ns | Ns Ar n Ns Cm < Ns Ar m Brc
 .Brq Cm normal | italic | oblique
 .Brq Cm normal | bold
-.Bq Cm family
+.Bq Ar family
 .Qc
 sets the font face for subsequent calls of
 .Ar id Ns Cm :show_text .
@@ -997,10 +997,8 @@ Default
 is 2.
 .Pp
 .Qq Ar id Ns Cm :set_source_rgba Bro Ar n Ns | Ns Cm = Ns Ar n Ns | Ns Ar n Ns Cm < Ns Ar m Brc color
-sets the color.
-.Ar color
-is in the format used with
-.Sx GtkColorButton .
+sets the color; see
+.Sx Color .
 .Pp
 .Qq Ar id Ns Cm :show_text Bro Ar n Ns | Ns Cm = Ns Ar n Ns | Ns Ar n Ns Cm < Ns Ar m Brc text
 writes
@@ -1607,6 +1605,8 @@ See
 none
 .El
 .Ss GtkImageMenuItem
+.Cm GtkImageMenuItem
+is deprecated.
 .Bl -tag -width "commands "
 .It Commands
 .Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
@@ -1636,10 +1636,6 @@ Default is disabling the tooltip.
 .Qq Ar id Ns Cm :force
 simulates a click on the menu item.
 .Pp
-.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
-writes a snapshot of the menu item to an image file of the specified
-type.
-.Pp
 .Qq Ar id Ns Cm :set_size_request Bq Ar width height
 sets the item's minimum size to
 .Ar width
@@ -1656,8 +1652,6 @@ See
 .Sx Style .
 .It Feedback
 A
-.Cm GtkMenuItem
-or
 .Cm GtkImageMenuItem
 with id
 .Ar foo Ns Cm _invoke
@@ -1669,7 +1663,7 @@ with id
 .Ar foo
 if it exists.
 If there isn't any dialog attached to the
-.Cm GtkMenuItem ,
+.Cm GtkImageMenuItem ,
 it reports
 .Qq Ar id Ns Cm \&:active Ar label .
 .El
@@ -1783,10 +1777,6 @@ Default is disabling the tooltip.
 .Qq Ar id Ns Cm :force
 simulates a click on the menu item.
 .Pp
-.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
-writes a snapshot of the menu item to an image file of the specified
-type.
-.Pp
 .Qq Ar id Ns Cm :set_size_request Bq Ar width height
 sets the item's minimum size to
 .Ar width
@@ -1804,8 +1794,6 @@ See
 .It Feedback
 A
 .Cm GtkMenuItem
-or
-.Cm GtkImageMenuItem
 with id
 .Ar foo Ns Cm _invoke
 will invoke the
@@ -3075,32 +3063,51 @@ Examples:
 .It
 .Ql label1:style font-style:italic; font-weight:bold; color:blue
 .It
+.Ql button1:style background-image:url("q.png")
+.It
+.Ql treeview1:style background-image:linear-gradient(45deg, yellow, blue);
+.It
 .Ql frame1:style border-color:red yellow; border-width:5px
 .It
 .Ql frame1:style border-radius:10px; transition:10s
 .El
-For a description of possible color notations see
-.Sx Color .
+For color notations see
+.Sx Color ,
+below.
 .Ss Color
+Possible
 .Ar color
-can be
+notations:
 .Bl -dash -offset indent -compact
 .It
-a standard X11 color name, like
+standard X11 colors names like
+.Ql blue ,
 .Ql Dark Sea Green ,
+or
+.Ql Red ;
 .It
-a hexadecimal value in the form
+.Ql transparent ;
+.It
+hexadecimal values in the form
 .Cm # Ns Ar rgb , Cm # Ns Ar rrggbb , Cm # Ns Ar rrrgggbbb ,
 or
-.Cm # Ns Ar rrrrggggbbbb ,
+.Cm # Ns Ar rrrrggggbbbb ;
 .It
-an RGB color in the form
-.Cm rgb( Ns Ar red Ns Cm \&, Ns Ar green Ns Cm \&, Ns Ar blue Ns Cm \&) ,
+RGB colors in the form
+.Cm rgb( Ns Ar red Ns Cm \&, Ns Ar green Ns Cm \&, Ns Ar blue Ns Cm \&)
 or
-.It
-an RGBA color in the form
+RGBA colors in the form
 .Cm rgba( Ns Ar red Ns Cm \&, Ns Ar green Ns Cm \&, Ns
-.Ar blue Ns Cm \&, Ns Ar alpha Ns Cm \&) .
+.Ar blue Ns Cm \&, Ns Ar alpha Ns Cm \&) ;
+.Ar red , green , blue
+between 0 and 255 and
+.Ar alpha
+between 0 and 1;
+.It
+color expressions like
+.Ql darker(blue)
+or
+.Ql lighter(currentColor) .
 .El
 .Sh EXIT STATUS
 .Ex -std
