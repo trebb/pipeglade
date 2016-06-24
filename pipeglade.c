@@ -1249,13 +1249,257 @@ cb_draw(GtkWidget *widget, cairo_t *cr, gpointer data)
  * ============================================================
  */
 
+/*
+ * Generic actions that are applicable to most widgets
+ */
+
+/*
+ * Simulate user activity on various widgets.  Runs inside gtk_main().
+ */
+static void
+fake_ui_activity(struct ui_data *ud)
+{
+        char dummy;
+
+        if (!GTK_IS_WIDGET(ud->obj) || sscanf(ud->data, " %c", &dummy) > 0)
+                ign_cmd(ud->type, ud->cmd);
+        else if (GTK_IS_SPIN_BUTTON(ud->obj)) {
+                ud->args->txt = "text";
+                cb_spin_button(GTK_BUILDABLE(ud->obj), ud->args); /* TODO: rename to "value" */
+        } else if (GTK_IS_SCALE(ud->obj)) {
+                ud->args->txt = "value";
+                cb_range(GTK_BUILDABLE(ud->obj), ud->args);
+        } else if (GTK_IS_ENTRY(ud->obj)) {
+                ud->args->txt = "text";
+                cb_editable(GTK_BUILDABLE(ud->obj), ud->args);
+        } else if (GTK_IS_CALENDAR(ud->obj)) {
+                ud->args->txt = "clicked";
+                cb_calendar(GTK_BUILDABLE(ud->obj), ud->args);
+        } else if (GTK_IS_FILE_CHOOSER_BUTTON(ud->obj)) {
+                ud->args->txt = "file";
+                cb_file_chooser_button(GTK_BUILDABLE(ud->obj), ud->args);
+        } else if (!gtk_widget_activate(GTK_WIDGET(ud->obj)))
+                ign_cmd(ud->type, ud->cmd);
+}
+
+static void
+update_focus(struct ui_data *ud){
+        char dummy;
+
+        if (GTK_IS_WIDGET(ud->obj) &&
+            sscanf(ud->data, " %c", &dummy) < 1 &&
+            gtk_widget_get_can_focus(GTK_WIDGET(ud->obj)))
+                gtk_widget_grab_focus(GTK_WIDGET(ud->obj));
+        else
+                ign_cmd(ud->type, ud->cmd);
+}
+
+/*
+ * Have the widget say "ping".  Runs inside gtk_main().
+ */
+static void
+ping(struct ui_data *ud)
+{
+        char dummy;
+
+        if (!GTK_IS_WIDGET(ud->obj) || sscanf(ud->data, " %c", &dummy) > 0)
+                ign_cmd(ud->type, ud->cmd);
+        ud->args->txt = "ping";
+        cb_simple(GTK_BUILDABLE(ud->obj), ud->args);
+}
+
+/*
+ * Write snapshot of widget in an appropriate format to file
+ */
+static void
+take_snapshot(struct ui_data *ud)
+{
+        cairo_surface_t *sur = NULL;
+        cairo_t *cr = NULL;
+        int height;
+        int width;
+
+        if (!GTK_IS_WIDGET(ud->obj) ||
+            !gtk_widget_is_drawable(GTK_WIDGET(ud->obj))) {
+                ign_cmd(ud->type, ud->cmd);
+                return;
+        }
+        height = gtk_widget_get_allocated_height(GTK_WIDGET(ud->obj));
+        width = gtk_widget_get_allocated_width(GTK_WIDGET(ud->obj));
+        if (has_suffix(ud->data, ".epsf") || has_suffix(ud->data, ".eps")) {
+                sur = cairo_ps_surface_create(ud->data, width, height);
+                cairo_ps_surface_set_eps(sur, TRUE);
+        } else if (has_suffix(ud->data, ".pdf"))
+                sur = cairo_pdf_surface_create(ud->data, width, height);
+        else if (has_suffix(ud->data, ".ps"))
+                sur = cairo_ps_surface_create(ud->data, width, height);
+        else if (has_suffix(ud->data, ".svg"))
+                sur = cairo_svg_surface_create(ud->data, width, height);
+        else {
+                ign_cmd(ud->type, ud->cmd);
+                return;
+        }
+        cr = cairo_create(sur);
+        gtk_widget_draw(GTK_WIDGET(ud->obj), cr);
+        cairo_destroy(cr);
+        cairo_surface_destroy(sur);
+}
+
+struct handler_id {
+        unsigned int id; /* returned by g_signal_connect() and friends */
+        bool blocked;    /* we avoid multiple blocking/unblocking */
+        struct handler_id *next;
+};
+
+static void
+update_blocked(struct ui_data *ud)
+{
+        char dummy;
+        struct handler_id *hid;
+        unsigned long int val;
+
+        if (sscanf(ud->data, "%lu %c", &val, &dummy) == 1 && val < 2) {
+                for (hid = g_object_get_data(ud->obj, "signal-id");
+                     hid != NULL; hid = hid->next) {
+                        if (val == 0 && hid->blocked == true) {
+                                g_signal_handler_unblock(ud->obj, hid->id);
+                                hid->blocked = false;
+                        } else if (val == 1 && hid->blocked == false) {
+                                g_signal_handler_block(ud->obj, hid->id);
+                                hid->blocked = true;
+                        }
+                }
+        } else
+                ign_cmd(ud->type, ud->cmd);
+}
+
+static void
+update_sensitivity(struct ui_data *ud)
+{
+        char dummy;
+        unsigned int val;
+
+        if (GTK_IS_WIDGET(ud->obj) &&
+            sscanf(ud->data, "%u %c", &val, &dummy) == 1 && val < 2)
+                gtk_widget_set_sensitive(GTK_WIDGET(ud->obj), val);
+        else
+                ign_cmd(ud->type, ud->cmd);
+}
+
+static void
+update_size_request(struct ui_data *ud)
+{
+        char dummy;
+        int x, y;
+
+        if (GTK_IS_WIDGET(ud->obj) &&
+            sscanf(ud->data, "%d %d %c", &x, &y, &dummy) == 2)
+                gtk_widget_set_size_request(GTK_WIDGET(ud->obj), x, y);
+        else if (GTK_IS_WIDGET(ud->obj) &&
+                 sscanf(ud->data, " %c", &dummy) < 1)
+                gtk_widget_set_size_request(GTK_WIDGET(ud->obj), -1, -1);
+        else
+                ign_cmd(ud->type, ud->cmd);
+}
+
+static void
+update_tooltip_text(struct ui_data *ud)
+{
+        if (GTK_IS_WIDGET(ud->obj))
+                gtk_widget_set_tooltip_text(GTK_WIDGET(ud->obj), ud->data);
+        else
+                ign_cmd(ud->type, ud->cmd);
+}
+
+static void
+update_visibility(struct ui_data *ud)
+{
+        char dummy;
+        unsigned int val;
+
+        if (GTK_IS_WIDGET(ud->obj) &&
+            sscanf(ud->data, "%u %c", &val, &dummy) == 1 && val < 2)
+                gtk_widget_set_visible(GTK_WIDGET(ud->obj), val);
+        else
+                ign_cmd(ud->type, ud->cmd);
+}
+
+/*
+ * Change the style of the widget passed.  Runs inside gtk_main().
+ */
+static void
+update_widget_style(struct ui_data *ud)
+{
+        GtkStyleContext *context;
+        GtkStyleProvider *style_provider;
+        char *style_decl;
+        const char *prefix = "* {", *suffix = "}";
+        size_t sz;
+
+        if (!GTK_IS_WIDGET(ud->obj)) {
+                ign_cmd(ud->type, ud->cmd);
+                return;
+        }
+        style_provider = g_object_get_data(ud->obj, "style_provider");
+        sz = strlen(prefix) + strlen(suffix) + strlen(ud->data) + 1;
+        context = gtk_widget_get_style_context(GTK_WIDGET(ud->obj));
+        gtk_style_context_remove_provider(context, style_provider);
+        if ((style_decl = malloc(sz)) == NULL)
+                OOM_ABORT;
+        strcpy(style_decl, prefix);
+        strcat(style_decl, ud->data);
+        strcat(style_decl, suffix);
+        gtk_style_context_add_provider(context, style_provider,
+                                       GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+        gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(style_provider),
+                                        style_decl, -1, NULL);
+        free(style_decl);
+}
+
+/*
+ * Check if one of the generic actions is requested; complain if none
+ * of them is
+ */
+static void
+try_generic_cmds(struct ui_data *ud)
+{
+        if (eql(ud->action, "block"))
+                update_blocked(ud);
+        else if (eql(ud->action, "set_sensitive"))
+                update_sensitivity(ud);
+        else if (eql(ud->action, "set_visible"))
+                update_visibility(ud);
+        else if (eql(ud->action, "set_tooltip_text"))
+                update_tooltip_text(ud);
+        else if (eql(ud->action, "grab_focus"))
+                update_focus(ud);
+        else if (eql(ud->action, "set_size_request"))
+                update_size_request(ud);
+        else if (eql(ud->action, "style"))
+                update_widget_style(ud);
+        else if (eql(ud->action, "force"))
+                fake_ui_activity(ud);
+        /* next line intentionally mangled to exclude it from */
+        /* auto-generated list of commands */
+        else if (eql(ud->action, /* undocumented! */ "ping"))
+                ping(ud);
+        else if (eql(ud->action, "snapshot"))
+                take_snapshot(ud);
+        else
+                ign_cmd(ud->type, ud->cmd);
+}
+
+/*
+ * Manipulation of specific widgets
+ */
+
 static void
 update_button(struct ui_data *ud)
 {
         if (eql(ud->action, "set_label"))
                 gtk_button_set_label(GTK_BUTTON(ud->obj), ud->data);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -1281,7 +1525,7 @@ update_calendar(struct ui_data *ud)
         } else if (eql(ud->action, "clear_marks") && sscanf(ud->data, " %c", &dummy) < 1)
                 gtk_calendar_clear_marks(calendar);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 /*
@@ -1324,7 +1568,7 @@ update_color_button(struct ui_data *ud)
                 gdk_rgba_parse(&color, ud->data);
                 gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(ud->obj), &color);
         } else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -1345,7 +1589,7 @@ update_combo_box_text(struct ui_data *ud)
                  sscanf(ud->data, "%d %n", &pos, &txt0) == 1)
                 gtk_combo_box_text_insert_text(combobox, pos, ud->data + txt0);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 /*
@@ -1843,7 +2087,7 @@ update_drawing_area(struct ui_data *ud)
                                           GTK_WIDGET(ud->obj), NULL);
                 break;
         case FAILURE:
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
                 break;
         case SUCCESS:
                 break;
@@ -1863,7 +2107,7 @@ update_entry(struct ui_data *ud)
         else if (eql(ud->action, "set_placeholder_text"))
                 gtk_entry_set_placeholder_text(entry, ud->data);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -1879,7 +2123,7 @@ update_expander(struct ui_data *ud)
         else if (eql(ud->action, "set_label"))
                 gtk_expander_set_label(expander, ud->data);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -1888,7 +2132,7 @@ update_file_chooser_button(struct ui_data *ud)
         if (eql(ud->action, "set_filename"))
                 gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(ud->obj), ud->data);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -1902,19 +2146,7 @@ update_file_chooser_dialog(struct ui_data *ud)
                 gtk_file_chooser_set_current_name(chooser, ud->data);
         else if (update_class_window(ud));
         else
-                ign_cmd(ud->type, ud->cmd);
-}
-
-static void
-update_focus(struct ui_data *ud){
-        char dummy;
-
-        if (GTK_IS_WIDGET(ud->obj) &&
-            sscanf(ud->data, " %c", &dummy) < 1 &&
-            gtk_widget_get_can_focus(GTK_WIDGET(ud->obj)))
-                gtk_widget_grab_focus(GTK_WIDGET(ud->obj));
-        else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -1924,7 +2156,7 @@ update_font_button(struct ui_data *ud){
         if (eql(ud->action, "set_font_name"))
                 gtk_font_button_set_font_name(font_button, ud->data);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -1933,7 +2165,7 @@ update_frame(struct ui_data *ud)
         if (eql(ud->action, "set_label"))
                 gtk_frame_set_label(GTK_FRAME(ud->obj), ud->data);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -1948,7 +2180,7 @@ update_image(struct ui_data *ud)
         else if (eql(ud->action, "set_from_icon_name"))
                 gtk_image_set_from_icon_name(image, ud->data, size);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -1957,35 +2189,13 @@ update_label(struct ui_data *ud)
         if (eql(ud->action, "set_text"))
                 gtk_label_set_text(GTK_LABEL(ud->obj), ud->data);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
-struct handler_id {
-        unsigned int id; /* returned by g_signal_connect() and friends */
-        bool blocked;    /* we avoid multiple blocking/unblocking */
-        struct handler_id *next;
-};
-
 static void
-update_blocked(struct ui_data *ud)
+update_menu_item(struct ui_data *ud)
 {
-        char dummy;
-        struct handler_id *hid;
-        unsigned long int val;
-
-        if (sscanf(ud->data, "%lu %c", &val, &dummy) == 1 && val < 2) {
-                for (hid = g_object_get_data(ud->obj, "signal-id");
-                     hid != NULL; hid = hid->next) {
-                        if (val == 0 && hid->blocked == true) {
-                                g_signal_handler_unblock(ud->obj, hid->id);
-                                hid->blocked = false;
-                        } else if (val == 1 && hid->blocked == false) {
-                                g_signal_handler_block(ud->obj, hid->id);
-                                hid->blocked = true;
-                        }
-                }
-        } else
-                ign_cmd(ud->type, ud->cmd);
+        try_generic_cmds(ud);
 }
 
 static void
@@ -1999,7 +2209,7 @@ update_notebook(struct ui_data *ud)
             val >= 0 && val < n_pages)
                 gtk_notebook_set_current_page(GTK_NOTEBOOK(ud->obj), val);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -2043,7 +2253,7 @@ update_print_dialog(struct ui_data *ud)
                 }
                 gtk_widget_hide(GTK_WIDGET(dialog));
         } else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -2059,7 +2269,7 @@ update_progress_bar(struct ui_data *ud)
                  sscanf(ud->data, "%lf %c", &frac, &dummy) == 1)
                 gtk_progress_bar_set_fraction(progressbar, frac);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -2085,7 +2295,7 @@ update_scale(struct ui_data *ud)
                  sscanf(ud->data, "%lf %lf %c", &val1, &val2, &dummy) == 2)
                 gtk_range_set_increments(range, val1, val2);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -2108,36 +2318,7 @@ update_scrolled_window(struct ui_data *ud)
                  sscanf(ud->data, "%lf %lf %c", &d0, &d1, &dummy) == 2)
                 gtk_adjustment_clamp_page(vadj, d0, d1);
         else
-                ign_cmd(ud->type, ud->cmd);
-}
-
-static void
-update_sensitivity(struct ui_data *ud)
-{
-        char dummy;
-        unsigned int val;
-
-        if (GTK_IS_WIDGET(ud->obj) &&
-            sscanf(ud->data, "%u %c", &val, &dummy) == 1 && val < 2)
-                gtk_widget_set_sensitive(GTK_WIDGET(ud->obj), val);
-        else
-                ign_cmd(ud->type, ud->cmd);
-}
-
-static void
-update_size_request(struct ui_data *ud)
-{
-        char dummy;
-        int x, y;
-
-        if (GTK_IS_WIDGET(ud->obj) &&
-            sscanf(ud->data, "%d %d %c", &x, &y, &dummy) == 2)
-                gtk_widget_set_size_request(GTK_WIDGET(ud->obj), x, y);
-        else if (GTK_IS_WIDGET(ud->obj) &&
-                 sscanf(ud->data, " %c", &dummy) < 1)
-                gtk_widget_set_size_request(GTK_WIDGET(ud->obj), -1, -1);
-        else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -2152,7 +2333,7 @@ update_socket(struct ui_data *ud)
                 snprintf(str, BUFLEN, "%lu", id);
                 send_msg(ud->args->fout, GTK_BUILDABLE(socket), "id", str, NULL);
         } else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -2172,7 +2353,7 @@ update_spin_button(struct ui_data *ud)
                  sscanf(ud->data, "%lf %lf %c", &val1, &val2, &dummy) == 2)
                 gtk_spin_button_set_increments(spinbutton, val1, val2);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -2186,7 +2367,7 @@ update_spinner(struct ui_data *ud)
         else if (eql(ud->action, "stop") && sscanf(ud->data, " %c", &dummy) < 1)
                 gtk_spinner_stop(spinner);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -2223,7 +2404,7 @@ update_statusbar(struct ui_data *ud)
                 gtk_statusbar_remove_all(statusbar,
                                          gtk_statusbar_get_context_id(statusbar, ctx_msg));
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
         free(ctx_msg);
 }
 
@@ -2237,7 +2418,7 @@ update_switch(struct ui_data *ud)
             sscanf(ud->data, "%u %c", &val, &dummy) == 1 && val < 2)
                 gtk_switch_set_active(GTK_SWITCH(ud->obj), val);
         else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -2279,7 +2460,7 @@ update_text_view(struct ui_data *ud)
                          gtk_text_buffer_get_text(textbuf, &a, &b, TRUE), NULL);
                 fclose(sv);
         } else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 static void
@@ -2294,16 +2475,7 @@ update_toggle_button(struct ui_data *ud)
                  sscanf(ud->data, "%u %c", &val, &dummy) == 1 && val < 2)
                 gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ud->obj), val);
         else
-                ign_cmd(ud->type, ud->cmd);
-}
-
-static void
-update_tooltip_text(struct ui_data *ud)
-{
-        if (GTK_IS_WIDGET(ud->obj))
-                gtk_widget_set_tooltip_text(GTK_WIDGET(ud->obj), ud->data);
-        else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 /*
@@ -2499,6 +2671,7 @@ update_tree_view(struct ui_data *ud)
         GtkTreeIter iter0, iter1;
         GtkTreeModel *model = gtk_tree_view_get_model(view);
         GtkTreePath *path = NULL;
+        GtkTreeSelection *sel = gtk_tree_view_get_selection(view);
         bool iter0_valid, iter1_valid;
         char *tokens, *arg0, *arg1, *arg2;
         int col = -1;           /* invalid column number */
@@ -2553,7 +2726,7 @@ update_tree_view(struct ui_data *ud)
                 tree_view_set_cursor(view, path, NULL);
         } else if (eql(ud->action, "set_cursor") && arg0 == NULL) {
                 tree_view_set_cursor(view, NULL, NULL);
-                gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(view));
+                gtk_tree_selection_unselect_all(sel);
         } else if (eql(ud->action, "insert_row") &&
                    eql(arg0, "end") && arg1 == NULL)
                 tree_model_insert_before(model, &iter1, NULL, NULL);
@@ -2571,8 +2744,11 @@ update_tree_view(struct ui_data *ud)
                 tree_model_remove(model, &iter0);
         else if (eql(ud->action, "clear") && arg0 == NULL) {
                 tree_view_set_cursor(view, NULL, NULL);
-                gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(view));
+                gtk_tree_selection_unselect_all(sel);
                 tree_model_clear(model);
+        } else if (eql(ud->action, "block") && arg0 != NULL) {
+                ud->obj=G_OBJECT(sel);
+                update_blocked(ud);
         } else if (eql(ud->action, "save") && arg0 != NULL &&
                    (ar.fout = fopen(arg0, "w")) != NULL) {
                 ar.obj = ud->obj;
@@ -2581,104 +2757,16 @@ update_tree_view(struct ui_data *ud)
                                        &ar);
                 fclose(ar.fout);
         } else
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
         free(tokens);
         gtk_tree_path_free(path);
-}
-
-static void
-update_visibility(struct ui_data *ud)
-{
-        char dummy;
-        unsigned int val;
-
-        if (GTK_IS_WIDGET(ud->obj) &&
-            sscanf(ud->data, "%u %c", &val, &dummy) == 1 && val < 2)
-                gtk_widget_set_visible(GTK_WIDGET(ud->obj), val);
-        else
-                ign_cmd(ud->type, ud->cmd);
-}
-
-/*
- * Change the style of the widget passed.  Runs inside gtk_main().
- */
-static void
-update_widget_style(struct ui_data *ud)
-{
-        GtkStyleContext *context;
-        GtkStyleProvider *style_provider;
-        char *style_decl;
-        const char *prefix = "* {", *suffix = "}";
-        size_t sz;
-
-        if (!GTK_IS_WIDGET(ud->obj)) {
-                ign_cmd(ud->type, ud->cmd);
-                return;
-        }
-        style_provider = g_object_get_data(ud->obj, "style_provider");
-        sz = strlen(prefix) + strlen(suffix) + strlen(ud->data) + 1;
-        context = gtk_widget_get_style_context(GTK_WIDGET(ud->obj));
-        gtk_style_context_remove_provider(context, style_provider);
-        if ((style_decl = malloc(sz)) == NULL)
-                OOM_ABORT;
-        strcpy(style_decl, prefix);
-        strcat(style_decl, ud->data);
-        strcat(style_decl, suffix);
-        gtk_style_context_add_provider(context, style_provider,
-                                       GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-        gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(style_provider),
-                                        style_decl, -1, NULL);
-        free(style_decl);
 }
 
 static void
 update_window(struct ui_data *ud)
 {
         if (!update_class_window(ud))
-                ign_cmd(ud->type, ud->cmd);
-}
-
-/*
- * Have the widget say "ping".  Runs inside gtk_main().
- */
-static void
-ping(struct ui_data *ud)
-{
-        char dummy;
-
-        if (!GTK_IS_WIDGET(ud->obj) || sscanf(ud->data, " %c", &dummy) > 0)
-                ign_cmd(ud->type, ud->cmd);
-        ud->args->txt = "ping";
-        cb_simple(GTK_BUILDABLE(ud->obj), ud->args);
-}
-
-/*
- * Simulate user activity on various widgets.  Runs inside gtk_main().
- */
-static void
-fake_ui_activity(struct ui_data *ud)
-{
-        char dummy;
-
-        if (!GTK_IS_WIDGET(ud->obj) || sscanf(ud->data, " %c", &dummy) > 0)
-                ign_cmd(ud->type, ud->cmd);
-        else if (GTK_IS_SPIN_BUTTON(ud->obj)) {
-                ud->args->txt = "text";
-                cb_spin_button(GTK_BUILDABLE(ud->obj), ud->args); /* TODO: rename to "value" */
-        } else if (GTK_IS_SCALE(ud->obj)) {
-                ud->args->txt = "value";
-                cb_range(GTK_BUILDABLE(ud->obj), ud->args);
-        } else if (GTK_IS_ENTRY(ud->obj)) {
-                ud->args->txt = "text";
-                cb_editable(GTK_BUILDABLE(ud->obj), ud->args);
-        } else if (GTK_IS_CALENDAR(ud->obj)) {
-                ud->args->txt = "clicked";
-                cb_calendar(GTK_BUILDABLE(ud->obj), ud->args);
-        } else if (GTK_IS_FILE_CHOOSER_BUTTON(ud->obj)) {
-                ud->args->txt = "file";
-                cb_file_chooser_button(GTK_BUILDABLE(ud->obj), ud->args);
-        } else if (!gtk_widget_activate(GTK_WIDGET(ud->obj)))
-                ign_cmd(ud->type, ud->cmd);
+                try_generic_cmds(ud);
 }
 
 /*
@@ -2692,44 +2780,7 @@ main_quit(struct ui_data *ud)
         if (sscanf(ud->data, " %c", &dummy) < 1)
                 gtk_main_quit();
         else
-                ign_cmd(ud->type, ud->cmd);
-}
-
-/*
- * Write snapshot of widget in an appropriate format to file
- */
-static void
-take_snapshot(struct ui_data *ud)
-{
-        cairo_surface_t *sur = NULL;
-        cairo_t *cr = NULL;
-        int height;
-        int width;
-
-        if (!GTK_IS_WIDGET(ud->obj) ||
-            !gtk_widget_is_drawable(GTK_WIDGET(ud->obj))) {
-                ign_cmd(ud->type, ud->cmd);
-                return;
-        }
-        height = gtk_widget_get_allocated_height(GTK_WIDGET(ud->obj));
-        width = gtk_widget_get_allocated_width(GTK_WIDGET(ud->obj));
-        if (has_suffix(ud->data, ".epsf") || has_suffix(ud->data, ".eps")) {
-                sur = cairo_ps_surface_create(ud->data, width, height);
-                cairo_ps_surface_set_eps(sur, TRUE);
-        } else if (has_suffix(ud->data, ".pdf"))
-                sur = cairo_pdf_surface_create(ud->data, width, height);
-        else if (has_suffix(ud->data, ".ps"))
-                sur = cairo_ps_surface_create(ud->data, width, height);
-        else if (has_suffix(ud->data, ".svg"))
-                sur = cairo_svg_surface_create(ud->data, width, height);
-        else {
-                ign_cmd(ud->type, ud->cmd);
-                return;
-        }
-        cr = cairo_create(sur);
-        gtk_widget_draw(GTK_WIDGET(ud->obj), cr);
-        cairo_destroy(cr);
-        cairo_surface_destroy(sur);
+                try_generic_cmds(ud);
 }
 
 /*
@@ -2857,30 +2908,7 @@ digest_cmd(struct info *ar)
                         goto exec;
                 }
                 ud->type = G_TYPE_FROM_INSTANCE(ud->obj);
-                if (eql(ud->action, "force"))
-                        ud->fn = fake_ui_activity;
-                /* next line intentionally mangled to exclude it from */
-                /* auto-generated list of commands */
-                else if (eql(ud->action, /* undocumented */ "ping"))
-                        ud->fn = ping;
-                else if (eql(ud->action, "snapshot"))
-                        ud->fn = take_snapshot;
-                else if (eql(ud->action, "block"))
-                        ud->fn = update_blocked;
-                else if (eql(ud->action, "set_sensitive"))
-                        ud->fn = update_sensitivity;
-                else if (eql(ud->action, "set_visible"))
-                        ud->fn = update_visibility;
-                else if (eql(ud->action, "set_size_request"))
-                        ud->fn = update_size_request;
-                else if (eql(ud->action, "set_tooltip_text"))
-                        ud->fn = update_tooltip_text;
-                else if (eql(ud->action, "grab_focus"))
-                        ud->fn = update_focus;
-                else if (eql(ud->action, "style")) {
-                        ud->action = id;
-                        ud->fn = update_widget_style;
-                } else if (ud->type == GTK_TYPE_DRAWING_AREA)
+                if (ud->type == GTK_TYPE_DRAWING_AREA)
                         ud->fn = update_drawing_area;
                 else if (ud->type == GTK_TYPE_TREE_VIEW)
                         ud->fn = update_tree_view;
@@ -2902,6 +2930,8 @@ digest_cmd(struct info *ar)
                         ud->fn = update_scrolled_window;
                 else if (ud->type == GTK_TYPE_BUTTON)
                         ud->fn = update_button;
+                else if (ud->type == GTK_TYPE_MENU_ITEM)
+                        ud->fn = update_menu_item;
                 else if (ud->type == GTK_TYPE_FILE_CHOOSER_DIALOG)
                         ud->fn = update_file_chooser_dialog;
                 else if (ud->type == GTK_TYPE_FILE_CHOOSER_BUTTON)
@@ -2938,7 +2968,7 @@ digest_cmd(struct info *ar)
                          ud->type == GTK_TYPE_DIALOG)
                         ud->fn = update_window;
                 else
-                        ud->fn = complain;
+                        ud->fn = try_generic_cmds;
         exec:
                 pthread_testcancel();
                 gdk_threads_add_timeout(0, (GSourceFunc) update_ui, ud);

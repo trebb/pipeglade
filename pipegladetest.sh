@@ -1835,6 +1835,33 @@ if test $INTERACTIVE; then
           "expander1:set_expanded 0"
 fi
 
+check 24 "" \
+      "treeview1:set_cursor 1\n treeview1:block 1\n treeview1:set_cursor 1\n treeview1:block 0\n treeview1:set_cursor 1" \
+      "treeview1:clicked" \
+      "treeview1:gboolean 1 0 1" \
+      "treeview1:gint 1 1 1" \
+      "treeview1:guint 1 2 0" \
+      "treeview1:glong 1 3 0" \
+      "treeview1:glong 1 4 0" \
+      "treeview1:glong 1 5 0" \
+      "treeview1:gulong 1 6 0" \
+      "treeview1:gfloat 1 7 0.000000" \
+      "treeview1:gdouble 1 8 0.000000" \
+      "treeview1:gchararray 1 9 def" \
+      "treeview1:gchararray 1 10 blue" \
+      "treeview1:clicked" \
+      "treeview1:gboolean 1 0 1" \
+      "treeview1:gint 1 1 1" \
+      "treeview1:guint 1 2 0" \
+      "treeview1:glong 1 3 0" \
+      "treeview1:glong 1 4 0" \
+      "treeview1:glong 1 5 0" \
+      "treeview1:gulong 1 6 0" \
+      "treeview1:gfloat 1 7 0.000000" \
+      "treeview1:gdouble 1 8 0.000000" \
+      "treeview1:gchararray 1 9 def" \
+      "treeview1:gchararray 1 10 blue"
+
 check 12 "" \
       "treeview2:set_visible 0\n treeview1:set 2 0 1\n treeview1:set 2 1 -30000\n treeview1:set 2 2 66\n treeview1:set 2 3 -2000000000\n treeview1:set 2 4 4000000000\n treeview1:set 2 5 -2000000000\n treeview1:set 2 6 4000000000\n treeview1:set 2 7 3.141\n treeview1:set 2 8 3.141\n treeview1:set 2 9 TEXT\n treeview1:set_cursor 2" \
       "treeview1:clicked" \
