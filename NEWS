@@ -8,6 +8,12 @@
   * API change, GtkSocket: rename response tags :plug-added and
   :plug-removed to :plug_added and :plug_removed, respectively.
 
+4.8.0 (unreleased)
+------------------
+  * Add support for GtkAspectFrame and GtkMenu.
+  * Add documentation for GtkMenuBar, GtkMenuButton, GtkPaned, and
+  GtkSizegroup.
+
 4.7.0 (2016-06-24)
 ------------------
   * Add command line option -b for sending pipeglade to background.

@@ -2193,6 +2193,21 @@ update_label(struct ui_data *ud)
 }
 
 static void
+update_menu(struct ui_data *ud)
+{
+        char dummy;
+        GtkMenu* menu = GTK_MENU(ud->obj);
+                   
+        if (eql(ud->action, "popup") && sscanf(ud->data, " %c", &dummy) < 1)
+                gtk_menu_popup(menu, NULL, NULL, NULL, NULL, 0,
+                               gtk_get_current_event_time()); 
+        else if (eql(ud->action, "popdown") && sscanf(ud->data, " %c", &dummy) < 1)
+                gtk_menu_popdown(menu); 
+        else
+                try_generic_cmds(ud);
+}
+
+static void
 update_menu_item(struct ui_data *ud)
 {
         try_generic_cmds(ud);
@@ -2924,12 +2939,15 @@ digest_cmd(struct info *ar)
                         ud->fn = update_notebook;
                 else if (ud->type == GTK_TYPE_EXPANDER)
                         ud->fn = update_expander;
-                else if (ud->type == GTK_TYPE_FRAME)
+                else if (ud->type == GTK_TYPE_FRAME ||
+                         ud->type == GTK_TYPE_ASPECT_FRAME)
                         ud->fn = update_frame;
                 else if (ud->type == GTK_TYPE_SCROLLED_WINDOW)
                         ud->fn = update_scrolled_window;
                 else if (ud->type == GTK_TYPE_BUTTON)
                         ud->fn = update_button;
+                else if (ud->type == GTK_TYPE_MENU)
+                        ud->fn = update_menu;
                 else if (ud->type == GTK_TYPE_MENU_ITEM)
                         ud->fn = update_menu_item;
                 else if (ud->type == GTK_TYPE_FILE_CHOOSER_DIALOG)

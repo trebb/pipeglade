@@ -14,7 +14,7 @@
   GtkAppChooserWidget      todo
 # GtkApplicationWindow     >=3.4
 # GtkArrow                 deprecated
-  GtkAspectFrame           todo
+  GtkAspectFrame           done
   GtkAssistant             todo
 # GtkBin                   not_useful
   GtkBox                   done
@@ -78,9 +78,9 @@
 # GtkListBoxRow            >=3.10
 # GtkListStore             hidden
   GtkLockButton            todo
-  GtkMenu                  todo
-  GtkMenuBar               todo
-  GtkMenuButton            todo
+  GtkMenu                  done
+  GtkMenuBar               done
+  GtkMenuButton            done
   GtkMenuItem              done
 # GtkMenuShell             not_useful
   GtkMenuToolButton        todo
@@ -91,7 +91,7 @@
 # GtkOffscreenWindow       shun
   GtkOverlay               done
   GtkPageSetupUnixDialog   todo
-  GtkPaned                 todo
+  GtkPaned                 done
 # GtkPlacesSidebar         >=3.16
   GtkPlug                  done
 # GtkPopover               >=3.12
@@ -122,7 +122,7 @@
   GtkShortcutsSection      
   GtkShortcutsShortcut     
   GtkShortcutsWindow       todo
-  GtkSizeGroup             
+  GtkSizeGroup             done
   GtkSocket                done
   GtkSpinButton            done
   GtkSpinner               done
