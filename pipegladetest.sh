@@ -419,9 +419,34 @@ if test $AUTOMATIC; then
     # GtkLabel
     check_error "label1:nnn" \
                 "ignoring GtkLabel command \"label1:nnn\""
+    # GtkFrame
+    check_error "frame1:nnn" \
+                "ignoring GtkFrame command \"frame1:nnn\""
+    # GtkAspectFrame
+    check_error "aspectframe1:nnn" \
+                "ignoring GtkAspectFrame command \"aspectframe1:nnn\""
     # GtkImage
     check_error "image1:nnn" \
                 "ignoring GtkImage command \"image1:nnn\""
+    # GtkMenu
+    check_error "menu1:nnn" \
+                "ignoring GtkMenu command \"menu1:nnn\""
+    check_error "menu1:popup 1" \
+                "ignoring GtkMenu command \"menu1:popup 1\""
+    check_error "menu1:popdown 1" \
+                "ignoring GtkMenu command \"menu1:popdown 1\""
+    # GtkMenuBar
+    check_error "menubar1:nnn" \
+                "ignoring GtkMenuBar command \"menubar1:nnn\""
+    # GtkMenuButton
+    check_error "menubutton1:nnn" \
+                "ignoring GtkMenuButton command \"menubutton1:nnn\""
+    # GtkPaned
+    check_error "paned1:nnn" \
+                "ignoring GtkPaned command \"paned1:nnn\""
+    # GtkSizeGroup
+    check_error "sizegroup1:nnn" \
+                "ignoring GtkSizeGroup command \"sizegroup1:nnn\""
     # GtkNotebook
     check_error "notebook1:nnn" \
                 "ignoring GtkNotebook command \"notebook1:nnn\""
@@ -2411,6 +2436,9 @@ fi
 
 if test $INTERACTIVE; then
 
+    check 1 "Click \"New\" on the popped-up menu" \
+          "menu1:popup" \
+          "new:active gtk-new"
     check 1 "Press the \"button\" which should now be renamed \"OK\"" \
           "button1:set_label OK" \
           "button1:clicked"
@@ -2684,7 +2712,7 @@ check 0 "" \
 if test $INTERACTIVE; then
 
     check 2 "Hit Backspace, Enter" \
-          "eventbox1:grab_focus" \
+          "eventbox1:grab_focus\n menu1:popup\n menu1:popdown" \
           "eventbox1:key_press BackSpace" \
           "eventbox1:key_press Return"
     check 6 "Inside the DrawingArea, left-click, middle-click, right-click (Don't move the mouse while clicking)" \
@@ -2837,52 +2865,55 @@ echo "
 ######################################################################
 "
 
-MAINPING=`mktemp`
-MAINQUIT=`mktemp`
-TEMPFOUT=`mktemp`
-echo -e "main:ping" > $MAINPING
-echo -e "_:main_quit" > $MAINQUIT
+if test $AUTOMATIC; then
+    MAINPING=`mktemp`
+    MAINQUIT=`mktemp`
+    TEMPFOUT=`mktemp`
+    echo -e "main:ping" > $MAINPING
+    echo -e "_:main_quit" > $MAINQUIT
 
-# check_alive command
-check_alive() {
-    echo "$SEND ${1}"
-    echo -e "$1" >$FIN
-    while read -t .5 <$FOUT; do : ; done
-    if test -p $FIN; then
-        timeout -k0 1 cp $MAINPING $FIN
-    fi
-    if test -p $FOUT; then
-        :>$TEMPFOUT
-        timeout -k0 1 cp $FOUT $TEMPFOUT
-    fi
-    if grep -q "main:ping" $TEMPFOUT; then
-        count_ok
-        echo " $OK"
-    else
-        count_fail
-        echo " $FAIL"
-    fi
-}
-
-
-for wid in `make examples-list`; do
-    PID=`./pipeglade -i $FIN -o $FOUT -b -u widget-examples/$wid`
-    cmd=""
-    for act in `make prog-actions`; do
-        if test "$act" != "main_quit"; then
-            cmd="$cmd\n ${wid/\.ui/}1:$act"
-            for args in '0' '0 1' '0 1 1' '1 0 1 2' '1 0 1 2 3' '1 0 1 2 3 4 5' '1 s XYZ' 'x.svg' 'x.eps' 'x.ps' 'x.pdf'; do
-                cmd="$cmd\n ${wid/\.ui/}1:$act $args"
-            done
+    # check_alive command
+    check_alive() {
+        echo "$SEND ${1}"
+        echo -e "$1" >$FIN
+        while read -t .5 <$FOUT; do : ; done
+        if test -p $FIN; then
+            timeout -k0 1 cp $MAINPING $FIN
         fi
+        if test -p $FOUT; then
+            :>$TEMPFOUT
+            timeout -k0 1 cp $FOUT $TEMPFOUT
+        fi
+        if grep -q "main:ping" $TEMPFOUT; then
+            count_ok
+            echo " $OK"
+        else
+            count_fail
+            echo " $FAIL"
+        fi
+    }
+
+
+    for wid in `make examples-list`; do
+        for act in `make prog-actions`; do
+            PID=`./pipeglade -i $FIN -o $FOUT -b -u widget-examples/$wid`
+            cmd=""
+            if test "$act" != "main_quit"; then
+                cmd="$cmd\n ${wid/\.ui/}1:$act"
+                for args in '0' '0 1' '0 1 1' '1 0 1 2' '1 0 1 2 3' '1 0 1 2 3 4 5' '1 s XYZ' 'x.svg' 'x.eps' 'x.ps' 'x.pdf'; do
+                    cmd="$cmd\n ${wid/\.ui/}1:$act $args"
+                done
+            fi
+            check_alive "$cmd"
+            timeout -k0 1 cp $MAINQUIT $FIN
+            kill $PID
+            rm -f $FIN $FOUT
+        done
     done
-    check_alive "$cmd"
-    timeout -k0 1 cp $MAINQUIT $FIN
-    kill $PID
-done
 
-rm -f $MAINPING $MAINQUIT $TEMPFOUT
+    rm -f $MAINPING $MAINQUIT $TEMPFOUT
 
+fi
 
 
 echo "PASSED: $OKS/$TESTS; FAILED: $FAILS/$TESTS"
