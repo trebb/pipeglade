@@ -493,6 +493,17 @@ read_buf(FILE *s, char **buf, size_t *bufsize)
  * ============================================================
  */
 
+/*
+ * Preclude triggering of GTK's default GtkLinkButton action which
+ * could otherwise interfere with pipeglade's own signal blocking
+ */
+gboolean
+gtk_show_uri(GdkScreen *s, const gchar *uri, guint32 ts, GError **e)
+{
+        (void) s; (void) uri; (void) ts; (void) e;
+        return TRUE;
+}
+
 static void
 send_msg_to(FILE* o, GtkBuildable *obj, const char *tag, va_list ap)
 {
@@ -2193,16 +2204,29 @@ update_label(struct ui_data *ud)
 }
 
 static void
+update_link_button(struct ui_data *ud)
+{
+        char dummy;
+        unsigned int val;
+
+        if (eql(ud->action, "set_visited") &&
+            sscanf(ud->data, "%u %c", &val, &dummy) == 1 && val < 2)
+                gtk_link_button_set_visited(GTK_LINK_BUTTON(ud->obj), val);
+        else
+                update_button(ud);
+}
+
+static void
 update_menu(struct ui_data *ud)
 {
         char dummy;
         GtkMenu* menu = GTK_MENU(ud->obj);
-                   
+
         if (eql(ud->action, "popup") && sscanf(ud->data, " %c", &dummy) < 1)
                 gtk_menu_popup(menu, NULL, NULL, NULL, NULL, 0,
-                               gtk_get_current_event_time()); 
+                               gtk_get_current_event_time());
         else if (eql(ud->action, "popdown") && sscanf(ud->data, " %c", &dummy) < 1)
-                gtk_menu_popdown(menu); 
+                gtk_menu_popdown(menu);
         else
                 try_generic_cmds(ud);
 }
@@ -2944,6 +2968,8 @@ digest_cmd(struct info *ar)
                         ud->fn = update_frame;
                 else if (ud->type == GTK_TYPE_SCROLLED_WINDOW)
                         ud->fn = update_scrolled_window;
+                else if (ud->type == GTK_TYPE_LINK_BUTTON)
+                        ud->fn = update_link_button;
                 else if (ud->type == GTK_TYPE_BUTTON)
                         ud->fn = update_button;
                 else if (ud->type == GTK_TYPE_MENU)
@@ -3213,7 +3239,9 @@ connect_widget_signals(gpointer *obj, struct info *ar)
                                 }
                         }
                 }
-        } else if (type == GTK_TYPE_BUTTON)
+        } else if (type == GTK_TYPE_LINK_BUTTON)
+                sig_conn(obj, "activate-link", G_CALLBACK(cb_simple), info_txt_new(o, "clicked"));
+        else if (type == GTK_TYPE_BUTTON)
                 /* Button associated with a GtkTextView. */
                 if ((suffix = strstr(w_id, "_send_text")) != NULL &&
                     GTK_IS_TEXT_VIEW(obj2 = obj_sans_suffix(ar->builder, suffix, w_id)))

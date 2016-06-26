@@ -10,9 +10,9 @@
 
 4.8.0 (unreleased)
 ------------------
-  * Add support for GtkAspectFrame and GtkMenu.
+  * Add support for GtkAspectFrame, GtkLinkButton, and GtkMenu.
   * Add documentation for GtkMenuBar, GtkMenuButton, GtkPaned, and
-  GtkSizegroup.
+  GtkSizeGroup.
 
 4.7.0 (2016-06-24)
 ------------------

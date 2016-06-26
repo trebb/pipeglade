@@ -1929,7 +1929,19 @@ selection</property>
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkLinkButton" id="linkbutton1">
+            <property name="label" translatable="yes">button</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="relief">none</property>
+            <property name="uri">http://glade.gnome.org</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
         </child>
         <child>
           <placeholder/>

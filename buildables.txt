@@ -15,7 +15,7 @@
 # GtkApplicationWindow     >=3.4
 # GtkArrow                 deprecated
   GtkAspectFrame           done
-  GtkAssistant             todo
+  GtkAssistant             todo (core dump in GTK+-3.18.8)
 # GtkBin                   not_useful
   GtkBox                   done
   GtkButton                done
@@ -73,7 +73,7 @@
   GtkLabel                 done
   GtkLayout                
 # GtkLevelBar              >=3.6
-  GtkLinkButton            todo
+  GtkLinkButton            done
 # GtkListBox               >=3.10
 # GtkListBoxRow            >=3.10
 # GtkListStore             hidden

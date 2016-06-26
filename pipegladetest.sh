@@ -514,6 +514,15 @@ if test $AUTOMATIC; then
     # GtkButton
     check_error "button1:nnn" \
                 "ignoring GtkButton command \"button1:nnn\""
+    # GtkLinkButton
+    check_error "linkbutton1:nnn" \
+                "ignoring GtkLinkButton command \"linkbutton1:nnn\""
+    check_error "linkbutton1:set_visited" \
+                "ignoring GtkLinkButton command \"linkbutton1:set_visited\""
+    check_error "linkbutton1:set_visited 0 1" \
+                "ignoring GtkLinkButton command \"linkbutton1:set_visited 0 1\""
+    check_error "linkbutton1:set_visited 2" \
+                "ignoring GtkLinkButton command \"linkbutton1:set_visited 2\""
     # GtkSwitch
     check_error "switch1:nnn" \
                 "ignoring GtkSwitch command \"switch1:nnn\""
@@ -1836,6 +1845,15 @@ if test $AUTOMATIC; then
           "label1:ping" \
           "button1:ping" \
           "main:ping"
+    check 0 "" \
+          "window1:set_visible 1"
+    check 2 "" \
+          "linkbutton1:force\n linkbutton1:block 1\n linkbutton1:force\n button1:force\n linkbutton1:block 0\n linkbutton1:clicked" \
+          "linkbutton1:clicked" \
+          "button1:clicked" \
+          "linkbutton1:clicked"
+    check 0 "" \
+          "window1:set_visible 0"
 
 fi
 

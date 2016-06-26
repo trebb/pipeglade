@@ -224,6 +224,7 @@ are
 .Sx GtkImageMenuItem ,
 .Sx GtkInfoBar ,
 .Sx GtkLabel ,
+.Sx GtkLinkButton ,
 .Sx GtkMenu ,
 .Sx GtkMenuBar ,
 .Sx GtkMenuButton ,
@@ -411,7 +412,7 @@ or responsive
 .Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
 hides
 .Pq Cm 0
-the widget, or makes it visible
+the button, or makes it visible
 .Pq Cm 1 .
 .Pp
 .Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
@@ -1880,6 +1881,71 @@ See
 .Sx Style .
 .It Feedback
 none
+.El
+.Ss GtkLinkButton
+.Bl -tag -width "commands "
+.It Commands
+.Qq Ar id Ns Cm :set_visited Brq Cm 0 Ns | Ns Cm 1
+gives the button text the appearance of an unvisited
+.Pq Cm 0 , No default
+or visited
+.Pq Cm 1
+link.
+.Pp
+.Qq Ar id Ns Cm :set_label Ar string
+replaces the button text with
+.Ar string .
+.Pp
+.Qq Ar id Ns Cm :grab_focus
+puts the keyboard focus onto the button.
+.Pp
+.Qq Ar id Ns Cm :set_sensitive Brq Cm 0 Ns | Ns Cm 1
+makes the button grayed out
+.Pq Cm 0
+or responsive
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :set_visible Brq Cm 0 Ns | Ns Cm 1
+hides
+.Pq Cm 0
+the button, or makes it visible
+.Pq Cm 1 .
+.Pp
+.Qq Ar id Ns Cm :block Brq Cm 0 Ns | Ns Cm 1
+blocks
+.Pq Cm 1
+or unblocks
+.Pq Cm 0
+feedback messages.
+Initially, the button is unblocked.
+.Pp
+.Qq Ar id Ns Cm :set_tooltip_text Bq Ar text
+sets the button's tooltip.
+Default is disabling the tooltip.
+.Pp
+.Qq Ar id Ns Cm :force
+simulates a click on the button.
+.Pp
+.Qq Ar id Ns Cm :snapshot Ar file Ns Brq Cm .ps Ns | Ns Cm .eps Ns | Ns Cm .epsf Ns | Ns Cm .pdf Ns | Ns Cm .svg
+writes a snapshot of the button to an image file of the specified
+type.
+.Pp
+.Qq Ar id Ns Cm :set_size_request Bq Ar width height
+sets the button's minimum size to
+.Ar width
+x
+.Ar height .
+Default is the button's natural size.
+.Pp
+.Qo
+.Ar id Ns Cm :style
+.Bo Ar prop Ns Cm \&: Ns Ar val Ns Bo Cm \&; Ar prop Ns Cm \&: Ns Ar val ... Bc Bc
+.Qc
+sets the style.
+See
+.Sx Style .
+.It Feedback
+.Qq Ar id Ns Cm \&:clicked
 .El
 .Ss GtkMenuBar
 .Bl -tag -width "commands "
