@@ -111,6 +111,10 @@ man-widgets:
 man-toc:
 	@awk '/BEGIN_TOC/,/END_TOC/' pipeglade.1 | awk '/\.Sx Gtk[A-Z][a-zA-Z]+ [,.]$$/{print $$2}'
 
+# Extract from manual page an outline of the headings
+man-outline: www-template/outline.xsl gh-pages/pipeglade.1.html
+	@xsltproc --html ${.ALLSRC}
+
 # Our collection of simple test widgets
 examples-list:
 	@ls -1 widget-examples | grep "\.ui$$"
