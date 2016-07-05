@@ -11,35 +11,29 @@
   </xsl:template>
 
   <xsl:template match="div[@class='section']/h1">
-    <xsl:value-of select="."/>
+    <xsl:value-of select="normalize-space(.)"/>
     <xsl:text>&#xA;</xsl:text>
   </xsl:template>
 
   <xsl:template match="div[@class='subsection']/h2">
-    <xsl:text>    </xsl:text>
-    <xsl:value-of select="."/>
+    <xsl:text>  </xsl:text>
+    <xsl:value-of select="normalize-space(.)"/>
     <xsl:text>&#xA;</xsl:text>
   </xsl:template>
 
   <xsl:template match="div[@class='subsection']/dl/dt/text()">
-    <xsl:text>      </xsl:text>
-    <xsl:choose>
-      <xsl:when test="starts-with(., '&#xA;')">
-        <xsl:value-of select="substring-after(., '&#xA;')"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="."/>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:text>    </xsl:text>
+    <xsl:value-of select="normalize-space(.)"/>
     <xsl:text>&#xA;</xsl:text>
   </xsl:template>
 
   <xsl:template
-      match="div[@class='subsection']/dl/dd/b[@class='flag']">
-    <xsl:if test="starts-with(., ':')">
-      <xsl:if test="string-length(.)>2">
-        <xsl:text>        </xsl:text>
-        <xsl:value-of select="."/>
+      match="div[@class='subsection']/dl/dd/ul/li/b[@class='flag']">
+    <xsl:variable name="action" select="normalize-space(.)"/>
+    <xsl:if test="starts-with($action, ':')">
+      <xsl:if test="string-length($action)>2">
+        <xsl:text>      </xsl:text>
+        <xsl:value-of select="$action"/>
         <xsl:text>&#xA;</xsl:text>
       </xsl:if>
     </xsl:if>
