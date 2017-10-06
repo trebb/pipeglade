@@ -13,6 +13,7 @@
   * Add support for GtkAspectFrame, GtkLinkButton, and GtkMenu.
   * Add documentation for GtkMenuBar, GtkMenuButton, GtkPaned, and
   GtkSizeGroup.
+  * Improve and document previously undocumented :ping command.
 
 4.7.0 (2016-06-24)
 ------------------

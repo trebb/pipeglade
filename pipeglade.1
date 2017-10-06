@@ -1,4 +1,4 @@
-.\" Copyright (c) 2014-2016 Bert Burgemeister <trebbu@googlemail.com>
+.\" Copyright (c) 2014-2017 Bert Burgemeister <trebbu@googlemail.com>
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -279,6 +279,7 @@ would appear as
 .\"  style
 .\"  force
 .\"  snapshot
+.\"  ping
 .\"
 .Ss Unspecific Widget
 .Bl -tag -width indent
@@ -355,11 +356,17 @@ Default is the frame's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkBox
@@ -400,11 +407,17 @@ Default is the box's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkButton
@@ -464,10 +477,18 @@ Default is the button's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
+.Pp
 .Qq Ar id Ns Cm \&:clicked
 .Pp
 .Cm GtkButton Ns
@@ -521,11 +542,17 @@ Default is the box's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkCalendar
@@ -589,6 +616,9 @@ Default is the widget's natural size.
 sets the calendar's style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -596,6 +626,11 @@ See
 .Qq Ar id Ns Cm \&:clicked Ar yyyy Ns Cm - Ns Ar mm Ns Cm - Ns Ar dd
 .It
 .Qq Ar id Ns Cm \&:doubleclicked Ar yyyy Ns Cm - Ns Ar mm Ns Cm - Ns Ar dd
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkCheckButton
@@ -661,6 +696,9 @@ Default is the widget's natural size.
 sets the button's style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -669,6 +707,11 @@ See
 if switched on, or
 .Qq Ar id Ns Cm \&:0
 otherwise.
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkColorButton
@@ -728,6 +771,9 @@ Default is the widget's natural size.
 sets the button's style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -741,6 +787,11 @@ and
 lie between 0 and 255, and
 .Ar alpha
 between 0 and 1.
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkComboBoxText
@@ -813,6 +864,9 @@ Default is the natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -821,6 +875,11 @@ See
 .Ar entry_id
 being the id of the child
 .Cm GtkEntry .
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkDialog
@@ -921,6 +980,9 @@ Default is its natural size.
 sets the dialog window's style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -929,6 +991,11 @@ See
 if the
 .Cm GtkDialog
 window was closed by the window manager.
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkDrawingArea
@@ -1152,11 +1219,17 @@ sets the drawing areas's minimum size to
 x
 .Ar height .
 Default is the natural size.
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkEntry
@@ -1221,6 +1294,9 @@ Default is the entry's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -1228,6 +1304,11 @@ See
 .Qq Ar id Ns Cm \&:text Ar text ,
 once for each change of
 .Ar text .
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkEventBox
@@ -1277,6 +1358,9 @@ Default is the natural size of the event box.
 sets the widget style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -1300,6 +1384,11 @@ being the key's name
 .Ql Tab ,
 .Ql a
 .Pc .
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkExpander
@@ -1357,11 +1446,16 @@ Default is the natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
-.It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkGrid
@@ -1397,11 +1491,17 @@ Default is the grid's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkFileChooserButton
@@ -1462,12 +1562,20 @@ Default is the widget's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
 .Qq Ar id Ns Cm \&:file Ar pathname
 if the selection has changed.
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkFileChooserDialog
@@ -1598,6 +1706,9 @@ Default is the widget's natural size.
 sets the widget style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -1610,6 +1721,11 @@ and/or
 if the
 .Cm GtkFileChooserDialog
 window was closed by the window manager.
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkFontButton
@@ -1668,11 +1784,19 @@ Default is the button's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
 .Qq Ar id Ns Cm \&:font Ar fontname
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkFrame
@@ -1718,11 +1842,17 @@ Default is the frame's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkImage
@@ -1766,10 +1896,16 @@ sets the style.
 See
 .Sx Style .
 .El
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkMenu
@@ -1809,11 +1945,17 @@ Default is the menu's natural size.
 sets the menu's style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkMenuButton
@@ -1861,11 +2003,17 @@ Default is the button's natural size.
 sets the button's style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkImageMenuItem
@@ -1916,6 +2064,9 @@ Default is the item's natural size.
 sets the item's style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -1935,6 +2086,11 @@ If there isn't any dialog attached to the
 .Cm GtkImageMenuItem ,
 it reports
 .Qq Ar id Ns Cm \&:active Ar label .
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkInfoBar
@@ -1972,11 +2128,17 @@ Default is the info bar's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkLabel
@@ -2022,11 +2184,17 @@ Default is the natural size.
 sets the label's style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkLinkButton
@@ -2093,11 +2261,19 @@ Default is the button's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
 .Qq Ar id Ns Cm \&:clicked
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkMenuBar
@@ -2135,11 +2311,17 @@ Default is its natural size.
 sets the menu bar's style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkMenuItem
@@ -2188,6 +2370,9 @@ Default is the item's natural size.
 sets the item's style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -2207,6 +2392,11 @@ If there isn't any dialog attached to the
 .Cm GtkMenuItem ,
 it reports
 .Qq Ar id Ns Cm \&:active Ar label .
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkNotebook
@@ -2255,11 +2445,17 @@ Default is the widget's natural size.
 sets the notebook's style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkOverlay
@@ -2301,11 +2497,17 @@ Default is the overlay's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkPaned
@@ -2350,11 +2552,17 @@ Default is the widget's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkPlug
@@ -2419,6 +2627,9 @@ Default is the dialog's natural size.
 sets the widget style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -2427,6 +2638,11 @@ See
 if the
 .Cm GtkPrintUnixDialog
 window was closed by the window manager.
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkProgressBar
@@ -2472,11 +2688,17 @@ Default is the natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkRadioButton
@@ -2540,6 +2762,9 @@ Default is the button's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -2548,6 +2773,11 @@ See
 if switched on, or
 .Qq Ar id Ns Cm \&:0
 otherwise.
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkScale
@@ -2621,11 +2851,19 @@ Default is the natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
 .Qq Ar id Ns Cm \&:value Ar number
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkScrolledWindow
@@ -2691,11 +2929,17 @@ Default is the widget's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkSeparator
@@ -2737,11 +2981,17 @@ Default is the natural size of the separator.
 sets the widget style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkSeparatorMenuItem
@@ -2783,11 +3033,17 @@ Default is the natural size of the menu item.
 sets the widget style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkSizeGroup
@@ -2795,12 +3051,16 @@ none
 .It Commands
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkSocket
@@ -2866,6 +3126,9 @@ Default is the socket's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -2881,6 +3144,11 @@ can be used by another process to XEmbed its widgets into the
 Notification that the other process has inserted its widgets into or
 removed them from the
 .Cm GtkSocket .
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkSpinButton
@@ -2951,11 +3219,19 @@ Default is the widget's natural size.
 sets the button's style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
 .Qq Ar id Ns Cm \&:text Ar text
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkSpinner
@@ -3002,11 +3278,17 @@ Default is the natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkStatusbar
@@ -3077,11 +3359,17 @@ Default is the natural size.
 sets the statusbar's style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkSwitch
@@ -3143,6 +3431,9 @@ Default is the natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -3151,6 +3442,11 @@ See
 if switched on, or
 .Qq Ar id Ns Cm \&:0
 otherwise.
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkTextView
@@ -3245,6 +3541,9 @@ Default is the natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -3259,6 +3558,11 @@ are replaced by
 .Cm \en ,
 and backslashes are replaced by
 .Cm \e\e .
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkToggleButton
@@ -3324,6 +3628,9 @@ Default is the button's natural size.
 sets the button's style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -3332,6 +3639,11 @@ See
 if switched on, or
 .Qq Ar id Ns Cm \&:0
 otherwise.
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkTreeView
@@ -3466,6 +3778,9 @@ Default is the widget's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -3479,6 +3794,11 @@ one message per cell in the underlying model for each selected row; or
 if the cell at
 .Pq Ar row , column
 has been edited.
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkTreeViewColumn
@@ -3493,11 +3813,19 @@ or unblocks
 .Pq Cm 0
 feedback messages.
 Initially, the widget is unblocked.
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
 .Qq Ar id Ns Cm \&:clicked
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkViewport
@@ -3539,11 +3867,17 @@ Default is the natural size of the viewport.
 sets the widget style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
 .It
-none
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Ss GtkWindow
@@ -3612,6 +3946,9 @@ Default is the widget's natural size.
 sets the style.
 See
 .Sx Style .
+.Pp
+.Qq Ar id Ns Cm :ping Bq Ar text
+triggers a feedback message.
 .El
 .It Feedback
 .Bl -item
@@ -3620,6 +3957,11 @@ See
 if the
 .Cm GtkWindow
 was closed by the window manager.
+.Pp
+.Qq Ar id Ns Cm :ping Ar text
+if triggered by the
+.Cm :ping
+command.
 .El
 .El
 .Sh SPECIAL SYNTAX

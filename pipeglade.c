@@ -567,6 +567,7 @@ struct info {
         GObject *obj;
         GtkTreeModel *model;
         char *txt;
+        char *data;
 };
 
 /*
@@ -881,12 +882,12 @@ cb_send_text_selection(GtkBuildable *obj, struct info *ar)
 }
 
 /*
- * Callback that only sends "name:tag" and returns true
+ * Callback that only sends "name:tag data" and returns true
  */
 static bool
 cb_simple(GtkBuildable *obj, struct info *ar)
 {
-        send_msg(ar->fout, obj, ar->txt, NULL);
+        send_msg(ar->fout, obj, ar->txt, ar->data, NULL);
         return true;
 }
 
@@ -1311,11 +1312,10 @@ update_focus(struct ui_data *ud){
 static void
 ping(struct ui_data *ud)
 {
-        char dummy;
-
-        if (!GTK_IS_WIDGET(ud->obj) || sscanf(ud->data, " %c", &dummy) > 0)
+        if (!GTK_IS_WIDGET(ud->obj))
                 ign_cmd(ud->type, ud->cmd);
         ud->args->txt = "ping";
+        ud->args->data = ud->data;
         cb_simple(GTK_BUILDABLE(ud->obj), ud->args);
 }
 
@@ -1490,9 +1490,7 @@ try_generic_cmds(struct ui_data *ud)
                 update_widget_style(ud);
         else if (eql(ud->action, "force"))
                 fake_ui_activity(ud);
-        /* next line intentionally mangled to exclude it from */
-        /* auto-generated list of commands */
-        else if (eql(ud->action, /* undocumented! */ "ping"))
+        else if (eql(ud->action, "ping"))
                 ping(ud);
         else if (eql(ud->action, "snapshot"))
                 take_snapshot(ud);
