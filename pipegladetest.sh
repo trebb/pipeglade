@@ -2,9 +2,9 @@
 
 # Pipeglade tests; they should be invoked in the build directory.
 #
-# Usage: ./pipegladetset.sh
-# Usage: ./pipegladetset.sh interactive
-# Usage: ./pipegladetset.sh automatic
+# Usage: ./pipegladetest.sh
+# Usage: ./pipegladetest.sh interactive
+# Usage: ./pipegladetest.sh automatic
 #
 # Failure of a test can cause failure of one or more subsequent tests.
 
@@ -247,7 +247,7 @@ check_error() {
     echo -e "$1" >$FIN
     while read r <$FERR; do
         # ignore irrelevant GTK warnings
-        if test "$r" != "" && ! grep -qe "WARNING"<<< "$r"; then
+        if test "$r" != "" && ! grep -qie "warning"<<< "$r"; then
             break;
         fi
     done
@@ -1655,17 +1655,20 @@ if test $AUTOMATIC; then
     echo "button1:force" >$FIN
     check_cmd "grep -qe 'button1:clicked' $OUT_FILE"
     echo "_:main_quit" >$FIN
+    check_rm $FIN
     rm -f $OUT_FILE
 
 
     ./pipeglade -i $FIN -o $FOUT -b >$PID_FILE
-    check_cmd "kill `cat $PID_FILE /dev/null` 2&>/dev/null"
+    check_cmd "kill `cat $PID_FILE` 2&>/dev/null"
     rm $FIN $FOUT
 
 
     ./pipeglade --display ${DISPLAY-:0} -i $FIN -o $FOUT -b >/dev/null
     check 0 "" \
-          "# checking --display $DISPLAY\n _:main_quit"
+          "# checking --display $DISPLAY"
+    check 0 "" \
+          "_:main_quit"
     check_rm $FIN
     check_rm $FOUT
 
@@ -1775,16 +1778,20 @@ if test $AUTOMATIC; then
           "socket1:id"
     read XID <$FOUT
     XID=${XID/socket1:id }
-    (sleep .5; ./pipeglade -u simple_dialog.ui -e $XID <<< "main_cancel:force") >/dev/null &
+    (sleep 1; ./pipeglade -u simple_dialog.ui -e $XID <<< "main_cancel:force") >/dev/null &
     check 2 "" \
           "" \
           "socket1:plug-added" \
           "socket1:plug-removed"
-    (sleep .5; ./pipeglade -u simple_dialog.ui -e $XID <<< "main_cancel:force") >/dev/null &
+    (sleep 1; ./pipeglade -u simple_dialog.ui -e $XID <<< "main_cancel:force") >/dev/null &
     check 2 "" \
           "" \
           "socket1:plug-added" \
           "socket1:plug-removed"
+    check 2 "" \
+          "socket1:ping\n socket1:ping foo bar" \
+          "socket1:ping" \
+          "socket1:ping foo bar"
 
     check 1 "" \
           "entry1:set_text FFFF" \
@@ -1815,6 +1822,10 @@ if test $AUTOMATIC; then
     check 1 "" \
           "entry1:force" \
           "entry1:text GGGG"
+    check 2 "" \
+          "entry1:ping\n entry1:ping foo bar" \
+          "entry1:ping" \
+          "entry1:ping foo bar"
     check 1 "" \
           "spinbutton1:block 1\n spinbutton1:set_text 29.0\n spinbutton1:block 0\n spinbutton1:set_text 28.0\n" \
           "spinbutton1:text 28.0"
@@ -1822,6 +1833,10 @@ if test $AUTOMATIC; then
           "spinbutton1:set_text 33.0\n spinbutton1:set_range 50 60\n" \
           "spinbutton1:text 33.0" \
           "spinbutton1:text 50.0"
+    check 2 "" \
+          "spinbutton1:ping\n spinbutton1:ping foo bar" \
+          "spinbutton1:ping" \
+          "spinbutton1:ping foo bar"
     check 1 "" \
           "radiobutton2:block 1\n radiobutton2:set_active 1\n radiobutton2:block 0" \
           "radiobutton1:0"
@@ -1829,29 +1844,52 @@ if test $AUTOMATIC; then
           "radiobutton1:set_active 1" \
           "radiobutton2:0" \
           "radiobutton1:1"
+    check 2 "" \
+          "radiobutton1:ping\n radiobutton1:ping foo bar" \
+          "radiobutton1:ping" \
+          "radiobutton1:ping foo bar"
     check 1 "" \
           "switch1:set_active 1\n switch1:block 1\n switch1:set_active 0" \
           "switch1:1"
     check 1 "" \
           "switch1:set_active 1\n switch1:block 0\n switch1:set_active 0" \
           "switch1:0"
+    check 2 "" \
+          "switch1:ping\n switch1:ping foo bar" \
+          "switch1:ping" \
+          "switch1:ping foo bar"
     # Although this should be handled gracefully, it mangles the UI too much
     # check 0 "" \
     #       "progressbar1:set_text $BIG_STRING"
     check 0 "" \
           "progressbar1:set_text This Is A Progressbar."
-    check 3 "" \
-          "label1:ping\n button1:ping\n main:ping" \
+    check 2 "" \
+          "progressbar1:ping\n progressbar1:ping foo bar" \
+          "progressbar1:ping" \
+          "progressbar1:ping foo bar"
+    check 2 "" \
+          "main:ping\n main:ping foo bar" \
+          "main:ping" \
+          "main:ping foo bar"
+    check 2 "" \
+          "label1:ping\n label1:ping foo bar" \
           "label1:ping" \
+          "label1:ping foo bar"
+    check 2 "" \
+          "button1:ping\n button1:ping foo bar" \
           "button1:ping" \
-          "main:ping"
+          "button1:ping foo bar"
     check 0 "" \
           "window1:set_visible 1"
     check 2 "" \
-          "linkbutton1:force\n linkbutton1:block 1\n linkbutton1:force\n button1:force\n linkbutton1:block 0\n linkbutton1:clicked" \
+          "linkbutton1:force\n linkbutton1:block 1\n linkbutton1:force\n button1:force\n linkbutton1:block 0" \
           "linkbutton1:clicked" \
           "button1:clicked" \
           "linkbutton1:clicked"
+    check 2 "" \
+          "linkbutton1:ping\n linkbutton1:ping foo bar" \
+          "linkbutton1:ping" \
+          "linkbutton1:ping foo bar"
     check 0 "" \
           "window1:set_visible 0"
 
@@ -1863,12 +1901,20 @@ check 1 "" \
 check 1 "" \
       "togglebutton1:block 1\n togglebutton1:set_active 0\n togglebutton1:block 0\n togglebutton1:set_active 1" \
       "togglebutton1:1"
+check 2 "" \
+      "togglebutton1:ping\n togglebutton1:ping foo bar" \
+      "togglebutton1:ping" \
+      "togglebutton1:ping foo bar"
 check 1 "" \
       "calendar1:block 1\n calendar1:select_date 1752-05-17\n calendar1:block 0\n calendar1:select_date 1752-05-18" \
       "calendar1:clicked 1752-05-18"
 check 1 "" \
       "calendar1:select_date 1752-03-29" \
       "calendar1:clicked 1752-03-29"
+check 2 "" \
+      "calendar1:ping\n calendar1:ping foo bar" \
+      "calendar1:ping" \
+      "calendar1:ping foo bar"
 
 if test $INTERACTIVE; then
     check 1 "Open what should now be named \"EXPANDER\" and click the \"button inside expander\"" \
@@ -1877,6 +1923,10 @@ if test $INTERACTIVE; then
     check 0 "" \
           "expander1:set_expanded 0"
 fi
+check 2 "" \
+      "expander1:ping\n expander1:ping foo bar" \
+      "expander1:ping" \
+      "expander1:ping foo bar"
 
 check 24 "" \
       "treeview1:set_cursor 1\n treeview1:block 1\n treeview1:set_cursor 1\n treeview1:block 0\n treeview1:set_cursor 1" \
@@ -2081,6 +2131,10 @@ check 2 "" \
       "treeview1:clear\n button1:force" \
       "treeview1:clicked" \
       "button1:clicked"
+check 2 "" \
+      "treeview1:ping\n treeview1:ping foo bar" \
+      "treeview1:ping" \
+      "treeview1:ping foo bar"
 
 check 12 "" \
       "treeview2:set_visible 1\n treeview2:insert_row end\n treeview2:insert_row 0 as_child\n treeview2:insert_row 0:0 as_child\n treeview2:insert_row 0:0\n treeview2:set 100:1:0 0 1\n treeview2:set 100:1:0 1 -30000\n treeview2:set 100:1:0 2 33\n treeview2:set 100:1:0 3 -2000000000\n treeview2:set 100:1:0 4 4000000000\n treeview2:set 100:1:0 5 -2000000000\n treeview2:set 100:1:0 6 4000000000\n treeview2:set 100:1:0 7 3.141\n treeview2:set 100:1:0 8 3.141\n treeview2:set 100:1:0 9 TEXT\n treeview2:expand_all\n treeview2:set_cursor 100:1:0" \
@@ -2295,20 +2349,40 @@ if test $AUTOMATIC; then
     check 1 "" \
           "nonexistent_send_text:force" \
           "nonexistent_send_text:clicked"
+    check 2 "" \
+          "nonexistent_send_text:ping\n nonexistent_send_text:ping foo bar" \
+          "nonexistent_send_text:ping" \
+          "nonexistent_send_text:ping foo bar"
     check 1 "" \
           "nonexistent_send_selection:force" \
           "nonexistent_send_selection:clicked"
     check 1 "" \
           "nonexistent_ok:force" \
           "nonexistent_ok:clicked"
+    check 2 "" \
+          "nonexistent_ok:ping\n nonexistent_ok:ping foo bar" \
+          "nonexistent_ok:ping" \
+          "nonexistent_ok:ping foo bar"
     check 1 "" \
           "nonexistent_apply:force" \
           "nonexistent_apply:clicked"
+    check 2 "" \
+          "nonexistent_apply:ping\n nonexistent_apply:ping foo bar" \
+          "nonexistent_apply:ping" \
+          "nonexistent_apply:ping foo bar"
     check 1 "" \
           "nonexistent_cancel:force" \
           "nonexistent_cancel:clicked"
+    check 2 "" \
+          "nonexistent_cancel:ping\n nonexistent_cancel:ping foo bar" \
+          "nonexistent_cancel:ping" \
+          "nonexistent_cancel:ping foo bar"
     check 0 "" \
           "notebook1:set_current_page 1"
+    check 2 "" \
+          "notebook1:ping\n notebook1:ping foo bar" \
+          "notebook1:ping" \
+          "notebook1:ping foo bar"
     check 1 "" \
           "textview1_send_text:force" \
           "textview1_send_text:text some textnetcn"
@@ -2322,6 +2396,10 @@ if test $AUTOMATIC; then
     check 1 "" \
           "textview1:save $DIR/$FILE1\n button1:force" \
           "button1:clicked"
+    check 2 "" \
+          "textview1:ping\n textview1:ping foo bar" \
+          "textview1:ping" \
+          "textview1:ping foo bar"
     i=0
     while (( i<2000 )); do
         (( i+=1 ))
@@ -2415,6 +2493,10 @@ if test $AUTOMATIC; then
     check 1 "" \
           "scale1:set_fill_level\n scale1:set_fill_level 20.5\n scale1:set_value 21.3" \
           "scale1:value 21.300000"
+    check 2 "" \
+          "scale1:ping\n scale1:ping foo bar" \
+          "scale1:ping" \
+          "scale1:ping foo bar"
     check 6 "" \
           "open_dialog:set_filename q.png\n file:force\n open_dialog_invoke:force\n open_dialog_apply:force\n open_dialog_ok:force" \
           "file:active _File" \
@@ -2424,6 +2506,22 @@ if test $AUTOMATIC; then
           "open_dialog_ok:clicked" \
           "open_dialog:file $PWD/q.png" \
           "open_dialog:folder $PWD"
+    check 2 "" \
+          "open_dialog:ping\n open_dialog:ping foo bar" \
+          "open_dialog:ping" \
+          "open_dialog:ping foo bar"
+    check 2 "" \
+          "open_dialog_apply:ping\n open_dialog_apply:ping foo bar" \
+          "open_dialog_apply:ping" \
+          "open_dialog_apply:ping foo bar"
+    check 2 "" \
+          "open_dialog_ok:ping\n open_dialog_ok:ping foo bar" \
+          "open_dialog_ok:ping" \
+          "open_dialog_ok:ping foo bar"
+    check 2 "" \
+          "open_dialog_cancel:ping\n open_dialog_cancel:ping foo bar" \
+          "open_dialog_cancel:ping" \
+          "open_dialog_cancel:ping foo bar"
     check 2 "" \
           "file:force\n open_dialog_invoke:force\n open_dialog_cancel:force" \
           "file:active _File" \
@@ -2437,6 +2535,10 @@ if test $AUTOMATIC; then
     check 1 "" \
           "nonexistent_invoke:force" \
           "nonexistent_invoke:active nonexistent"
+    check 2 "" \
+          "nonexistent_invoke:ping\n nonexistent_invoke:ping foo bar" \
+          "nonexistent_invoke:ping" \
+          "nonexistent_invoke:ping foo bar"
 
     # _:load
     mkdir -p $DIR
@@ -2638,6 +2740,10 @@ check 0 "" \
       "drawingarea1:move_to 5 10 75\n drawingarea1:set_source_rgba 5 red\n drawingarea1:set_font_face 5 italic bold Courier\n drawingarea1:set_font_size 5 30\n drawingarea1:show_text 5 Xyz 789\n drawingarea1:set_font_size 5 10\n drawingarea1:show_text 5 Abc 123"
 check 0 "" \
       "drawingarea1:remove 1\n drawingarea1:remove 2\n drawingarea1:remove 3\n drawingarea1:remove 4"
+check 2 "" \
+      "drawingarea1:ping\n drawingarea1:ping foo bar" \
+      "drawingarea1:ping" \
+      "drawingarea1:ping foo bar"
 
 check 0 "" \
       "drawingarea2:rotate 55<500 5\n drawingarea2:scale 33 .7 .7\n drawingarea2:translate 77 30 30\n drawingarea2:transform 44"
@@ -2804,6 +2910,10 @@ if test $INTERACTIVE; then
 
 fi
 
+check 2 "" \
+      "statusbar1:ping\n statusbar1:ping foo bar" \
+      "statusbar1:ping" \
+      "statusbar1:ping foo bar"
 check 0 "" \
       "statusbar1:remove_all_id ZZZ"
 
@@ -2817,7 +2927,7 @@ check_cmd "head -n 2 $LOG | tail -n 1 | grep -q '##### (New Pipeglade session) #
 check_cmd "tail -n 4 $LOG | head -n 1 | grep -q '### (Idle) ###'"
 check_cmd "tail -n 3 $LOG | head -n 1 | grep -q 'statusbar1:remove_all_id ZZZ'"
 check_cmd "tail -n 2 $LOG | head -n 1 | grep -q '### (Idle) ###'"
-# check_cmd "tail -n 1 $LOG | grep '_:main_quit'"
+check_cmd "tail -n 1 $LOG | grep '_:main_quit'"
 
 if test $AUTOMATIC; then
     unset -v BIG_STRING
