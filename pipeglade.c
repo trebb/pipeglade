@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Bert Burgemeister <trebbu@googlemail.com>
+ * Copyright (c) 2014-2017 Bert Burgemeister <trebbu@googlemail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -601,6 +601,7 @@ info_new_full(FILE *stream, GObject *obj, GtkTreeModel *model, char *txt)
         ar->obj = obj;
         ar->model = model;
         ar->txt = txt;
+        ar->data = NULL;
         return ar;
 }
 
