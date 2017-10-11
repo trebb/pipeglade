@@ -8,7 +8,7 @@
   * API change, GtkSocket: rename response tags :plug-added and
   :plug-removed to :plug_added and :plug_removed, respectively.
 
-4.8.0 (unreleased)
+4.8.0 (2017-10-11)
 ------------------
   * Add support for GtkAspectFrame, GtkLinkButton, and GtkMenu.
   * Add documentation for GtkMenuBar, GtkMenuButton, GtkPaned, and

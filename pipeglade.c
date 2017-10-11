@@ -44,7 +44,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "4.7.0"
+#define VERSION "4.8.0"
 #define BUFLEN 256
 #define WHITESPACE " \t\n"
 #define MAIN_WIN "main"
