@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="style.css" type="text/css" media="all">
+    <title>PIPEGLADE</title>
+    <meta name="author" content="Bert Burgemeister">
+  </head>
+  <body>
+    <div class="mandoc">
+      <div class="section">
+        <h1>PIPEGLADE<br>
+          Graphical User Interfaces, The UNIX Way</h1>
+        <p>
+          </p>
+<div class="toc">
+<i class="link-sec"><a class="link-sec" href="#DOCUMENTATION">DOCUMENTATION</a></i> · <i class="link-sec"><a class="link-sec" href="#WIDGET%20GALLERY">WIDGET GALLERY</a></i> · <i class="link-sec"><a class="link-sec" href="#EXAMPLE">EXAMPLE</a></i> · <i class="link-sec"><a class="link-sec" href="#SOURCE%20CODE">SOURCE CODE</a></i> · <i class="link-sec"><a class="link-sec" href="#LICENSE">LICENSE</a></i>
+</div>
+        <p>
+          Pipeglade is a helper program that displays graphical user
+          interfaces for other programs.  It renders the GUI definition
+          found in a GtkBuilder file (created using
+          the
+          <a class="link-ext" href="https://glade.gnome.org">Glade</a> Interface
+          Designer), and communicates with the main program solely
+          via pipes or fifos.
+        </p>
+<p>
+          To have its GUI rendered by pipeglade, a program must be able to
+          </p>
+<ul class="list list-dash">
+            <li class="list list-dash">
+              send  plain text commands to standard output or a named
+              pipe and/or
+            </li>
+<li class="list list-dash">
+              receive and parse simple plain text messages from standard
+              input or a named pipe.
+          </li>
+</ul>
+          Pipeglade strives for simplicity; it provides access to a
+          subset of the features available in GTK+ v3.2.
+          <p>
+          See below for the set of widgets accessible via pipeglade.
+          (<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/ch03.html">Widgets
+            of any kind</a> can grab focus and change visibility,
+          sensitivity, <a class="link-ext" href="https://developer.gnome.org/gtk3/stable/chap-css-properties.html">style</a>,
+          size, and tooltip.)
+        </p>
+<p>
+          </p>
+<div class="subsection">
+            <h2 id="DOCUMENTATION">DOCUMENTATION</h2>
+            Pipeglade has a manual page:
+            <a class="link-ext" href="pipeglade.1.html">pipeglade(1)[HTML]</a>,
+            <a class="link-ext" href="pipeglade.1.pdf">pipeglade(1)[PDF]</a>
+          </div>
+          <div class="subsection">
+            <h2 id="WIDGET GALLERY">WIDGET GALLERY</h2>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b4173706563744672616d65">GtkAspectFrame</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkAspectFrame.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkAspectFrame.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b426f78">GtkBox</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkBox.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkBox.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b427574746f6e">GtkButton</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkButton.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkButton.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b427574746f6e426f78">GtkButtonBox</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkButtonBox.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkButtonBox.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b43616c656e646172">GtkCalendar</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkCalendar.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkCalendar.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b436865636b427574746f6e">GtkCheckButton</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkCheckButton.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkCheckButton.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b436f6c6f72427574746f6e">GtkColorButton</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkColorButton.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkColorButton.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b436f6d626f426f7854657874">GtkComboBoxText</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkComboBoxText.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkComboBoxText.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b4469616c6f67">GtkDialog</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkDialog.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkDialog.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b44726177696e6741726561">GtkDrawingArea</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkDrawingArea.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkDrawingArea.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b456e747279">GtkEntry</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkEntry.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkEntry.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b4576656e74426f78">GtkEventBox</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkEventBox.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkEventBox.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b457870616e646572">GtkExpander</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkExpander.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkExpander.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b46696c6543686f6f736572427574746f6e">GtkFileChooserButton</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkFileChooserButton.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkFileChooserButton.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b46696c6543686f6f7365724469616c6f67">GtkFileChooserDialog</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkFileChooserDialog.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkFileChooserDialog.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b466f6e74427574746f6e">GtkFontButton</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkFontButton.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkFontButton.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b4672616d65">GtkFrame</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkFrame.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkFrame.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b47726964">GtkGrid</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkGrid.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkGrid.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b496d616765">GtkImage</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkImage.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkImage.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b496d6167654d656e754974656d">GtkImageMenuItem</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkImageMenuItem.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkImageMenuItem.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b496e666f426172">GtkInfoBar</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkInfoBar.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkInfoBar.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b4c6162656c">GtkLabel</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkLabel.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkLabel.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b4c696e6b427574746f6e">GtkLinkButton</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkLinkButton.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkLinkButton.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b4d656e75">GtkMenu</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkMenu.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkMenu.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b4d656e75426172">GtkMenuBar</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkMenuBar.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkMenuBar.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b4d656e75427574746f6e">GtkMenuButton</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkMenuButton.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkMenuButton.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b4d656e754974656d">GtkMenuItem</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkMenuItem.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkMenuItem.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b4e6f7465626f6f6b">GtkNotebook</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkNotebook.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkNotebook.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b4f7665726c6179">GtkOverlay</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkOverlay.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkOverlay.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b50616e6564">GtkPaned</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkPaned.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkPaned.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b506c7567">GtkPlug</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkPlug.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkPlug.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b5072696e74556e69784469616c6f67">GtkPrintUnixDialog</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkPrintUnixDialog.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkPrintUnixDialog.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b50726f6772657373426172">GtkProgressBar</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkProgressBar.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkProgressBar.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b526164696f427574746f6e">GtkRadioButton</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkRadioButton.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkRadioButton.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b5363616c65">GtkScale</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkScale.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkScale.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b5363726f6c6c656457696e646f77">GtkScrolledWindow</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkScrolledWindow.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkScrolledWindow.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b536570617261746f72">GtkSeparator</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkSeparator.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkSeparator.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b536570617261746f724d656e754974656d">GtkSeparatorMenuItem</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkSeparatorMenuItem.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkSeparatorMenuItem.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b53697a6547726f7570">GtkSizeGroup</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkSizeGroup.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkSizeGroup.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b536f636b6574">GtkSocket</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkSocket.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkSocket.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b5370696e427574746f6e">GtkSpinButton</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkSpinButton.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkSpinButton.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b5370696e6e6572">GtkSpinner</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkSpinner.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkSpinner.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b537461747573626172">GtkStatusbar</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkStatusbar.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkStatusbar.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b537769746368">GtkSwitch</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkSwitch.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkSwitch.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b5465787456696577">GtkTextView</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkTextView.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkTextView.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b546f67676c65427574746f6e">GtkToggleButton</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkToggleButton.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkToggleButton.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b5472656556696577">GtkTreeView</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkTreeView.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkTreeView.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b5472656556696577436f6c756d6e">GtkTreeViewColumn</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkTreeViewColumn.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkTreeViewColumn.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b56696577706f7274">GtkViewport</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkViewport.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkViewport.jpg">
+</div>
+<p/>
+<div class="display">
+  <i class="link-sec">
+    <a href="pipeglade.1.html#x47746b57696e646f77">GtkWindow</a>  </i>
+  (cf.&nbsp;<a class="link-ext" href="https://developer.gnome.org/gtk3/stable/GtkWindow.html">GTK+ 3 Reference Manual</a>)
+  <br>
+  <img src="GtkWindow.jpg">
+</div>
+          </div>
+          <div class="subsection">
+            <h2 id="EXAMPLE">EXAMPLE</h2>
+            The shell script <a class="link-ext" href="clock.sh.txt">clock.sh</a> uses
+            pipeglade to display an analog clock on the interface
+            defined in the GtkBuilder
+            file <a class="link-ext" href="clock.ui.txt">clock.ui</a>.  The script was
+            also used to generate the image below.
+            <p>
+              <img src="clock.jpg" width="200">
+          </p>
+</div>
+          <div class="subsection">
+            <h2 id="SOURCE CODE">SOURCE CODE</h2>
+            <ul class="list list-dash">
+              <li class="list list-dash">
+                Download pipeglade v4.8.0:
+                <a class="link-ext" href="http://github.com/trebb/pipeglade/archive/4.8.0.tar.gz">
+                  pipeglade-4.8.0.tar.gz</a>
+              </li>
+<li class="list list-dash">
+                <a class="link-ext" href="http://github.com/trebb/pipeglade">GitHub</a>
+            </li>
+</ul>
+          </div>
+          <div class="subsection">
+            <h2 id="LICENSE">LICENSE</h2>
+Copyright (c) 2014-2017 Bert Burgemeister &lt;trebbu@googlemail.com&gt;
+<p/>
+The MIT License
+<p/>
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+&quot;Software&quot;), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+<p/>
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+<p/>
+THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+          </div>
+      </div>
+    </div>
+<!-- Start of StatCounter Code for Default Guide -->
+<script type="text/javascript">
+var sc_project=10203688; 
+var sc_invisible=1; 
+var sc_security="d6fba82d"; 
+var scJsHost = (("https:" == document.location.protocol) ?
+"https://secure." : "http://www.");
+document.write("<sc"+"ript type='text/javascript' src='" +
+scJsHost+
+"statcounter.com/counter/counter.js'></"+"script>");
+</script>
+<noscript><div class="statcounter"><a title="site stats"
+href="http://statcounter.com/free-web-stats/"
+target="_blank"><img class="statcounter"
+src="http://c.statcounter.com/10203688/0/d6fba82d/1/"
+alt="site stats"></a></div></noscript>
+<!-- End of StatCounter Code for Default Guide -->
+  </body>
+</html>
