@@ -67,6 +67,7 @@ clean:
 # with GNU make.
 ######################################################################
 VERSION != (which git >/dev/null && git describe --tags || echo "NONE") | cut -d "-" -f 1
+
 CODE_VERSION != awk '/\#define VERSION/{print $$3}' pipeglade.c | tr -d '"'
 NEWS_VERSION != awk '/^[0-9]+\.[0-9]+\.[0-9]+ .*([0-9]+-[01][0-9]-[0-3][0-9])/{print $$1}' NEWS | head -n1
 NEWS_DATE != awk '/^[0-9]+\.[0-9]+\.[0-9]+ .*([0-9]+-[01][0-9]-[0-3][0-9])/{print substr($$2, 2, 10)}' NEWS | head -n1
@@ -126,8 +127,8 @@ done-list:
 
 # Prepare the www directory
 
-gh-pages:
-	$(MAKE) -f Makefile.publish gh-pages
+gh-pages: pipeglade pipeglade.1 NEWS LICENSE
+	$(MAKE) "VERSION = $(VERSION)" -f Makefile.publish gh-pages
 
 publish:
-	$(MAKE) -f Makefile.publish publish
+	$(MAKE) "VERSION = $(VERSION)" -f Makefile.publish publish
