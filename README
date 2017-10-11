@@ -84,6 +84,8 @@ SUCCESSFUL BUILDS
 
 Debian wheezy, GTK+ 3.4.2
 Debian Jessie, GTK+ 3.14.5
+Debian Stretch, GTK+ 3.22.11
 FreeBSD 10.1, GTK+ 3.14.5
 FreeBSD 10.2, GTK+ 3.16.6
+FreeBSD 10.3, GTK+ 3.18.8
 Arch Linux, GTK+ 3.18.5
