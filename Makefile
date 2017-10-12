@@ -116,19 +116,6 @@ man-toc:
 man-outline: www-template/outline.xsl gh-pages/pipeglade.1.html
 	@xsltproc --html ${.ALLSRC}
 
-# Our collection of simple test widgets
-examples-list:
-	@ls -1 widget-examples | grep "\.ui$$"
-
 # Items marked done in list of all widgets
 done-list:
 	@awk '!/^#/&&/Gtk[A-Z][a-zA-Z]/&&/done/{print $$1}' buildables.txt
-
-
-# Prepare the www directory
-
-gh-pages: pipeglade pipeglade.1 NEWS LICENSE
-	$(MAKE) "VERSION = $(VERSION)" -f Makefile.publish gh-pages
-
-publish:
-	$(MAKE) "VERSION = $(VERSION)" -f Makefile.publish publish

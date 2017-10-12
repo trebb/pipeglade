@@ -23,6 +23,10 @@
 
 # Prepare the www directory
 
+clean:
+	rm -rf gh-pages
+
+VERSION != (which git >/dev/null && git describe --tags || echo "NONE") | cut -d "-" -f 1
 GH_PAGES_SIMPLE = style.css CNAME README robots.txt
 GH_PAGES_PUBLIC = ${GH_PAGES_SIMPLE} pipeglade.1.html pipeglade.1.pdf clock.jpg clock.ui.txt clock.sh.txt 404.html
 GH_PAGES_TEMP = LICENSE gallery.html index-hrefs
@@ -35,7 +39,7 @@ SNAPSHOTS = ${WIDGETS:C|(.*)|gh-pages/\1.jpg|}
 gh-pages: gh-pages-untested test-index-hrefs
 	rm -f ${GH_PAGES_TEMP:S|^|gh-pages/|}
 
-gh-pages-untested: ${GH_PAGES_PUBLIC:S|^|gh-pages/|} ${SNAPSHOTS} gh-pages/index.html
+gh-pages-untested: ${GH_PAGES_PUBLIC:S|^|gh-pages/|} $(SNAPSHOTS) gh-pages/index.html
 
 .for FILE in ${GH_PAGES_SIMPLE}
 gh-pages/${FILE}: www-template/${FILE}
@@ -52,7 +56,7 @@ gh-pages/index.html: pipeglade gh-pages/pipeglade.1.html www-template/index.html
 	echo -e ',s/_PUT_VERSION_HERE_/$(VERSION)/g\nwq' | ed -s gh-pages/index.html
 	echo -e '/<\/body>/-r www-template/statcounter.html\nwq' | ed -s gh-pages/index.html
 
-gh-pages/LICENSE: LICENSE Makefile
+gh-pages/LICENSE: LICENSE Makefile Makefile.publish
 	@mkdir -p gh-pages
 	sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g; s/'"'"'/\&#39;/g; s|^$$|<p/>|g' <LICENSE >${.TARGET}
 
@@ -78,6 +82,10 @@ gh-pages/clock.jpg: clock.svg
 
 clock.svg: clock.sh clock.ui pipeglade
 	./clock.sh ${.TARGET}
+
+# Our collection of simple test widgets
+examples-list:
+	@ls -1 widget-examples | grep "\.ui$$"
 
 # Screenshots of the widget examples
 
